@@ -1,6 +1,26 @@
+# === BACKEND (Python / Flask) ===
 __pycache__/
-*.pyc
-venv/
-.env
+*.py[cod]
+*.sqlite3
+*.log
+*.db
+*.env
 config.py
-logs/
+instance/
+venv/
+env/
+ENV/
+
+# === FRONTEND (React) ===
+frontend/node_modules/
+frontend/.env
+frontend/build/
+
+# === General ===
+.DS_Store
+*.swp
+*.swo
+.idea/
+.vscode/
+*.bak
+*.tmp

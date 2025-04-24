@@ -11,14 +11,12 @@ DATABASE = os.getenv("DB_NAME")
 
 def obtenerConexion():
     try:
-        print("Intentando conectar con la base de datos...")  # Ver si entra al try
         conexion = pymysql.connect(
             host=HOST,
             user=USER,
             password=PASSWORD,
             database=DATABASE
         )
-        print("Conexión exitosa")
         conexion.autocommit = False
         return conexion
     except pymysql.MySQLError as error:

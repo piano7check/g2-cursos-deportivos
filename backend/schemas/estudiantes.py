@@ -1,14 +1,18 @@
+from datetime import datetime
 from cerberus import Validator
 
 esquemaUsuario = {
-    'nombre': {'type': 'string', 'minlength': 2, 'maxlength': 50},
-    'apellido': {'type': 'string', 'minlength': 2, 'maxlength': 50},
-    'edad': {'type': 'integer', 'min': 6},
-    'correo': {
+    'name': {'type': 'string', 'minlength': 2, 'maxlength': 50},
+    'lastname': {'type': 'string', 'minlength': 2, 'maxlength': 50},
+    'birthdate': {
+        'type': 'string',
+        'regex': r'^\d{4}-\d{2}-\d{2}$',  
+    },
+    'email': {
         'type': 'string',
         'regex': r'^\S+@\S+\.\S+$'
     },
-    'contrasena': {
+    'password': {
         'type': 'string',
         'minlength': 8,
         'maxlength': 32,
@@ -20,4 +24,3 @@ def validarUsuario(data):
     v = Validator(esquemaUsuario)
     esValido = v.validate(data)
     return esValido, v.errors
-
