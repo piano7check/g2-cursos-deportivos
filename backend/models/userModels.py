@@ -8,15 +8,16 @@ class userModel:
 
             with conexion.cursor() as cursor:
                 sql = """
-                    INSERT INTO usuarios (name, lastname, birthdate, email, password )
-                    VALUES (%s, %s, %s, %s, %s)
+                    INSERT INTO users (name, lastname, birthdate, email, password, rol)
+                    VALUES (%s, %s, %s, %s, %s, %s)
                 """
                 valores = (
                     data['name'],
                     data['lastname'],
                     data['birthdate'], 
                     data['email'],
-                    data['password']
+                    data['password'],
+                    data['rol'] 
                 )
                 cursor.execute(sql, valores)
                 conexion.commit()

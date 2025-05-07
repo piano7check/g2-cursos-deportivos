@@ -10,6 +10,6 @@ def registro():
     return usuarioController.registroUsuario()
 
 
-@autentificacionesUsuario.route('/acceso', methods=['POST'])
+@autentificacionesUsuario.route('/login', methods=['POST'])
 def accesoUsuario():
-    return 0
+    return usuarioController.loginUsuario()
