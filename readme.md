@@ -14,6 +14,8 @@ Clonar el repo
             DB_PASSWORD= x
             DB_NAME= x
 
+            SECRET_KEY= x
+
 **BACKEND**
 
     cd backend

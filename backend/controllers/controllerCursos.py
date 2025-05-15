@@ -1,4 +1,16 @@
+from flask import jsonify, request
+from models.cursosModels import cursosModels
+
 class controllerCursos():
-    def mostrarCursos(self):
+    @staticmethod
+    def mostrarCursos():
+        resultado = cursosModels.mostrarCursos()
+        if 'error' in resultado:
+            return jsonify(resultado)
+        return jsonify(resultado)
+    
+    @staticmethod
+    def crearCursos():
         return 0
-    ##implementar la logica 
+    ##falta completar 
+        
