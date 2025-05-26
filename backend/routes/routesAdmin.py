@@ -12,11 +12,11 @@ routesAdmin = Blueprint("adminRoute", __name__)
 def mostrarCursos():
     return controllerCursos.mostrarCursos() 
 
-@routesAdmin.route("/cursos", methods=['POST']) 
+@routesAdmin.route('/cursos', methods=['POST'])
 @token_requerido
 @rol_requerido(['admin'])
-def crearCursos():
-    return controllerCursos.crearCursos() 
+def crearCurso():
+    return controllerCursos.crearCursos()
 
 
     
