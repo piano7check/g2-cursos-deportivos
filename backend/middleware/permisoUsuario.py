@@ -1,7 +1,6 @@
 from functools import wraps
 from flask import request, jsonify
-from pymysql.cursors import DictCursor
-from data.conexion import obtenerConexion
+from utils.buscarUsuario import buscarUsuarioById
 
 def validarPermisoUsuario(f):
     @wraps(f)
@@ -12,19 +11,11 @@ def validarPermisoUsuario(f):
         if not id_objetivo:
             return jsonify({'error': 'ID de usuario no proporcionado'}), 400
 
-        conexion = obtenerConexion()
-        try:
-            with conexion.cursor(DictCursor) as cursor:
-                consulta = "SELECT id, rol FROM users WHERE id = %s"
-                cursor.execute(consulta, (id_objetivo,))
-                usuario_objetivo = cursor.fetchone()
-        finally:
-            conexion.close()
+        usuario_objetivo = buscarUsuarioById(id_objetivo)
 
-        if not usuario_objetivo:
+        if not usuario_objetivo or 'error' in usuario_objetivo:
             return jsonify({'error': 'Usuario no encontrado'}), 404
 
-        # Jerarquía de roles
         jerarquia = {'estudiante': 1, 'profesor': 2, 'admin': 3}
 
         rol_actual = usuario_actual['rol']

@@ -2,19 +2,21 @@ from data.conexion import obtenerConexion
 from pymysql.cursors import DictCursor
 
 def buscarUsuarioById(id_objetivo):
+    conexion = obtenerConexion()
+
+    if conexion is None:
+        return {"error": "Error en la conexión a la base de datos"}
+
     try:
-        conexion = obtenerConexion()
-        
-        if conexion is None:
-            return {"error": "Error en la conexion a la base de datos"}
         with conexion.cursor(DictCursor) as cursor:
-            sql =  "SELECT FROM users where id = %s"   
-            cursor.execute(sql,(id_objetivo))
+            sql = "SELECT id, name, lastname, email, rol FROM users WHERE id = %s"
+            cursor.execute(sql, (id_objetivo,))
             usuario = cursor.fetchone()
-            
-        return usuario            
+        return usuario
+
     except Exception as e:
-        conexion.rollback()
-        return {"error": str(e)}
+        return {"error": "Error al buscar usuario",
+                "detalles": str(e)}
+
     finally:
         conexion.close()
