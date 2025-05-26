@@ -1,9 +1,12 @@
 from flask import request,jsonify
 import bcrypt
 from models.userModels import userModel
+from schemas.estudianteParcial import validarUsuarioParcial
 from schemas.estudiantes import validarUsuario
 from utils.validarLogin import validacionLogin
 from utils.tokenUsuario import generarToken
+from utils.buscarUsuario import buscarUsuarioById
+
 class controllerUsuario():
     @staticmethod
     def registroUsuario():
@@ -11,7 +14,7 @@ class controllerUsuario():
         data = request.get_json()
         esValido, errores = validarUsuario(data)
         if not esValido:
-            return jsonify({"errors": errores}), 400
+            return jsonify({"error": errores}), 400
 
         try:
             password = data['password'].encode('utf-8')
@@ -60,6 +63,46 @@ class controllerUsuario():
     @staticmethod
     def editarUsuario(id):
         try:
-            resultado = userModel.editarUsuario(id)
+            data = request.get_json()
+
+            esValido, errores, data_limpia = validarUsuarioParcial(data)
+            if not esValido:
+                return jsonify({
+                    "message": "Datos no válidos",
+                    "error": errores
+                }), 400
+
+            if "password" in data_limpia:
+                password_bytes = data_limpia["password"].encode('utf-8')
+                hashed = bcrypt.hashpw(password_bytes, bcrypt.gensalt())
+                data_limpia["password"] = hashed.decode('utf-8') 
+
+
+            usuarioExistente = buscarUsuarioById(id)
+
+            if not usuarioExistente:
+                return jsonify({"error": "Usuario no encontrado"}), 404
+
+            if "error" in usuarioExistente:
+                return jsonify(usuarioExistente), 500
+
+            resultadoEdicion = userModel.editarUsuario(id, data_limpia)
+            
+        
+            if "error" in resultadoEdicion:
+                return jsonify(resultadoEdicion), 500
+
+            return jsonify({
+                "message": "Usuario actualizado correctamente",
+                "usuario": resultadoEdicion
+            }), 200
+
         except Exception as e:
+            return jsonify({"error": f"Error inesperado: {str(e)}"}), 500
+    
+    @staticmethod
+    def buscar_usuario_nombre(nombre):
+        try:
             return 0
+        except Exception as e:
+            return jsonify({"error": f"Error inesperado: {str(e)}"}), 500

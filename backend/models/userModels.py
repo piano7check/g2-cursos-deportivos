@@ -52,18 +52,32 @@ class userModel:
             conexion.close()
             
     @staticmethod
-    def editarUsuario():
+    def editarUsuario(id, data):
+        conexion = obtenerConexion()
+
+        if conexion is None:
+            return {"error": "No se pudo conectar a la base de datos"}
+
         try:
-            conexion = obtenerConexion()
-            if conexion is None:
-                return {"error": "Error en la conexion de la base de datos"}
-            
-            sql = "UPDATE FROM users"
-            
-            
+            with conexion.cursor() as cursor:
+                campos = []
+                valores = []
+
+                for campo, valor in data.items():
+                    campos.append(f"{campo} = %s")
+                    valores.append(valor)
+
+                valores.append(id) 
+
+                sql = f"UPDATE users SET {', '.join(campos)} WHERE id = %s"
+                cursor.execute(sql, valores)
+                conexion.commit()
+
+                return {"id": id, "actualizado": True}
+
         except Exception as e:
             conexion.rollback()
-            return {"error" : "Error al editar usuario",
-                    "detalles": str(e)}
+            return {"error": f"No se pudo actualizar el usuario: {str(e)}"}
+
         finally:
             conexion.close()
