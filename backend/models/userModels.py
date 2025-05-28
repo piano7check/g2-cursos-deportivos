@@ -79,5 +79,34 @@ class userModel:
             conexion.rollback()
             return {"error": f"No se pudo actualizar el usuario: {str(e)}"}
 
+    @staticmethod
+    def obtenerUsuarios(limit, offset, filtros=None):
+        conexion = obtenerConexion()
+        try:
+            with conexion.cursor() as cursor:
+                base_sql = "SELECT id, name, lastname, email, birthdate, rol FROM users"
+                condiciones = []
+                valores = []
+
+                if filtros:
+                    for campo, valor in filtros.items():
+                        condiciones.append(f"{campo} LIKE %s")
+                        valores.append(f"%{valor}%")
+
+                if condiciones:
+                    base_sql += " WHERE " + " AND ".join(condiciones)
+
+                base_sql += " ORDER BY id LIMIT %s OFFSET %s"
+                valores.extend([limit, offset])
+
+                cursor.execute(base_sql, valores)
+                usuarios = cursor.fetchall()
+
+                return usuarios
+
+        except Exception as e:
+            return {"error": str(e)}
+
         finally:
             conexion.close()
+ 

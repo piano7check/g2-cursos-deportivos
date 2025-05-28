@@ -99,10 +99,46 @@ class controllerUsuario():
 
         except Exception as e:
             return jsonify({"error": f"Error inesperado: {str(e)}"}), 500
-    
+        
     @staticmethod
-    def buscar_usuario_nombre(nombre):
+    def mostrarUsuarios():
         try:
-            return 0
+            limit = int(request.args.get('limit', 10))
+            offset = int(request.args.get('offset', 0))
+
+            usuarios = userModel.obtenerUsuarios(limit, offset)
+
+            if isinstance(usuarios, dict) and 'error' in usuarios:
+                return jsonify(usuarios), 500
+
+            return jsonify({"usuarios": usuarios})
+
+        except Exception as e:
+            return jsonify({"error": f"Error inesperado: {str(e)}"}), 500
+
+    @staticmethod
+    def buscarUsuarioPorCampo():
+        try:
+            campos_validos = ['name', 'lastname', 'email']
+            filtros = {}
+
+            for campo in campos_validos:
+                valor = request.args.get(campo)
+                if valor:
+                    filtros[campo] = valor
+
+            if not filtros:
+                return jsonify({"error": "Debe especificar al menos un campo de búsqueda válido"}), 400
+
+            limit = int(request.args.get('limit', 10))
+            offset = int(request.args.get('offset', 0))
+
+            usuarios = userModel.obtenerUsuarios(limit, offset, filtros)
+
+            if isinstance(usuarios, dict) and 'error' in usuarios:
+                return jsonify(usuarios), 500
+
+            return jsonify({"usuarios": usuarios})
+
         except Exception as e:
             return jsonify({"error": f"Error inesperado: {str(e)}"}), 500
