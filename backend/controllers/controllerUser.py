@@ -1,4 +1,4 @@
-from flask import request,jsonify
+from flask import request,jsonify,make_response
 import bcrypt
 from models.userModels import userModel
 from schemas.estudianteParcial import validarUsuarioParcial
@@ -43,11 +43,22 @@ class controllerUsuario():
     def loginUsuario():
         data = request.get_json()
         resultado = validacionLogin(data)
+        
         if 'error' in resultado:
-            return jsonify(resultado),400
+            return jsonify(resultado), 400
+        
         token = generarToken(resultado)
-        return jsonify({"token": token})
-    
+        response = make_response(jsonify({"mensaje": "Login exitoso"}), 200)
+        response.set_cookie(
+            "access_token", 
+            token, 
+            httponly=True, 
+            secure=False,      
+            samesite="Lax", 
+            max_age= 30
+        )
+        return response
+
     @staticmethod
     def eliminarUsuario(id):
         try:

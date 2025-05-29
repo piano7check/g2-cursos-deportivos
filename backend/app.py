@@ -5,7 +5,7 @@ from routes.routesStudent import cursosEstudiante
 from routes.routesUsuarios import routesUsuarios
 from flask_cors import CORS
 app = Flask(__name__)
-CORS(app)
+CORS(app, supports_credentials=True)
 
 app.register_blueprint(autentificacionesUsuario)
 app.register_blueprint(routesAdmin, url_prefix='/admin')
