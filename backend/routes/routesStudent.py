@@ -10,3 +10,4 @@ cursosEstudiante = Blueprint("courses", __name__)
 @rol_requerido(['estudiante','profesor', 'admin'])
 def cursosEstudiantes():
     return controllerCursos.mostrarCursos()
+
