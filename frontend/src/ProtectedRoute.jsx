@@ -2,7 +2,7 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 
 const ProtectedRoute = ({ allowedRoles, children }) => {
-  // Obtener token desde localStorage
+  // Obtener token desde localStora
   const token = localStorage.getItem('token');
 
   if (!token) {

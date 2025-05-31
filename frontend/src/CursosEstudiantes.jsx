@@ -1,4 +1,4 @@
-// src/CursosEstudiantes.js
+// src/CursosEstudiantes.jsx
 import React from 'react';
 
 function CursosEstudiantes() {
