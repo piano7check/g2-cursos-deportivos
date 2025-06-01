@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import styles from './Home.module.css';
 import UABLogo from '../../assets/images/uab-logo.png';
-import useUsuario from '../../hooks/useUsuario';
+import { useUsuarioContext } from '../../context/UsuarioContext';
 
 import atletismo from '../../assets/images/atletismo.webp';
 import basketball from '../../assets/images/basketball.webp';
@@ -13,19 +13,19 @@ import voleibol from '../../assets/images/voleibol.webp';
 
 const Home = () => {
   const navigate = useNavigate();
-  const { usuario, loading } = useUsuario();
+  const { usuario, cargando } = useUsuarioContext();
 
-useEffect(() => {
-  if (!loading && usuario) {
-    if (usuario.rol === 'estudiante') {
-      navigate('/cursosEstudiantes');
-    } else if (usuario.rol === 'profesor') {
-      navigate('/profesor');
-    } else if (usuario.rol === 'admin') {
-      navigate('/admin');
+  useEffect(() => {
+    if (!cargando && usuario) {
+      if (usuario.rol === 'estudiante') {
+        navigate('/cursosEstudiantes');
+      } else if (usuario.rol === 'profesor') {
+        navigate('/profesor');
+      } else if (usuario.rol === 'admin') {
+        navigate('/admin');
+      }
     }
-  }
-}, [loading, usuario, navigate]);
+  }, [cargando, usuario, navigate]);
 
   const deportes = [
     { nombre: 'Atletismo', imagen: atletismo },

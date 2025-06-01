@@ -1,12 +1,12 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import useUsuario from '../../hooks/useUsuario';
+import { useUsuarioContext } from "../context/UsuarioContext";
 
 const ProtectedRoute = ({ allowedRoles, children }) => {
-  const { usuario, loading } = useUsuario();
+  const { usuario, cargando } = useUsuarioContext();
 
-  if (loading) {
-    return <p>Cargando...</p>; 
+  if (cargando) {
+    return <p>Cargando...</p>;
   }
 
   if (!usuario) {

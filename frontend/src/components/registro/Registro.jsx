@@ -47,7 +47,7 @@ const Registro = () => {
     setError(''); 
 
     try {
-      const response = await fetch('/autentificacion/register', { // Considera usar http://localhost:5000/autentificacion/register si tu backend corre ahí
+      const response = await fetch('/api/autentificacion/register', { 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -175,7 +175,6 @@ const Registro = () => {
           </button>
         </form>
         
-        {/* Enlace para ir al login */}
         <p className={styles.loginPrompt}>
           ¿Ya tienes una cuenta? <Link to="/login" className={styles.loginLink}>Inicia Sesión aquí</Link>
         </p>

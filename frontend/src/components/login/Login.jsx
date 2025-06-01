@@ -14,7 +14,7 @@ const Login = () => {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:5000/autentificacion/login', {
+      const response = await fetch('/api/autentificacion/login', {
         method: 'POST',
         credentials: 'include', 
         headers: {

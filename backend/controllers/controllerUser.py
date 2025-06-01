@@ -53,9 +53,9 @@ class controllerUsuario():
             "access_token", 
             token, 
             httponly=True, 
-            secure=False,      
+            secure=False,
             samesite="Lax", 
-            max_age= 30
+            max_age=3600  
         )
         return response
 
