@@ -1,4 +1,4 @@
-from flask import request,jsonify,make_response
+from flask import request,jsonify,make_response,g
 import bcrypt
 from models.userModels import userModel
 from schemas.estudianteParcial import validarUsuarioParcial
@@ -153,3 +153,12 @@ class controllerUsuario():
 
         except Exception as e:
             return jsonify({"error": f"Error inesperado: {str(e)}"}), 500
+        
+    @staticmethod
+    def obtenerUsuarioActual():
+        usuario = {
+            "id": g.usuario['id'],
+            "email": g.usuario['email'],
+            "rol": g.usuario['rol']
+        }
+        return jsonify(usuario), 200

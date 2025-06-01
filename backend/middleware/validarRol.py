@@ -1,11 +1,11 @@
 from functools import wraps
-from flask import request, jsonify
+from flask import request, jsonify,g
 
 def rol_requerido(roles_permitidos):
     def decorador(f):
         @wraps(f)
         def funcion_decorada(*args, **kwargs):
-            usuario = getattr(request, 'usuario', None)
+            usuario = getattr(g, 'usuario', None)
             if not usuario:
                 return jsonify({'error': 'Usuario no autenticado'}), 401
             if usuario.get('rol') not in roles_permitidos:

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom'; 
 import styles from './Login.module.css';
+import UABLogo from '../../assets/images/uab-logo.png'; 
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -15,7 +16,7 @@ const Login = () => {
     try {
       const response = await fetch('http://localhost:5000/autentificacion/login', {
         method: 'POST',
-        credentials: 'include', // 👈 Necesario para enviar la cookie
+        credentials: 'include', 
         headers: {
           'Content-Type': 'application/json'
         },
@@ -35,32 +36,45 @@ const Login = () => {
   };
 
   return (
-    <div className={styles.loginContainer}>
-      <h2>Iniciar Sesión</h2>
-      {error && <p className={styles.error}>{error}</p>}
-      <form onSubmit={handleLogin}>
-        <div>
-          <label>Email:</label>
-          <input
-            type="email"
-            required
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-          />
-        </div>
+    <div className={styles.container}>
+      <header className={styles.header}> 
+        <img src={UABLogo} alt="Logo UAB" className={styles.logo} /> 
+        <h1>Universidad Adventista de Bolivia</h1> 
+      </header>
 
-        <div>
-          <label>Contraseña:</label>
-          <input
-            type="password"
-            required
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-          />
-        </div>
+      <div className={styles.formContainer}>
+        <h2 className={styles.title}>Iniciar Sesión</h2>
+        {error && <p className={styles.error}>{error}</p>}
+        <form onSubmit={handleLogin} className={styles.form}>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Email:</label>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              className={styles.input}
+            />
+          </div>
 
-        <button type="submit">Iniciar sesión</button>
-      </form>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Contraseña:</label>
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              className={styles.input}
+            />
+          </div>
+
+          <button type="submit" className={styles.submitButton}>Iniciar sesión</button>
+        </form>
+        
+        <p className={styles.loginPrompt}> 
+          ¿No tienes una cuenta? <Link to="/register" className={styles.loginLink}>Regístrate aquí</Link>
+        </p>
+      </div>
     </div>
   );
 };

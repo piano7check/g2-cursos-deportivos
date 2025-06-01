@@ -1,5 +1,5 @@
 from functools import wraps
-from flask import request, jsonify
+from flask import request, jsonify,g
 import jwt
 import os
 from dotenv import load_dotenv
@@ -23,7 +23,7 @@ def token_requerido(f):
 
         try:
             datos = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-            request.usuario = datos 
+            g.usuario = datos 
         except jwt.ExpiredSignatureError:
             return jsonify({'error': 'Token expirado'}), 401
         except jwt.InvalidTokenError:

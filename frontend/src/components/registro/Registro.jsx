@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom'; // Asegúrate de importar Link
-import styles from './Registro.module.css';
+import styles from './Registro.module.css'; // Asegúrate de que el nombre del archivo CSS sea correcto
 import UABLogo from '../../assets/images/uab-logo.png'; // Asegúrate de que esta ruta sea correcta
 
 const Registro = () => {
@@ -47,7 +47,7 @@ const Registro = () => {
     setError(''); 
 
     try {
-      const response = await fetch('/autentificacion/register', {
+      const response = await fetch('/autentificacion/register', { // Considera usar http://localhost:5000/autentificacion/register si tu backend corre ahí
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -75,10 +75,10 @@ const Registro = () => {
 
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
-        <img src={UABLogo} alt="Logo UAB" className={styles.logo} />
-        <h1>Universidad Adventista de Bolivia</h1>
-      </div>
+      <header className={styles.header}> {/* Ya estaba, solo para confirmar */}
+        <img src={UABLogo} alt="Logo UAB" className={styles.logo} /> {/* Ya estaba, solo para confirmar */}
+        <h1>Universidad Adventista de Bolivia</h1> {/* Ya estaba, solo para confirmar */}
+      </header>
 
       <div className={styles.formContainer}>
         <h2 className={styles.title}>Crea tu cuenta</h2> 

@@ -1,4 +1,5 @@
 from flask import Blueprint
+from middleware.validarToken import token_requerido
 from controllers.controllerUser import controllerUsuario 
 
 
@@ -13,4 +14,8 @@ def registro():
 def accesoUsuario():
     return controllerUsuario.loginUsuario()
 
+@autentificacionesUsuario.route('/usuario', methods=['GET'])
+@token_requerido
+def obtener_usuario_actual():
+    return controllerUsuario.obtenerUsuarioActual()
 
