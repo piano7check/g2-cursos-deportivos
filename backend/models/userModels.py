@@ -1,11 +1,11 @@
 from data.conexion import obtenerConexion 
-
+import pymysql.err
 class userModel:
     @staticmethod
     def crearUsuario(data):
+        conexion = None
         try:
             conexion = obtenerConexion()
-
             with conexion.cursor() as cursor:
                 sql = """
                     INSERT INTO users (name, lastname, birthdate, email, password, rol)
@@ -21,14 +21,22 @@ class userModel:
                 )
                 cursor.execute(sql, valores)
                 conexion.commit()
-
             return {"mensaje": "Usuario registrado correctamente"}
 
+        except pymysql.err.IntegrityError as e:
+            if e.args[0] == 1062:
+                return {"error": "El email ya está registrado"}
+            else:
+                return {"error": f"Error de integridad en la BD: {str(e)}"}
+
         except Exception as e:
-            conexion.rollback()
+            if conexion:
+                conexion.rollback()
             return {"error": str(e)}
+
         finally:
-            conexion.close()
+            if conexion:
+                conexion.close()
             
     @staticmethod
     def eliminarUsuario(id):

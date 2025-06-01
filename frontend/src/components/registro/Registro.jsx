@@ -1,154 +1,186 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { useNavigate, Link } from 'react-router-dom'; // Asegúrate de importar Link
 import styles from './Registro.module.css';
-import UABLogo from '../../assets/images/uab-logo.png';
+import UABLogo from '../../assets/images/uab-logo.png'; // Asegúrate de que esta ruta sea correcta
 
 const Registro = () => {
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     name: '',
     lastname: '',
     birthdate: '',
     email: '',
-    password: ''
+    password: '',
+    confirmPassword: '',
   });
 
-  const [error, setError] = useState(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+  const handleChange = e => {
+    setFormData({...formData, [e.target.name]: e.target.value});
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
-    setIsSubmitting(true);
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Las contraseñas no coinciden. Por favor, verifica.');
+      return;
+    }
+
+    const requiredFields = ['name', 'lastname', 'birthdate', 'email', 'password'];
+    const missingFields = requiredFields.filter(field => !formData[field]);
+
+    if (missingFields.length > 0) {
+      setError('Por favor, completa todos los campos obligatorios.');
+      return;
+    }
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError('Introduce un correo electrónico válido.');
+      return;
+    }
+
+
+    setError(''); 
 
     try {
-      const response = await fetch('http://localhost:5000/register', {
+      const response = await fetch('/autentificacion/register', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          lastname: formData.lastname,
+          birthdate: formData.birthdate,
+          email: formData.email,
+          password: formData.password,
+        }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error('Error en el registro');
+        setError(data.error || 'Error en el registro. Inténtalo de nuevo.');
+      } else {
+        alert('¡Usuario registrado correctamente!');
+        navigate('/login');
       }
-
-      const result = await response.json();
-      console.log(result);
-      alert('Usuario registrado correctamente');
-
-    } catch (error) {
-      console.error(error);
-      setError('Hubo un error al registrar el usuario');
-    } finally {
-      setIsSubmitting(false);
+    } catch (err) {
+      console.error('Error de conexión:', err); 
+      setError('Error de conexión con el servidor. Por favor, inténtalo más tarde.');
     }
   };
 
   return (
-    <motion.div 
-      className={styles.container}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-    >
-      <header className={styles.header}>
+    <div className={styles.container}>
+      <div className={styles.header}>
         <img src={UABLogo} alt="Logo UAB" className={styles.logo} />
-        <h1>Cursos Deportivos UAB</h1>
-      </header>
+        <h1>Universidad Adventista de Bolivia</h1>
+      </div>
 
-      <motion.div 
-        className={styles.formContainer}
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.2 }}
-      >
-        <h2 className={styles.title}>Registro de Usuario</h2>
-        
+      <div className={styles.formContainer}>
+        <h2 className={styles.title}>Crea tu cuenta</h2> 
         {error && <div className={styles.error}>{error}</div>}
 
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.formGroup}>
-            <label className={styles.label}>Nombre:</label>
+            <label htmlFor="name" className={styles.label}>Nombre:</label> 
             <input
               type="text"
+              id="name"
               name="name"
               value={formData.name}
               onChange={handleChange}
-              className={styles.input}
               required
+              className={styles.input}
+              placeholder="Tu nombre" 
             />
           </div>
 
           <div className={styles.formGroup}>
-            <label className={styles.label}>Apellido:</label>
+            <label htmlFor="lastname" className={styles.label}>Apellido:</label>
             <input
               type="text"
+              id="lastname"
               name="lastname"
               value={formData.lastname}
               onChange={handleChange}
-              className={styles.input}
               required
+              className={styles.input}
+              placeholder="Tu apellido"
             />
           </div>
 
           <div className={styles.formGroup}>
-            <label className={styles.label}>Fecha de Nacimiento:</label>
+            <label htmlFor="birthdate" className={styles.label}>Fecha de nacimiento:</label>
             <input
               type="date"
+              id="birthdate"
               name="birthdate"
               value={formData.birthdate}
               onChange={handleChange}
-              className={styles.input}
               required
+              className={styles.input}
             />
           </div>
 
           <div className={styles.formGroup}>
-            <label className={styles.label}>Email:</label>
+            <label htmlFor="email" className={styles.label}>Email:</label>
             <input
               type="email"
+              id="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className={styles.input}
               required
+              className={styles.input}
+              placeholder="ejemplo@uab.edu.bo"
             />
           </div>
 
           <div className={styles.formGroup}>
-            <label className={styles.label}>Contraseña:</label>
+            <label htmlFor="password" className={styles.label}>Contraseña:</label>
             <input
               type="password"
+              id="password"
               name="password"
               value={formData.password}
               onChange={handleChange}
-              className={styles.input}
               required
-              minLength="6"
+              minLength={6}
+              className={styles.input}
+              placeholder="Mínimo 6 caracteres"
             />
           </div>
 
-          <motion.button
-            type="submit"
-            className={styles.submitButton}
-            disabled={isSubmitting}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            {isSubmitting ? 'Registrando...' : 'Registrarse'}
-          </motion.button>
-        </form>
+          <div className={styles.formGroup}>
+            <label htmlFor="confirmPassword" className={styles.label}>Confirmar Contraseña:</label>
+            <input
+              type="password"
+              id="confirmPassword"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              required
+              minLength={6}
+              className={styles.input}
+              placeholder="Repite tu contraseña"
+            />
+          </div>
 
-        <div className={styles.loginLink}>
-          ¿Ya tienes una cuenta? <a href="/login">Inicia sesión aquí</a>
-        </div>
-      </motion.div>
-    </motion.div>
+          <button type="submit" className={styles.submitButton}>
+            Registrarse
+          </button>
+        </form>
+        
+        {/* Enlace para ir al login */}
+        <p className={styles.loginPrompt}>
+          ¿Ya tienes una cuenta? <Link to="/login" className={styles.loginLink}>Inicia Sesión aquí</Link>
+        </p>
+      </div>
+    </div>
   );
 };
 

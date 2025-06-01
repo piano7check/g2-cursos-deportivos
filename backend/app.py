@@ -7,7 +7,7 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
 
-app.register_blueprint(autentificacionesUsuario)
+app.register_blueprint(autentificacionesUsuario, url_prefix='/autentificacion')
 app.register_blueprint(routesAdmin, url_prefix='/admin')
 app.register_blueprint(cursosEstudiante)
 app.register_blueprint(routesUsuarios)
