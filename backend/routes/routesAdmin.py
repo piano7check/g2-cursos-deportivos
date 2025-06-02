@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 from middleware.validarToken import token_requerido
 from middleware.validarRol import rol_requerido
-from controllers.controllerCursos import controllerCursos
+from controllers.controllerCursos import ControllerCursos
 from controllers.controllerUser import controllerUsuario
 
 routesAdmin = Blueprint("adminRoute", __name__)
@@ -11,13 +11,13 @@ routesAdmin = Blueprint("adminRoute", __name__)
 @token_requerido
 @rol_requerido(['admin'])
 def mostrarCursos():
-    return controllerCursos.mostrarCursos() 
+    return ControllerCursos.mostrarCursos() 
 
 @routesAdmin.route('/cursos', methods=['POST'])
 @token_requerido
 @rol_requerido(['admin'])
-def crearCurso():
-    return controllerCursos.crearCursos()
+def crear_curso(): 
+    return ControllerCursos.crear_curso() 
 
 @routesAdmin.route('/usuarios', methods=['GET'])
 @token_requerido
