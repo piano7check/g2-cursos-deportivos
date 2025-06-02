@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom'; 
+import { useUsuarioContext } from '../../context/UsuarioContext'; 
 import styles from './Login.module.css';
 import UABLogo from '../../assets/images/uab-logo.png'; 
 
@@ -7,31 +8,44 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { verificarAutenticacion } = useUsuarioContext();
 
-  const handleLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
 
     try {
       const response = await fetch('/api/autentificacion/login', {
         method: 'POST',
-        credentials: 'include', 
+        credentials: 'include',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password }),
       });
 
-      const data = await response.json();
+      const text = await response.text();
+      const data = text ? JSON.parse(text) : {};
 
-      if (response.ok) {
-        navigate('/cursosEstudiantes'); 
+      if (!response.ok) {
+        throw new Error(data.error || 'Error en la autenticación');
+      }
+
+      const autenticado = await verificarAutenticacion();
+      
+      if (autenticado) {
+        window.location.href = '/cursosEstudiantes';
       } else {
-        setError(data.error || 'Error en el login');
+        setError('Error al verificar la autenticación');
       }
     } catch (err) {
-      setError('Error de conexión con el servidor');
+      setError(err.message || 'Error de conexión con el servidor');
+      console.error('Error en login:', err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -45,7 +59,7 @@ const Login = () => {
       <div className={styles.formContainer}>
         <h2 className={styles.title}>Iniciar Sesión</h2>
         {error && <p className={styles.error}>{error}</p>}
-        <form onSubmit={handleLogin} className={styles.form}>
+        <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.formGroup}>
             <label className={styles.label}>Email:</label>
             <input
@@ -54,6 +68,7 @@ const Login = () => {
               value={email}
               onChange={e => setEmail(e.target.value)}
               className={styles.input}
+              disabled={isLoading}
             />
           </div>
 
@@ -65,10 +80,17 @@ const Login = () => {
               value={password}
               onChange={e => setPassword(e.target.value)}
               className={styles.input}
+              disabled={isLoading}
             />
           </div>
 
-          <button type="submit" className={styles.submitButton}>Iniciar sesión</button>
+          <button 
+            type="submit" 
+            className={styles.submitButton}
+            disabled={isLoading}
+          >
+            {isLoading ? 'Cargando...' : 'Iniciar sesión'}
+          </button>
         </form>
         
         <p className={styles.loginPrompt}> 
