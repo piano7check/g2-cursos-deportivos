@@ -18,4 +18,3 @@ def accesoUsuario():
 @token_requerido
 def obtener_usuario_actual():
     return controllerUsuario.obtenerUsuarioActual()
-

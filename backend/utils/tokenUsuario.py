@@ -12,7 +12,7 @@ def generarToken(usuario):
         "name": usuario['name'],
         "email": usuario['email'],
         "rol": usuario["rol"],
-        "exp": datetime.datetime.now(datetime.timezone.utc)+ datetime.timedelta(seconds=3600)
+        "exp": datetime.datetime.now(datetime.timezone.utc)+ datetime.timedelta(days=1)
     }
     token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
     return token

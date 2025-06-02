@@ -48,14 +48,24 @@ class controllerUsuario():
             return jsonify(resultado), 400
         
         token = generarToken(resultado)
-        response = make_response(jsonify({"mensaje": "Login exitoso"}), 200)
+        response_data = {
+            "mensaje": "Login exitoso",
+            "usuario": {
+                "id": resultado.get('id'),
+                "email": resultado.get('email'),
+                "rol": resultado.get('rol')
+            }
+        }
+        
+        response = make_response(jsonify(response_data), 200)
         response.set_cookie(
             "access_token", 
             token, 
             httponly=True, 
             secure=False,
             samesite="Lax", 
-            max_age=3600  
+            max_age=3600 * 24,  
+            path="/"  
         )
         return response
 
