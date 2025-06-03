@@ -9,5 +9,5 @@ cursosEstudiante = Blueprint("courses", __name__)
 @token_requerido
 @rol_requerido(['estudiante','profesor', 'admin'])
 def cursosEstudiantes():
-    return ControllerCursos.mostrarCursos()
+    return ControllerCursos.obtener_cursos()
 

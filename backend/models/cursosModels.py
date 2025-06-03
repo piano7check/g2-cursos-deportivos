@@ -58,8 +58,8 @@ class CursosModel:
                 sql = """SELECT c.*, 
                                 u.name as profesor_nombre, 
                                 u.lastname as profesor_apellido 
-                         FROM cursos c
-                         JOIN users u ON c.profesor_id = u.id"""
+                        FROM cursos c
+                        JOIN users u ON c.profesor_id = u.id"""
                 cursor.execute(sql)
                 cursos = cursor.fetchall()
                 
@@ -68,10 +68,17 @@ class CursosModel:
                         "SELECT dia, hora_inicio, hora_fin FROM horarios WHERE curso_id = %s",
                         (curso['id'],)
                     )
-                    curso['horarios'] = cursor.fetchall()
-                
-                return cursos
-                
+                    horarios = cursor.fetchall()
+                    
+                    horarios_serializables = []
+                    for horario in horarios:
+                        horarios_serializables.append({
+                            'dia': horario['dia'],
+                            'hora_inicio': str(horario['hora_inicio']),  
+                            'hora_fin': str(horario['hora_fin'])           
+                        })
+                    curso['horarios'] = horarios_serializables     
+                return cursos          
         except pymysql.Error as e:
             return {"error": "Error en base de datos", "codigo": e.args[0], "mensaje": e.args[1]}
         except Exception as e:
@@ -81,7 +88,6 @@ class CursosModel:
 
     @staticmethod
     def obtener_cursos_por_profesor(profesor_id):
-        """Obtiene todos los cursos asignados a un profesor específico"""
         conexion = obtenerConexion()
         if conexion is None:
             return {"error": "Error de conexión a BD"}
