@@ -2,51 +2,135 @@ import { useUsuarioContext } from '../context/UsuarioContext';
 import { useEffect, useState } from 'react';
 import styles from './CursosEstudiantes.module.css';
 
+const FieldWithFallback = ({ value, fallback = "No definido", children }) => {
+  return value ? (children || value) : fallback;
+};
+
 const CursosEstudiantes = () => {
   const { usuario, cargando } = useUsuarioContext();
   const [cursos, setCursos] = useState([]);
   const [error, setError] = useState(null);
+  const [expandedCourseId, setExpandedCourseId] = useState(null);
+  const [isFetching, setIsFetching] = useState(false);
 
   useEffect(() => {
     if (!cargando && usuario) {
+      setIsFetching(true);
       fetch('/api/estudiante/cursosEstudiantes', {
         credentials: 'include',
       })
-        .then(res => {
+        .then(async (res) => {
           if (!res.ok) {
-            throw new Error('Error al obtener cursos');
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.message || 'Error al obtener cursos');
           }
           return res.json();
         })
         .then(data => {
-          setCursos(data);
+          const cursosValidados = Array.isArray(data?.cursos) 
+            ? data.cursos.map(curso => ({
+                ...curso,
+                horarios: Array.isArray(curso.horarios) ? curso.horarios : [],
+              }))
+            : [];
+          
+          setCursos(cursosValidados);
           setError(null);
         })
         .catch(err => {
           console.error('Error:', err);
-          setError(err.message);
+          setError(err.message || 'Error desconocido al cargar cursos');
+        })
+        .finally(() => {
+          setIsFetching(false);
         });
     }
   }, [cargando, usuario]);
 
-  if (cargando) return <div className={styles.loading}>Cargando cursos...</div>;
+  const toggleDetails = (courseId) => {
+    setExpandedCourseId(prevId => prevId === courseId ? null : courseId);
+  };
+
+  const formatTime = (timeString) => {
+    if (!timeString) return '--:--';
+    return timeString.split(':').slice(0, 2).join(':');
+  };
+
+  if (cargando || isFetching) {
+    return (
+      <div className={styles.loadingContainer}>
+        <div className={styles.spinner}></div>
+        <p>Cargando cursos...</p>
+      </div>
+    );
+  }
+
   if (!usuario) return <div className={styles.error}>No autenticado</div>;
   if (error) return <div className={styles.error}>Error: {error}</div>;
+  if (cursos.length === 0) return <div className={styles.emptyState}>No hay cursos disponibles</div>;
 
   return (
     <div className={styles.container}>
-      <h2 className={styles.title}>Cursos disponibles para {usuario.rol}</h2>
+      <h2 className={styles.title}>Cursos disponibles</h2>
       
       <div className={styles.cursosGrid}>
         {cursos.map(curso => (
-          <div key={curso.id} className={styles.cursoCard}>
-            <h3 className={styles.cursoNombre}>{curso.nombre}</h3>
-            <p className={styles.cursoDescripcion}>{curso.descripcion}</p>
-            <div className={styles.cursoDetalles}>
-              <p><strong>Cupos disponibles:</strong> {curso.cupos}</p>
-              <p><strong>ID del profesor:</strong> {curso.profesor_id}</p>
-              <p><strong>ID del curso:</strong> {curso.id}</p>
+          <div 
+            key={curso.id} 
+            className={`${styles.cursoCard} ${expandedCourseId === curso.id ? styles.expanded : ''}`}
+          >
+            <div className={styles.cursoHeader}>
+              <h3 className={styles.cursoNombre}>
+                <FieldWithFallback value={curso.nombre} fallback="Curso sin nombre" />
+              </h3>
+              
+              <div className={styles.cursoResumen}>
+                <p>
+                  <strong>Cupos:</strong> 
+                  <FieldWithFallback value={curso.cupos} fallback="N/A" />
+                </p>
+                <button 
+                  onClick={() => toggleDetails(curso.id)} 
+                  className={styles.detailsButton}
+                  aria-expanded={expandedCourseId === curso.id}
+                >
+                  {expandedCourseId === curso.id ? 'Ocultar detalles' : 'Ver detalles'}
+                </button>
+              </div>
             </div>
+            
+            {expandedCourseId === curso.id && (
+              <div className={styles.cursoDetalles}>
+                <p className={styles.cursoDescripcion}>
+                  <FieldWithFallback value={curso.descripcion} fallback="No hay descripción disponible" />
+                </p>
+                
+                <p className={styles.profesorInfo}>
+                  <strong>Profesor:</strong>{' '}
+                  <FieldWithFallback value={`${curso.profesor_nombre || ''} ${curso.profesor_apellido || ''}`.trim()} />
+                </p>
+                
+                <div className={styles.horariosContainer}>
+                  <p><strong>Horarios:</strong></p>
+                  {curso.horarios.length > 0 ? (
+                    <ul className={styles.horariosList}>
+                      {curso.horarios.map((horario, index) => (
+                        <li key={index}>
+                          <span className={styles.dia}>
+                            <FieldWithFallback value={horario.dia} fallback="Día no especificado" />:
+                          </span>
+                          <span className={styles.horas}>
+                            {formatTime(horario.hora_inicio)} - {formatTime(horario.hora_fin)}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className={styles.noHorarios}>No hay horarios definidos</p>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         ))}
       </div>
