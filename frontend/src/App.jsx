@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './components/home/Home.jsx';
 import Login from './components/login/Login.jsx';
 import Registro from './components/registro/Registro.jsx';
-import CursosEstudiantes from './routes/CursosEstudiantes.jsx';
+import CursosEstudiantes from './routes/estudiante/CursosEstudiantes.jsx';
 import ProtectedRoute from './components/protected/ProtectedRoute.jsx';
 
 function App() {

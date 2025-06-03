@@ -1,4 +1,4 @@
-import { useUsuarioContext } from '../context/UsuarioContext';
+import { useUsuarioContext } from '../../context/UsuarioContext';
 import { useEffect, useState } from 'react';
 import styles from './CursosEstudiantes.module.css';
 
