@@ -22,7 +22,7 @@ const Home = () => {
       } else if (usuario.rol === 'profesor') {
         navigate('/profesor');
       } else if (usuario.rol === 'admin') {
-        navigate('/admin');
+        navigate('/dashboardAdmin');
       }
     }
   }, [cargando, usuario, navigate]);
@@ -42,7 +42,6 @@ const Home = () => {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      {/* Navbar */}
       <nav className={styles.navbar}>
         <img src={UABLogo} alt="Logo UAB" className={styles.logo} />
         <div className={styles.navLinks}>
@@ -63,7 +62,6 @@ const Home = () => {
         </div>
       </nav>
 
-      {/* Hero Section */}
       <section className={styles.hero}>
         <div className={styles.heroContent}>
           <motion.h1
@@ -83,7 +81,6 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Sección Deportes */}
       <section className={styles.deportesSection}>
         <motion.h2
           initial={{ opacity: 0 }}
@@ -113,7 +110,6 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Sección Institucional */}
       <section className={styles.institucionalSection}>
         <motion.h2
           initial={{ opacity: 0 }}
