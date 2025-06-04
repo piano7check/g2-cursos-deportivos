@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom'; 
-import { useUsuarioContext } from '../../context/UsuarioContext'; 
+import { useNavigate, Link } from 'react-router-dom';
+import { useUsuarioContext } from '../../context/UsuarioContext';
 import styles from './Login.module.css';
-import UABLogo from '../../assets/images/uab-logo.png'; 
+import UABLogo from '../../assets/images/uab-logo.png';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
+  const navigate = useNavigate(); 
   const { verificarAutenticacion } = useUsuarioContext();
 
   const handleSubmit = async (e) => {
@@ -34,12 +34,21 @@ const Login = () => {
         throw new Error(data.error || 'Error en la autenticación');
       }
 
+      const userRole = data.usuario?.rol; 
+
       const autenticado = await verificarAutenticacion();
-      
+
       if (autenticado) {
-        window.location.href = '/cursosEstudiantes';
+        if (userRole === 'admin') {
+          navigate('/dashboardAdmin'); 
+        } else if (userRole === 'estudiante' || userRole === 'profesor') {
+          navigate('/cursosEstudiantes');
+        } else {
+          setError('Rol de usuario no reconocido. Contacte al administrador.');
+          navigate('/');
+        }
       } else {
-        setError('Error al verificar la autenticación');
+        setError('Error al verificar la autenticación. Por favor, intente de nuevo.');
       }
     } catch (err) {
       setError(err.message || 'Error de conexión con el servidor');
@@ -51,9 +60,9 @@ const Login = () => {
 
   return (
     <div className={styles.container}>
-      <header className={styles.header}> 
-        <img src={UABLogo} alt="Logo UAB" className={styles.logo} /> 
-        <h1>Universidad Adventista de Bolivia</h1> 
+      <header className={styles.header}>
+        <img src={UABLogo} alt="Logo UAB" className={styles.logo} />
+        <h1>Universidad Adventista de Bolivia</h1>
       </header>
 
       <div className={styles.formContainer}>
@@ -84,16 +93,16 @@ const Login = () => {
             />
           </div>
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className={styles.submitButton}
             disabled={isLoading}
           >
             {isLoading ? 'Cargando...' : 'Iniciar sesión'}
           </button>
         </form>
-        
-        <p className={styles.loginPrompt}> 
+
+        <p className={styles.loginPrompt}>
           ¿No tienes una cuenta? <Link to="/register" className={styles.loginLink}>Regístrate aquí</Link>
         </p>
       </div>
