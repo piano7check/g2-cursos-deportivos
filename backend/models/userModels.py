@@ -117,4 +117,21 @@ class userModel:
 
         finally:
             conexion.close()
+            
+    @staticmethod
+    def obtener_profesores():
+        conexion = obtenerConexion()
+        if conexion is None:
+            return {"error": "Error de conexión a BD"}
+        try:
+            with conexion.cursor(pymysql.cursors.DictCursor) as cursor:
+                sql = "SELECT id, name, lastname FROM users WHERE rol = 'profesor'"
+                cursor.execute(sql)
+                profesores = cursor.fetchall()
+            return {"profesores": profesores} 
+        except pymysql.MySQLError as e:
+            return {"error": "Error en base de datos", "codigo": e.args[0], "mensaje": e.args[1]}
+        finally:
+            if conexion:
+                conexion.close()
  

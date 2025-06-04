@@ -163,7 +163,14 @@ class controllerUsuario():
 
         except Exception as e:
             return jsonify({"error": f"Error inesperado: {str(e)}"}), 500
-        
+         
+    @staticmethod
+    def obtener_profesores():
+        result = userModel.obtener_profesores()
+        if "error" in result:
+            return jsonify(result), 500
+        return jsonify(result), 200
+    
     @staticmethod
     def obtenerUsuarioActual():
         usuario = {

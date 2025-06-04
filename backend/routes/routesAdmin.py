@@ -11,7 +11,7 @@ routesAdmin = Blueprint("adminRoute", __name__)
 @token_requerido
 @rol_requerido(['admin'])
 def mostrarCursos():
-    return ControllerCursos.mostrarCursos() 
+    return ControllerCursos.obtener_cursos() 
 
 @routesAdmin.route('/cursos', methods=['POST'])
 @token_requerido
@@ -19,7 +19,7 @@ def mostrarCursos():
 def crear_curso(): 
     return ControllerCursos.crear_curso() 
 
-@routesAdmin.route('/usuarios', methods=['GET'])
+@routesAdmin.route('/usuarios/<int:id>', methods=['GET'])
 @token_requerido
 @rol_requerido(['admin'])
 def mostrar_usuarios():
@@ -32,4 +32,13 @@ def mostrar_usuarios():
 def buscar_usuario():
     return controllerUsuario.buscarUsuarioPorCampo()
 
+@routesAdmin.route('/usuarios/register', methods=['POST'])
+@token_requerido
+@rol_requerido(['admin'])
+def registrar_Usuario():
+    return controllerUsuario.registrarUsuario()
 
+@routesAdmin.route('/profesores', methods=['GET'])
+@token_requerido
+def obtener_profesores_admin():
+    return controllerUsuario.obtener_profesores()
