@@ -1,4 +1,5 @@
-Para correr el proyecto realizar los siguientes pasos
+Para correr el proyecto realizar los siguientes pasos:
+
 Clonar el repo
 
 **Requerimientos**
