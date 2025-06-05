@@ -2,49 +2,48 @@ from flask import Blueprint, jsonify, request
 from middleware.validarToken import token_requerido
 from middleware.validarRol import rol_requerido
 from controllers.controllerCursos import ControllerCursos
-from controllers.controllerUser import controllerUsuario
+from controllers.adminUserController import adminUserController 
 
-routesAdmin = Blueprint("adminRoute", __name__)
+routes_admin = Blueprint("adminRoute", __name__)
 
-
-@routesAdmin.route("/cursos", methods=['GET']) 
+@routes_admin.before_request
 @token_requerido
 @rol_requerido(['admin'])
+def before_request_admin():
+    pass 
+
+@routes_admin.route("/cursos", methods=['GET'])
 def mostrarCursos():
-    return ControllerCursos.obtener_cursos() 
+    return ControllerCursos.mostrarCursos()
 
-@routesAdmin.route('/cursos', methods=['POST'])
-@token_requerido
-@rol_requerido(['admin'])
-def crear_curso(): 
-    return ControllerCursos.crear_curso() 
+@routes_admin.route('/cursos', methods=['POST'])
+def crear_curso():
+    return ControllerCursos.crearCurso()
 
-@routesAdmin.route('/cursos/<int:id>', methods=['DELETE'])
-@token_requerido
-@rol_requerido(['admin'])
-def eliminar_curso(id): 
-    return ControllerCursos.eliminar_curso(id) 
+@routes_admin.route('/cursos/<int:id>', methods=['DELETE'])
+def eliminar_curso(id):
+    return ControllerCursos.eliminarCurso(id)
 
-@routesAdmin.route('/cursos/<int:id>', methods=['PATCH']) 
-@token_requerido
-@rol_requerido(['admin'])
+@routes_admin.route('/cursos/<int:id>', methods=['PATCH'])
 def editar_curso(id):
-    return ControllerCursos.editar_curso(id)
+    return ControllerCursos.editarCurso(id)
 
-@routesAdmin.route('/usuarios', methods=['GET'])
-@token_requerido
-@rol_requerido(['admin'])
-def mostrar_usuarios():
-    return controllerUsuario.mostrarUsuarios()
- 
+@routes_admin.route('/usuarios', methods=['GET'])
+def mostrar_usuarios_admin(): 
+    return adminUserController.mostrarUsuarios()
 
-@routesAdmin.route('/usuarios/buscar', methods=['GET'])
-@token_requerido
-@rol_requerido(['admin'])
-def buscar_usuario():
-    return controllerUsuario.buscarUsuarioPorCampo()
+@routes_admin.route('/usuarios/buscar', methods=['GET'])
+def buscar_usuario_admin(): 
+    return adminUserController.buscarUsuarioPorCampo()
 
-@routesAdmin.route('/profesores', methods=['GET'])
-@token_requerido
-def obtener_profesores_admin():
-    return controllerUsuario.obtener_profesores()
+@routes_admin.route('/usuarios/<int:id>', methods=['DELETE'])
+def eliminar_usuario_admin(id): 
+    return adminUserController.eliminarUsuario(id)
+
+@routes_admin.route('/usuarios/<int:id>', methods=['PATCH'])
+def editar_usuario_admin(id): 
+    return adminUserController.editarUsuario(id)
+
+@routes_admin.route('/profesores', methods=['GET'])
+def obtener_profesores_admin(): 
+    return adminUserController.obtenerProfesores()
