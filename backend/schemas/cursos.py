@@ -11,7 +11,6 @@ esquema_curso_completo = {
     'descripcion': {
         'type': 'string',
         'required': True,
-        'minlength': 10,
         'maxlength': 500,
         'empty': False
     },
@@ -24,13 +23,13 @@ esquema_curso_completo = {
     'profesor_id': {
         'type': 'integer',
         'required': True,
-        'min': 1  # IDs empiezan en 1
+        'min': 1  
     },
     'horarios': {
         'type': 'list',
         'required': True,
         'minlength': 1,
-        'maxlength': 7,  # Máximo 7 días
+        'maxlength': 7, 
         'schema': {
             'type': 'dict',
             'schema': {
