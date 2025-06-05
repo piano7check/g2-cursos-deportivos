@@ -6,16 +6,17 @@ from utils.validarCursos import validar_horarios_y_disponibilidad_curso
 from utils.validarProfesor import validar_profesor, verificar_disponibilidad_profesor
 from utils.obtenerCursoId import obtener_curso
 from datetime import datetime
-class ControllerCursos():  
+
+class ControllerCursos(): 
     @staticmethod
-    def obtener_cursos():  
+    def mostrarCursos(): 
         resultado = CursosModel.obtener_cursos()
         if 'error' in resultado:
             return jsonify(resultado), 500
         return jsonify({"cursos": resultado}), 200
     
     @staticmethod
-    def crear_curso():         
+    def crearCurso(): 
         data = request.get_json()
         
         if not data:
@@ -48,7 +49,7 @@ class ControllerCursos():
         return jsonify(resultado), 201
     
     @staticmethod
-    def editar_curso(id):
+    def editarCurso(id): 
         data = request.get_json()
 
         if not data:
@@ -88,7 +89,7 @@ class ControllerCursos():
         return jsonify({"message": "Curso actualizado exitosamente", "curso": resultado}), 200
 
     @staticmethod
-    def eliminar_curso(id):
+    def eliminarCurso(id):
         busqueda = obtener_curso(id)
         
         if not isinstance(busqueda, dict) or "error" in busqueda:

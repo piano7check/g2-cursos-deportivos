@@ -1,74 +1,10 @@
-from flask import request,jsonify,make_response,g
+from flask import request, jsonify
 import bcrypt
 from models.userModels import userModel
 from schemas.estudianteParcial import validarUsuarioParcial
-from schemas.estudiantes import validarUsuario
-from utils.validarLogin import validacionLogin
-from utils.tokenUsuario import generarToken
 from utils.buscarUsuario import buscarUsuarioById
 
-class controllerUsuario():
-    @staticmethod
-    def registroUsuario():
-        
-        data = request.get_json()
-        esValido, errores = validarUsuario(data)
-        if not esValido:
-            return jsonify({"error": errores}), 400
-
-        try:
-            password = data['password'].encode('utf-8')
-            hashed_password = bcrypt.hashpw(password, bcrypt.gensalt())
-            data['password'] = hashed_password.decode('utf-8')
-            data['rol'] = 'estudiante'
-            resultado = userModel.crearUsuario(data)
-
-            if 'error' in resultado:
-                return jsonify(resultado), 500 
-
-            return jsonify({
-                "message": "Usuario registrado correctamente",
-                "usuario": {
-                    "name": data.get('name'),
-                    "lastname": data.get('lastname'),
-                    "email": data.get('email'),
-                    "rol": data.get('rol')
-                }
-            }), 201
-        
-        except Exception as e:
-            return jsonify({"error": f"Error inesperado: {str(e)}"}), 500 
-     
-    @staticmethod
-    def loginUsuario():
-        data = request.get_json()
-        resultado = validacionLogin(data)
-        
-        if 'error' in resultado:
-            return jsonify(resultado), 400
-        
-        token = generarToken(resultado)
-        response_data = {
-            "mensaje": "Login exitoso",
-            "usuario": {
-                "id": resultado.get('id'),
-                "email": resultado.get('email'),
-                "rol": resultado.get('rol')
-            }
-        }
-        
-        response = make_response(jsonify(response_data), 200)
-        response.set_cookie(
-            "access_token", 
-            token, 
-            httponly=True, 
-            secure=False,
-            samesite="Lax", 
-            max_age=3600 * 24,  
-            path="/"  
-        )
-        return response
-
+class adminUserController:
     @staticmethod
     def eliminarUsuario(id):
         try:
@@ -76,10 +12,10 @@ class controllerUsuario():
             if "error" in resultado:
                 return jsonify(resultado), 500
             
-            return jsonify(resultado), 200
+            return jsonify({"message": "Usuario eliminado correctamente"}), 200
             
         except Exception as e:
-            return jsonify({"error": f"Error inesperado: {str(e)}"}), 500 
+            return jsonify({"error": f"Error inesperado: {str(e)}"}), 500
         
     @staticmethod
     def editarUsuario(id):
@@ -96,8 +32,7 @@ class controllerUsuario():
             if "password" in data_limpia:
                 password_bytes = data_limpia["password"].encode('utf-8')
                 hashed = bcrypt.hashpw(password_bytes, bcrypt.gensalt())
-                data_limpia["password"] = hashed.decode('utf-8') 
-
+                data_limpia["password"] = hashed.decode('utf-8')    
 
             usuarioExistente = buscarUsuarioById(id)
 
@@ -109,7 +44,6 @@ class controllerUsuario():
 
             resultadoEdicion = userModel.editarUsuario(id, data_limpia)
             
-        
             if "error" in resultadoEdicion:
                 return jsonify(resultadoEdicion), 500
 
@@ -163,19 +97,10 @@ class controllerUsuario():
 
         except Exception as e:
             return jsonify({"error": f"Error inesperado: {str(e)}"}), 500
-         
+            
     @staticmethod
-    def obtener_profesores():
+    def obtenerProfesores(): 
         result = userModel.obtener_profesores()
         if "error" in result:
             return jsonify(result), 500
         return jsonify(result), 200
-    
-    @staticmethod
-    def obtenerUsuarioActual():
-        usuario = {
-            "id": g.usuario['id'],
-            "email": g.usuario['email'],
-            "rol": g.usuario['rol']
-        }
-        return jsonify(usuario), 200
