@@ -19,7 +19,13 @@ def mostrarCursos():
 def crear_curso(): 
     return ControllerCursos.crear_curso() 
 
-@routesAdmin.route('/usuarios/<int:id>', methods=['GET'])
+@routesAdmin.route('/cursos/<int:id>', methods=['DELETE'])
+@token_requerido
+@rol_requerido(['admin'])
+def eliminar_curso(id): 
+    return ControllerCursos.eliminar_curso(id) 
+
+@routesAdmin.route('/usuarios', methods=['GET'])
 @token_requerido
 @rol_requerido(['admin'])
 def mostrar_usuarios():
@@ -31,12 +37,6 @@ def mostrar_usuarios():
 @rol_requerido(['admin'])
 def buscar_usuario():
     return controllerUsuario.buscarUsuarioPorCampo()
-
-@routesAdmin.route('/usuarios/register', methods=['POST'])
-@token_requerido
-@rol_requerido(['admin'])
-def registrar_Usuario():
-    return controllerUsuario.registrarUsuario()
 
 @routesAdmin.route('/profesores', methods=['GET'])
 @token_requerido

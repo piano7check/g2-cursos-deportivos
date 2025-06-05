@@ -115,3 +115,20 @@ class CursosModel:
             return {"error": str(e)}
         finally:
             conexion.close()
+    
+    @staticmethod
+    def eliminar_curso(id):
+        conexion = obtenerConexion()
+        if conexion is None:
+            return {"error": "Error de conexión a BD"}
+        try:
+            with conexion.cursor() as cursor:
+                sql = "DELETE from cursos where id = %s"
+                cursor.execute(sql, (id,))
+                conexion.commit()
+            return {"message": "Curso eliminado exitosamente"}
+        except Exception as e:
+            return {"error": "Error al eliminar curso",
+            "detalles": str(e)}
+        finally:
+            conexion.close()
