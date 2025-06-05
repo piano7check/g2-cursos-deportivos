@@ -16,7 +16,6 @@ export const getCursos = async () => {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
-            
         },
         credentials: 'include', 
     });
@@ -37,7 +36,7 @@ export const createCurso = async (courseData) => {
 
 export const updateCurso = async (cursoId, courseData) => {
     const response = await fetch(`${API_BASE_URL}/cursos/${cursoId}`, {
-        method: 'PUT',
+        method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
         },
@@ -54,7 +53,6 @@ export const deleteCurso = async (cursoId) => {
             'Content-Type': 'application/json',
         },
         credentials: 'include', 
-        
     });
     return handleResponse(response);
 };
@@ -70,3 +68,4 @@ export const getProfesores = async () => {
     const data = await handleResponse(response);
     return data.profesores;
 };
+

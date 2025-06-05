@@ -14,17 +14,17 @@ const CourseModal = ({ editingCourse, professors, onClose, onSave }) => {
     useEffect(() => {
         if (editingCourse) {
             setFormData({
-                nombre: editingCourse.name || '',
-                descripcion: editingCourse.description || '',
-                cupos: editingCourse.capacity || '',
-                profesor_id: editingCourse.professor_id || '',
+                nombre: editingCourse.nombre || '', 
+                descripcion: editingCourse.descripcion || '',
+                cupos: editingCourse.cupos || '', 
+                profesor_id: editingCourse.profesor_id || '',
                 horarios: editingCourse.horarios && editingCourse.horarios.length > 0
                     ? editingCourse.horarios.map(h => ({
                         dia: h.dia || '',
-                        hora_inicio: h.hora_inicio || '',
-                        hora_fin: h.hora_fin || ''
+                        hora_inicio: h.hora_inicio ? h.hora_inicio.substring(0, 5) : '', 
+                        hora_fin: h.hora_fin ? h.hora_fin.substring(0, 5) : ''
                     }))
-                    : [{ dia: '', hora_inicio: '', hora_fin: '' }],
+                    : [{ dia: '', hora_inicio: '', hora_fin: '' }], 
             });
         } else {
             setFormData({
@@ -69,19 +69,36 @@ const CourseModal = ({ editingCourse, professors, onClose, onSave }) => {
         const newHorarios = formData.horarios.filter((_, i) => i !== index);
         setFormData(prev => ({
             ...prev,
-            horarios: newHorarios.length > 0 ? newHorarios : [{ dia: '', hora_inicio: '', hora_fin: '' }] // Asegura que siempre haya al menos uno
+            horarios: newHorarios.length > 0 ? newHorarios : [{ dia: '', hora_inicio: '', hora_fin: '' }] 
         }));
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
 
+        let errors = {};
+
+        if (!formData.nombre.trim()) {
+            errors.nombre = 'El nombre es obligatorio.';
+        }
+        if (!formData.cupos || parseInt(formData.cupos) <= 0) {
+            errors.cupos = 'Los cupos deben ser un número positivo.';
+        }
+        if (!formData.profesor_id) {
+            errors.profesor_id = 'Debe seleccionar un profesor.';
+        }
+
         const validHorarios = formData.horarios.filter(h =>
             h.dia && h.hora_inicio && h.hora_fin
         );
 
-        if (validHorarios.length === 0) {
-            alert('Por favor, ingrese al menos un horario completo para el curso.');
+        if (!editingCourse && validHorarios.length === 0) {
+            errors.horarios = 'Para crear un curso, debe ingresar al menos un horario completo.';
+        }
+
+        if (Object.keys(errors).length > 0) {
+            const errorMessage = Object.values(errors).join('\n');
+            alert(`Por favor, corrija los siguientes errores:\n${errorMessage}`); 
             return;
         }
 
@@ -90,9 +107,9 @@ const CourseModal = ({ editingCourse, professors, onClose, onSave }) => {
             descripcion: formData.descripcion,
             cupos: parseInt(formData.cupos),
             profesor_id: parseInt(formData.profesor_id),
-            horarios: validHorarios, 
+            horarios: validHorarios.length > 0 ? validHorarios : [], 
         };
-
+        
         onSave(courseData);
     };
 
@@ -109,7 +126,6 @@ const CourseModal = ({ editingCourse, professors, onClose, onSave }) => {
                             name="nombre"
                             value={formData.nombre}
                             onChange={handleChange}
-                            required
                         />
                     </div>
                     <div className={styles.formGroup}>
@@ -130,7 +146,6 @@ const CourseModal = ({ editingCourse, professors, onClose, onSave }) => {
                             value={formData.cupos}
                             onChange={handleChange}
                             min="1"
-                            required
                         />
                     </div>
                     <div className={styles.formGroup}>
@@ -140,7 +155,6 @@ const CourseModal = ({ editingCourse, professors, onClose, onSave }) => {
                             name="profesor_id"
                             value={formData.profesor_id}
                             onChange={handleChange}
-                            required
                         >
                             <option value="">Seleccione un profesor</option>
                             {professors.map(p => (
@@ -159,7 +173,6 @@ const CourseModal = ({ editingCourse, professors, onClose, onSave }) => {
                                     name="dia"
                                     value={horario.dia}
                                     onChange={(e) => handleHorarioChange(index, e)}
-                                    required
                                 >
                                     <option value="">Día</option>
                                     <option value="Lunes">Lunes</option>
@@ -175,7 +188,6 @@ const CourseModal = ({ editingCourse, professors, onClose, onSave }) => {
                                     name="hora_inicio"
                                     value={horario.hora_inicio}
                                     onChange={(e) => handleHorarioChange(index, e)}
-                                    required
                                 />
                                 <span>-</span>
                                 <input
@@ -183,7 +195,6 @@ const CourseModal = ({ editingCourse, professors, onClose, onSave }) => {
                                     name="hora_fin"
                                     value={horario.hora_fin}
                                     onChange={(e) => handleHorarioChange(index, e)}
-                                    required
                                 />
                                 {formData.horarios.length > 1 && (
                                     <button
