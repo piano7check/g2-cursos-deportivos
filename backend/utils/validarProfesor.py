@@ -3,9 +3,6 @@ from models.cursosModels import CursosModel
 from datetime import datetime, time, timedelta 
 
 def validar_profesor(profesor_id):
-    """
-    Valida si un ID dado corresponde a un profesor existente.
-    """
     if not isinstance(profesor_id, int) or profesor_id <= 0:
         return False
     
@@ -17,7 +14,6 @@ def validar_profesor(profesor_id):
     return profesor is not None and profesor.get('rol') == 'profesor'
 
 def _convert_timedelta_to_time(td_obj):
-
     if isinstance(td_obj, timedelta):
         total_seconds = int(td_obj.total_seconds())
         hours = total_seconds // 3600
@@ -26,8 +22,7 @@ def _convert_timedelta_to_time(td_obj):
         return time(hours, minutes, seconds)
     return td_obj 
 
-def verificar_disponibilidad_profesor(profesor_id, horarios_nuevos):
-
+def verificar_disponibilidad_profesor(profesor_id, horarios_nuevos, curso_id_a_ignorar=None):
     if not validar_profesor(profesor_id):
         return False, "El profesor especificado no existe o no tiene el rol correcto."
     
@@ -38,11 +33,11 @@ def verificar_disponibilidad_profesor(profesor_id, horarios_nuevos):
     
     cursos_existentes = cursos_profesor_data 
     
-    if not cursos_existentes: 
-        return True, None
-
     processed_existing_horarios = []
     for curso in cursos_existentes: 
+        if curso_id_a_ignorar and curso['id'] == curso_id_a_ignorar:
+            continue
+
         for horario_existente_data in curso.get('horarios', []):
             try:
                 h_inicio_existente = _convert_timedelta_to_time(horario_existente_data['hora_inicio'])
