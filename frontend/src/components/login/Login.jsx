@@ -1,58 +1,59 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useUsuarioContext } from '../../context/UsuarioContext';
+import { loginUser } from '../../services/authService';
 import styles from './Login.module.css';
 import UABLogo from '../../assets/images/uab-logo.png';
+import MessageModal from '../common/MessageModal';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate(); 
   const { verificarAutenticacion } = useUsuarioContext();
 
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [statusModalMessage, setStatusModalMessage] = useState('');
+  const [statusModalType, setStatusModalType] = useState('error');
+
+  const closeStatusModal = () => {
+      setShowStatusModal(false);
+      setStatusModalMessage('');
+      setStatusModalType('error');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setStatusModalMessage('');
+    setShowStatusModal(false);
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/autentificacion/login', {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
+      await loginUser({ email, password });
+      const updatedUser = await verificarAutenticacion();
+      
+      if (updatedUser && updatedUser.rol) {
+        const userRole = updatedUser.rol; 
 
-      const text = await response.text();
-      const data = text ? JSON.parse(text) : {};
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Error en la autenticación');
-      }
-
-      const userRole = data.usuario?.rol; 
-
-      const autenticado = await verificarAutenticacion();
-
-      if (autenticado) {
         if (userRole === 'admin') {
           navigate('/dashboardAdmin'); 
         } else if (userRole === 'estudiante' || userRole === 'profesor') {
           navigate('/cursosEstudiantes');
         } else {
-          setError('Rol de usuario no reconocido. Contacte al administrador.');
-          navigate('/');
+          setStatusModalMessage('Rol de usuario no reconocido. Contacte al administrador.');
+          setStatusModalType('error');
+          setShowStatusModal(true);
         }
       } else {
-        setError('Error al verificar la autenticación. Por favor, intente de nuevo.');
+        setStatusModalMessage('Error al verificar la autenticación o rol del usuario. Por favor, intente de nuevo.');
+        setStatusModalType('error');
+        setShowStatusModal(true);
       }
     } catch (err) {
-      setError(err.message || 'Error de conexión con el servidor');
-      console.error('Error en login:', err);
+      setStatusModalMessage(err.data?.error || err.message || 'Error de conexión con el servidor');
+      setStatusModalType('error');
+      setShowStatusModal(true);
     } finally {
       setIsLoading(false);
     }
@@ -67,7 +68,13 @@ const Login = () => {
 
       <div className={styles.formContainer}>
         <h2 className={styles.title}>Iniciar Sesión</h2>
-        {error && <p className={styles.error}>{error}</p>}
+        {showStatusModal && (
+            <MessageModal
+                message={statusModalMessage}
+                type={statusModalType}
+                onClose={closeStatusModal}
+            />
+        )}
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.formGroup}>
             <label className={styles.label}>Email:</label>

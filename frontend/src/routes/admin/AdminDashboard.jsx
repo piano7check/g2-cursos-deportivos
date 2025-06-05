@@ -46,7 +46,6 @@ const AdminDashboard = () => {
             }));
             setCourses(fetchedCourses);
         } catch (err) {
-            console.error('Error al cargar los cursos:', err);
             setStatusModalMessage(err.message || 'Error al cargar los cursos. Por favor, intente de nuevo.');
             setStatusModalType('error');
             setShowStatusModal(true);
@@ -62,9 +61,7 @@ const AdminDashboard = () => {
         try {
             const fetchedProfs = await getProfesores();
             setProfessors(fetchedProfs);
-            console.log('Profesores cargados desde API:', fetchedProfs);
         } catch (err) {
-            console.error('Error cargando profesores:', err);
             setStatusModalMessage(err.message || 'Error cargando profesores.');
             setStatusModalType('error');
             setShowStatusModal(true);
@@ -109,7 +106,6 @@ const AdminDashboard = () => {
                 };
                 
                 const response = await updateCurso(editingCourse.id, dataToSendForPatch); 
-                console.log('Curso actualizado:', response);
                 setStatusModalMessage(`Curso "${response.curso?.nombre || courseData.nombre}" actualizado exitosamente.`); 
                 setStatusModalType('success');
                 setShowStatusModal(true);
@@ -122,7 +118,6 @@ const AdminDashboard = () => {
                     horarios: courseData.horarios,
                 };
                 const response = await createCurso(dataToSend);
-                console.log('Curso creado:', response);
                 setStatusModalMessage(`Curso "${response.nombre}" creado exitosamente.`);
                 setStatusModalType('success');
                 setShowStatusModal(true);
@@ -131,7 +126,6 @@ const AdminDashboard = () => {
             setEditingCourse(null);
             fetchCourses(); 
         } catch (err) {
-            console.error('Error al guardar el curso:', err.data || err.message);
             setStatusModalMessage(`Error al guardar el curso: ${err.data?.detalle || err.message || 'Error desconocido'}`); 
             setStatusModalType('error');
             setShowStatusModal(true);
@@ -148,13 +142,11 @@ const AdminDashboard = () => {
             closeStatusModal();
             try {
                 await deleteCurso(courseId); 
-                console.log('Curso eliminado:', courseId);
                 setStatusModalMessage(`Curso ${courseId} eliminado exitosamente.`);
                 setStatusModalType('success');
                 setShowStatusModal(true);
                 fetchCourses();
             } catch (err) {
-                console.error('Error al eliminar el curso:', err.data || err.message);
                 setStatusModalMessage(`Error al eliminar el curso: ${err.data?.detalle || err.message || 'Error desconocido'}`); 
                 setStatusModalType('error');
                 setShowStatusModal(true);

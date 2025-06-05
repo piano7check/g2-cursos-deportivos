@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom'; // Asegúrate de importar Link
-import styles from './Registro.module.css'; // Asegúrate de que el nombre del archivo CSS sea correcto
-import UABLogo from '../../assets/images/uab-logo.png'; // Asegúrate de que esta ruta sea correcta
+import { useNavigate, Link } from 'react-router-dom';
+import { registerUser } from '../../services/authService'; 
+import styles from './Registro.module.css';
+import UABLogo from '../../assets/images/uab-logo.png';
+import MessageModal from '../common/MessageModal'; 
 
 const Registro = () => {
   const navigate = useNavigate();
@@ -15,7 +17,17 @@ const Registro = () => {
     confirmPassword: '',
   });
 
-  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [statusModalMessage, setStatusModalMessage] = useState('');
+  const [statusModalType, setStatusModalType] = useState('error');
+
+  const closeStatusModal = () => {
+      setShowStatusModal(false);
+      setStatusModalMessage('');
+      setStatusModalType('error');
+  };
 
   const handleChange = e => {
     setFormData({...formData, [e.target.name]: e.target.value});
@@ -23,9 +35,15 @@ const Registro = () => {
 
   const handleSubmit = async e => {
     e.preventDefault();
+    setStatusModalMessage('');
+    setShowStatusModal(false);
+    setIsLoading(true);
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Las contraseñas no coinciden. Por favor, verifica.');
+      setStatusModalMessage('Las contraseñas no coinciden. Por favor, verifica.');
+      setStatusModalType('error');
+      setShowStatusModal(true);
+      setIsLoading(false);
       return;
     }
 
@@ -33,56 +51,65 @@ const Registro = () => {
     const missingFields = requiredFields.filter(field => !formData[field]);
 
     if (missingFields.length > 0) {
-      setError('Por favor, completa todos los campos obligatorios.');
+      setStatusModalMessage('Por favor, completa todos los campos obligatorios.');
+      setStatusModalType('error');
+      setShowStatusModal(true);
+      setIsLoading(false);
       return;
     }
     
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
-      setError('Introduce un correo electrónico válido.');
+      setStatusModalMessage('Introduce un correo electrónico válido.');
+      setStatusModalType('error');
+      setShowStatusModal(true);
+      setIsLoading(false);
       return;
     }
 
-
-    setError(''); 
-
     try {
-      const response = await fetch('/api/autentificacion/register', { 
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: formData.name,
-          lastname: formData.lastname,
-          birthdate: formData.birthdate,
-          email: formData.email,
-          password: formData.password,
-        }),
+      await registerUser({
+        name: formData.name,
+        lastname: formData.lastname,
+        birthdate: formData.birthdate,
+        email: formData.email,
+        password: formData.password,
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.error || 'Error en el registro. Inténtalo de nuevo.');
-      } else {
-        alert('¡Usuario registrado correctamente!');
+      setStatusModalMessage('¡Usuario registrado correctamente!');
+      setStatusModalType('success');
+      setShowStatusModal(true);
+      setTimeout(() => {
+        closeStatusModal();
         navigate('/login');
-      }
+      }, 2000); 
+
     } catch (err) {
       console.error('Error de conexión:', err); 
-      setError('Error de conexión con el servidor. Por favor, inténtalo más tarde.');
+      setStatusModalMessage(err.data?.error || err.message || 'Error de conexión con el servidor. Por favor, inténtalo más tarde.');
+      setStatusModalType('error');
+      setShowStatusModal(true);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <div className={styles.container}>
-      <header className={styles.header}> {/* Ya estaba, solo para confirmar */}
-        <img src={UABLogo} alt="Logo UAB" className={styles.logo} /> {/* Ya estaba, solo para confirmar */}
-        <h1>Universidad Adventista de Bolivia</h1> {/* Ya estaba, solo para confirmar */}
+      <header className={styles.header}>
+        <img src={UABLogo} alt="Logo UAB" className={styles.logo} />
+        <h1>Universidad Adventista de Bolivia</h1>
       </header>
 
       <div className={styles.formContainer}>
         <h2 className={styles.title}>Crea tu cuenta</h2> 
-        {error && <div className={styles.error}>{error}</div>}
+        {showStatusModal && (
+            <MessageModal
+                message={statusModalMessage}
+                type={statusModalType}
+                onClose={closeStatusModal}
+            />
+        )}
 
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.formGroup}>
@@ -96,6 +123,7 @@ const Registro = () => {
               required
               className={styles.input}
               placeholder="Tu nombre" 
+              disabled={isLoading}
             />
           </div>
 
@@ -110,6 +138,7 @@ const Registro = () => {
               required
               className={styles.input}
               placeholder="Tu apellido"
+              disabled={isLoading}
             />
           </div>
 
@@ -123,6 +152,7 @@ const Registro = () => {
               onChange={handleChange}
               required
               className={styles.input}
+              disabled={isLoading}
             />
           </div>
 
@@ -137,6 +167,7 @@ const Registro = () => {
               required
               className={styles.input}
               placeholder="ejemplo@uab.edu.bo"
+              disabled={isLoading}
             />
           </div>
 
@@ -152,6 +183,7 @@ const Registro = () => {
               minLength={6}
               className={styles.input}
               placeholder="Mínimo 6 caracteres"
+              disabled={isLoading}
             />
           </div>
 
@@ -164,19 +196,23 @@ const Registro = () => {
               value={formData.confirmPassword}
               onChange={handleChange}
               required
-              minLength={6}
               className={styles.input}
               placeholder="Repite tu contraseña"
+              disabled={isLoading}
             />
           </div>
 
-          <button type="submit" className={styles.submitButton}>
-            Registrarse
+          <button
+            type="submit"
+            className={styles.submitButton}
+            disabled={isLoading}
+          >
+            {isLoading ? 'Registrando...' : 'Registrarme'}
           </button>
         </form>
-        
+
         <p className={styles.loginPrompt}>
-          ¿Ya tienes una cuenta? <Link to="/login" className={styles.loginLink}>Inicia Sesión aquí</Link>
+          ¿Ya tienes una cuenta? <Link to="/login" className={styles.loginLink}>Inicia sesión aquí</Link>
         </p>
       </div>
     </div>
