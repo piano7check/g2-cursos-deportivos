@@ -25,6 +25,12 @@ def crear_curso():
 def eliminar_curso(id): 
     return ControllerCursos.eliminar_curso(id) 
 
+@routesAdmin.route('/cursos/<int:id>', methods=['PATCH']) 
+@token_requerido
+@rol_requerido(['admin'])
+def editar_curso(id):
+    return ControllerCursos.editar_curso(id)
+
 @routesAdmin.route('/usuarios', methods=['GET'])
 @token_requerido
 @rol_requerido(['admin'])
