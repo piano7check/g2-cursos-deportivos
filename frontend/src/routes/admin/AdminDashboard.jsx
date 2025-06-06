@@ -1,21 +1,25 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import styles from './AdminDashboard.module.css';
-import { FaUsers, FaChalkboardTeacher, FaClipboardCheck, FaBookOpen, FaPlus, FaSignOutAlt, FaHome, FaEdit, FaTrash } from 'react-icons/fa';
+import { FaUsers, FaChalkboardTeacher, FaClipboardCheck, FaBookOpen, FaPlus, FaSignOutAlt, FaHome } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import { useUsuarioContext } from '../../context/UsuarioContext'; 
 
 import { getCursos, createCurso, updateCurso, deleteCurso, getProfesores } from '../../services/cursosService';
-import { logoutUser } from '../../services/authService'; 
+import { logoutUser } from '../../services/userService'; // Importar logoutUser
 import CursosTable from '../../components/admin/cursos/CursosTable';
 import CourseModal from '../../components/admin/cursos/CourseModal';
-import MessageModal from '../../components/common/MessageModal'; 
+import MessageModal from '../../components/common/MessageModal';
+import UserProfileWidget from '../../components/common/UserProfileWidget'; 
 
 const AdminDashboard = () => {
+    const { usuario: contextUsuario, cargando: cargandoContext, triggerCoursesUpdate, setUsuario } = useUsuarioContext(); 
+    
     const [activeTab, setActiveTab] = useState('overview');
     const [showCourseModal, setShowCourseModal] = useState(false);
     const [editingCourse, setEditingCourse] = useState(null);
     const [professors, setProfessors] = useState([]); 
     const [courses, setCourses] = useState([]);
-    const [loadingCourses, setLoadingCourses] = useState(true);
+    const [loadingCourses, setLoadingCourses] = useState(true); 
     const [errorCourses, setErrorCourses] = useState(null);
     const navigate = useNavigate();
 
@@ -73,9 +77,15 @@ const AdminDashboard = () => {
     }, [navigate]);
 
     useEffect(() => {
-        fetchCourses();
-        fetchProfessors();
-    }, [fetchCourses, fetchProfessors]);
+        if (!cargandoContext) {
+            if (contextUsuario) {
+                fetchCourses();
+                fetchProfessors();
+            } else {
+                navigate('/login');
+            }
+        }
+    }, [cargandoContext, contextUsuario, fetchCourses, fetchProfessors, navigate]);
 
     const handleNewCourseClick = () => {
         setEditingCourse(null);
@@ -105,8 +115,8 @@ const AdminDashboard = () => {
                     horarios: courseData.horarios,
                 };
                 
-                const response = await updateCurso(editingCourse.id, dataToSendForPatch); 
-                setStatusModalMessage(`Curso "${response.curso?.nombre || courseData.nombre}" actualizado exitosamente.`); 
+                await updateCurso(editingCourse.id, dataToSendForPatch); 
+                setStatusModalMessage(`Curso "${courseData.nombre}" actualizado exitosamente.`); 
                 setStatusModalType('success');
                 setShowStatusModal(true);
             } else {
@@ -125,6 +135,7 @@ const AdminDashboard = () => {
             setShowCourseModal(false);
             setEditingCourse(null);
             fetchCourses(); 
+            triggerCoursesUpdate(); 
         } catch (err) {
             setStatusModalMessage(`Error al guardar el curso: ${err.data?.detalle || err.message || 'Error desconocido'}`); 
             setStatusModalType('error');
@@ -136,7 +147,7 @@ const AdminDashboard = () => {
     };
 
     const handleDeleteCourse = async (courseId) => {
-        setStatusModalMessage('¿Estás seguro de que quieres eliminar este curso?');
+        setStatusModalMessage('¿Estás seguro de que quieres eliminar este curso?.');
         setStatusModalType('confirm');
         setStatusModalOnConfirm(() => async () => {
             closeStatusModal();
@@ -146,6 +157,7 @@ const AdminDashboard = () => {
                 setStatusModalType('success');
                 setShowStatusModal(true);
                 fetchCourses();
+                triggerCoursesUpdate(); 
             } catch (err) {
                 setStatusModalMessage(`Error al eliminar el curso: ${err.data?.detalle || err.message || 'Error desconocido'}`); 
                 setStatusModalType('error');
@@ -158,20 +170,31 @@ const AdminDashboard = () => {
         setShowStatusModal(true);
     };
 
-    const handleLogout = async () => { 
+    const handleLogout = async () => { // Hacer la función asíncrona
         try {
-            await logoutUser(); 
-            navigate('/login'); 
-        } catch (err) {
-            setStatusModalMessage(err.message || 'Error al cerrar sesión. Por favor, intente de nuevo.');
+            await logoutUser(); // Llamar al servicio de logout
+            setUsuario(null); // Limpiar el usuario del contexto
+            navigate('/login'); // Redirigir al login
+        } catch (error) {
+            console.error("Error al cerrar sesión:", error);
+            setStatusModalMessage(`Error al cerrar sesión: ${error.message || 'Error desconocido'}`); 
             setStatusModalType('error');
             setShowStatusModal(true);
-
-            if (err.status === 401) {
-                navigate('/login');
-            }
         }
     };
+
+    if (cargandoContext) {
+        return (
+            <div className={styles.loadingContainer}>
+                <div className={styles.spinner}></div>
+                <p>Cargando panel de administrador...</p>
+            </div>
+        );
+    }
+
+    if (!contextUsuario || contextUsuario.rol !== 'admin') {
+        return <div className={styles.error}>Acceso denegado. Por favor, inicie sesión como administrador.</div>;
+    }
 
     return (
         <div className={styles.adminDashboard}>
@@ -208,7 +231,7 @@ const AdminDashboard = () => {
                     </button>
                     <button
                         className={styles.navItem}
-                        onClick={handleLogout}
+                        onClick={handleLogout} 
                     >
                         <FaSignOutAlt /> Cerrar Sesión
                     </button>
@@ -219,7 +242,7 @@ const AdminDashboard = () => {
                 <header className={styles.header}>
                     <h1>Bienvenido, Administrador</h1>
                     <div className={styles.userInfo}>
-                        <span></span>
+                        <UserProfileWidget /> 
                     </div>
                 </header>
 

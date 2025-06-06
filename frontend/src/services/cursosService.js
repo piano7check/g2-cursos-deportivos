@@ -36,7 +36,7 @@ export const createCurso = async (courseData) => {
 
 export const updateCurso = async (cursoId, courseData) => {
     const response = await fetch(`${API_BASE_URL}/cursos/${cursoId}`, {
-        method: 'PATCH',
+        method: 'PATCH', 
         headers: {
             'Content-Type': 'application/json',
         },
@@ -66,6 +66,11 @@ export const getProfesores = async () => {
         credentials: 'include', 
     });
     const data = await handleResponse(response);
-    return data.profesores;
-};
 
+    if (data && Array.isArray(data.profesores)) {
+        return data.profesores;
+    } else {
+        console.error("Formato de respuesta inesperado para profesores:", data);
+        return []; 
+    }
+};

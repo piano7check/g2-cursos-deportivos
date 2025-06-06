@@ -1,32 +1,35 @@
 import { useUsuarioContext } from '../../context/UsuarioContext';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Importar useNavigate
-import { logoutUser } from '../../services/authService'; // Importar la función de logout
+import { useNavigate } from 'react-router-dom'; 
 import styles from './CursosEstudiantes.module.css';
-import { FaSignOutAlt } from 'react-icons/fa'; // Icono para cerrar sesión
+import UserProfileWidget from '../../components/common/UserProfileWidget';
 
 const FieldWithFallback = ({ value, fallback = "No definido", children }) => {
   return value ? (children || value) : fallback;
 };
 
 const CursosEstudiantes = () => {
-  const { usuario, cargando, error: authError } = useUsuarioContext(); // Obtener también el error de autenticación
+  const { usuario, cargando, error: authError, coursesLastUpdated } = useUsuarioContext(); 
   const [cursos, setCursos] = useState([]);
   const [error, setError] = useState(null);
   const [expandedCourseId, setExpandedCourseId] = useState(null);
   const [isFetching, setIsFetching] = useState(false);
-  const navigate = useNavigate(); // Hook para la navegación
+  const navigate = useNavigate(); 
 
   useEffect(() => {
     if (!cargando && usuario) {
       setIsFetching(true);
       fetch('/api/estudiante/cursosEstudiantes', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
         credentials: 'include',
+        cache: 'no-store', 
       })
         .then(async (res) => {
           if (!res.ok) {
             const errorData = await res.json().catch(() => ({}));
-            // Si el error es 401, redirigir al login
             if (res.status === 401) {
               navigate('/login');
             }
@@ -46,14 +49,13 @@ const CursosEstudiantes = () => {
           setError(null);
         })
         .catch(err => {
-          console.error('Error:', err);
           setError(err.message || 'Error desconocido al cargar cursos');
         })
         .finally(() => {
           setIsFetching(false);
         });
     }
-  }, [cargando, usuario, navigate]); // Añadir 'navigate' a las dependencias
+  }, [cargando, usuario, navigate, coursesLastUpdated]); 
 
   const toggleDetails = (courseId) => {
     setExpandedCourseId(prevId => prevId === courseId ? null : courseId);
@@ -62,19 +64,6 @@ const CursosEstudiantes = () => {
   const formatTime = (timeString) => {
     if (!timeString) return '--:--';
     return timeString.split(':').slice(0, 2).join(':');
-  };
-
-  // Función para manejar el cierre de sesión
-  const handleLogout = async () => {
-    try {
-      await logoutUser(); // Llamar a la función de logout del servicio
-      navigate('/login'); // Redirigir al login después de un logout exitoso
-    } catch (err) {
-      console.error('Error al cerrar sesión:', err);
-      // Aunque haya un error, si la cookie se borró, redirigimos.
-      // Podrías mostrar un mensaje de error si el logout falla por otras razones.
-      navigate('/login'); 
-    }
   };
 
   if (cargando || isFetching) {
@@ -86,9 +75,7 @@ const CursosEstudiantes = () => {
     );
   }
 
-  // Si no hay usuario y no estamos cargando, significa que no está autenticado
   if (!usuario && !cargando) {
-      // ProtectedRoute debería manejar esto, pero como fallback
       return <div className={styles.error}>No autenticado. Por favor, inicie sesión.</div>;
   }
   
@@ -100,15 +87,7 @@ const CursosEstudiantes = () => {
       <header className={styles.header}>
         <h1 className={styles.title}>Cursos disponibles</h1>
         <div className={styles.userInfo}>
-            {usuario && (
-                <>
-                    <p>Bienvenido, <strong>{usuario.email}</strong></p>
-                    <p>ID: {usuario.id} | Rol: {usuario.rol}</p>
-                </>
-            )}
-            <button className={styles.logoutButton} onClick={handleLogout}>
-                <FaSignOutAlt /> Cerrar Sesión
-            </button>
+            <UserProfileWidget />
         </div>
       </header>
       
