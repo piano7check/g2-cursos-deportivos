@@ -1,7 +1,9 @@
-from flask import jsonify, g, request, make_response
+from flask import request, jsonify, g, make_response
 from models.userModels import userModel
-from schemas.estudianteParcial import validarUsuarioParcial 
-import bcrypt 
+from schemas.estudianteParcial import validarUsuarioParcial
+import bcrypt
+from utils.tokenUsuario import generarToken
+from utils.buscarUsuario import buscarUsuarioById
 
 class userProfileController:
     @staticmethod
@@ -14,16 +16,16 @@ class userProfileController:
             "email": g.usuario['email'],
             "rol": g.usuario['rol'],
             "name": g.usuario.get('name'),
-            "lastname": g.usuario.get('lastname') 
+            "lastname": g.usuario.get('lastname')
         }
         return jsonify(usuario), 200
 
     @staticmethod
-    def editarMiPerfil():
+    def editarPerfil(id):
         if 'usuario' not in g:
             return jsonify({"error": "Usuario no autenticado"}), 401
-        
-        user_id = g.usuario['id']
+            
+        target_user_id = id
         data = request.get_json()
 
         esValido, errores, data_limpia = validarUsuarioParcial(data)
@@ -41,39 +43,57 @@ class userProfileController:
             hashed = bcrypt.hashpw(password_bytes, bcrypt.gensalt())
             data_limpia["password"] = hashed.decode('utf-8')
 
-        resultadoEdicion = userModel.editarUsuario(user_id, data_limpia)
-        
+        resultadoEdicion = userModel.editarUsuario(target_user_id, data_limpia)
+            
         if "error" in resultadoEdicion:
             return jsonify(resultadoEdicion), 500
+        
+        updated_user = buscarUsuarioById(target_user_id)
+        if not updated_user or "error" in updated_user:
+            return jsonify({"error": "Perfil actualizado, pero no se pudo recuperar los datos completos del usuario."}), 500
+        
+        new_token = generarToken(updated_user)
 
-        return jsonify({
-            "message": "Su perfil ha sido actualizado correctamente",
-            "usuario": resultadoEdicion
-        }), 200
+        response = make_response(jsonify({
+            "message": "Perfil de usuario actualizado correctamente",
+            "usuario": updated_user 
+            }), 200)
+
+        response.set_cookie(
+            "access_token",
+            new_token,
+            httponly=True,
+            secure=False,
+            samesite="Lax",
+            max_age=3600 * 24,
+            path="/"
+        )
+        return response
 
     @staticmethod
-    def eliminarMiCuenta():
+    def eliminarCuenta(id):
         if 'usuario' not in g:
             return jsonify({"error": "Usuario no autenticado"}), 401
-        
-        user_id = g.usuario['id']
-        resultado = userModel.eliminarUsuario(user_id)
-        
+            
+        target_user_id = id
+        resultado = userModel.eliminarUsuario(target_user_id)
+            
         if "error" in resultado:
             return jsonify(resultado), 500
             
-        return jsonify({"message": "Su cuenta ha sido eliminada correctamente"}), 200
-    
+        return jsonify({"message": "Cuenta de usuario eliminada correctamente"}), 200
+
     @staticmethod
-    def logoutUsuario(): 
+    def logoutUsuario():
         response = make_response(jsonify({"message": "Sesión cerrada correctamente"}), 200)
         response.set_cookie(
             "access_token", 
             "", 
             max_age=0, 
             httponly=True, 
-            secure=False,
+            secure=False, 
             samesite="Lax",
             path="/"
         )
         return response
+
