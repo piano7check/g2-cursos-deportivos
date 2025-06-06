@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useUsuarioContext } from '../../context/UsuarioContext';
 import { loginUser } from '../../services/authService';
@@ -11,7 +11,7 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate(); 
-  const { verificarAutenticacion } = useUsuarioContext();
+  const { verificarAutenticacion, usuario, cargando } = useUsuarioContext();
 
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [statusModalMessage, setStatusModalMessage] = useState('');
@@ -23,6 +23,16 @@ const Login = () => {
       setStatusModalType('error');
   };
 
+  useEffect(() => {
+    if (!cargando && usuario) {
+      if (usuario.rol === 'admin') {
+        navigate('/dashboardAdmin');
+      } else if (usuario.rol === 'estudiante' || usuario.rol === 'profesor') {
+        navigate('/cursosEstudiantes');
+      }
+    }
+  }, [usuario, cargando, navigate]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setStatusModalMessage('');
@@ -33,7 +43,7 @@ const Login = () => {
       await loginUser({ email, password });
       const updatedUser = await verificarAutenticacion();
       
-      if (updatedUser && updatedUser.rol) {
+      if (updatedUser && updatedUser.rol) { 
         const userRole = updatedUser.rol; 
 
         if (userRole === 'admin') {

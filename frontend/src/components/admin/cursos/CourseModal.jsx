@@ -1,22 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import styles from '../../../routes/admin/AdminDashboard.module.css'; 
 import { FaPlusCircle, FaMinusCircle } from 'react-icons/fa'; 
+import MessageModal from '../../common/MessageModal';
 
 const CourseModal = ({ editingCourse, professors, onClose, onSave }) => {
     const [formData, setFormData] = useState({
         nombre: '',
         descripcion: '',
-        cupos: '',
+        cupos: 0,
         profesor_id: '',
-        horarios: [{ dia: '', hora_inicio: '', hora_fin: '' }], 
+        horarios: [{ dia: '', hora_inicio: '', hora_fin: '' }],
     });
+    const [formErrors, setFormErrors] = useState({});
+    const [showLocalModal, setShowLocalModal] = useState(false);
+    const [localModalMessage, setLocalModalMessage] = useState('');
 
     useEffect(() => {
         if (editingCourse) {
             setFormData({
                 nombre: editingCourse.nombre || '', 
                 descripcion: editingCourse.descripcion || '',
-                cupos: editingCourse.cupos || '', 
+                cupos: editingCourse.cupos || 0,
                 profesor_id: editingCourse.profesor_id || '',
                 horarios: editingCourse.horarios && editingCourse.horarios.length > 0
                     ? editingCourse.horarios.map(h => ({
@@ -24,17 +28,20 @@ const CourseModal = ({ editingCourse, professors, onClose, onSave }) => {
                         hora_inicio: h.hora_inicio ? h.hora_inicio.substring(0, 5) : '', 
                         hora_fin: h.hora_fin ? h.hora_fin.substring(0, 5) : ''
                     }))
-                    : [{ dia: '', hora_inicio: '', hora_fin: '' }], 
+                    : [{ dia: '', hora_inicio: '', hora_fin: '' }],
             });
         } else {
             setFormData({
                 nombre: '',
                 descripcion: '',
-                cupos: '',
+                cupos: 0,
                 profesor_id: '',
-                horarios: [{ dia: '', hora_inicio: '', hora_fin: '' }], 
+                horarios: [{ dia: '', hora_inicio: '', hora_fin: '' }],
             });
         }
+        setFormErrors({});
+        setLocalModalMessage('');
+        setShowLocalModal(false);
     }, [editingCourse]);
 
     const handleChange = (e) => {
@@ -43,6 +50,7 @@ const CourseModal = ({ editingCourse, professors, onClose, onSave }) => {
             ...prev,
             [name]: value
         }));
+        setFormErrors(prev => ({ ...prev, [name]: undefined }));
     };
 
     const handleHorarioChange = (index, e) => {
@@ -56,6 +64,7 @@ const CourseModal = ({ editingCourse, professors, onClose, onSave }) => {
             ...prev,
             horarios: newHorarios
         }));
+        setFormErrors(prev => ({ ...prev, horarios: undefined }));
     };
 
     const addHorarioField = () => {
@@ -69,23 +78,24 @@ const CourseModal = ({ editingCourse, professors, onClose, onSave }) => {
         const newHorarios = formData.horarios.filter((_, i) => i !== index);
         setFormData(prev => ({
             ...prev,
-            horarios: newHorarios.length > 0 ? newHorarios : [{ dia: '', hora_inicio: '', hora_fin: '' }] 
+            horarios: newHorarios.length > 0 ? newHorarios : [{ dia: '', hora_inicio: '', hora_fin: '' }]
         }));
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        let errors = {};
+        let currentErrors = {};
 
         if (!formData.nombre.trim()) {
-            errors.nombre = 'El nombre es obligatorio.';
+            currentErrors.nombre = 'El nombre es obligatorio.';
         }
-        if (!formData.cupos || parseInt(formData.cupos) <= 0) {
-            errors.cupos = 'Los cupos deben ser un número positivo.';
+        const parsedCupos = parseInt(formData.cupos);
+        if (isNaN(parsedCupos) || parsedCupos <= 0) {
+            currentErrors.cupos = 'Los cupos deben ser un número positivo.';
         }
         if (!formData.profesor_id) {
-            errors.profesor_id = 'Debe seleccionar un profesor.';
+            currentErrors.profesor_id = 'Debe seleccionar un profesor.';
         }
 
         const validHorarios = formData.horarios.filter(h =>
@@ -93,21 +103,23 @@ const CourseModal = ({ editingCourse, professors, onClose, onSave }) => {
         );
 
         if (!editingCourse && validHorarios.length === 0) {
-            errors.horarios = 'Para crear un curso, debe ingresar al menos un horario completo.';
+            currentErrors.horarios = 'Para crear un curso, debe ingresar al menos un horario completo.';
         }
-
-        if (Object.keys(errors).length > 0) {
-            const errorMessage = Object.values(errors).join('\n');
-            alert(`Por favor, corrija los siguientes errores:\n${errorMessage}`); 
+        
+        if (Object.keys(currentErrors).length > 0) {
+            setFormErrors(currentErrors);
+            const errorMessage = Object.values(currentErrors).join('\n');
+            setLocalModalMessage(`Por favor, corrija los siguientes errores:\n${errorMessage}`);
+            setShowLocalModal(true);
             return;
         }
 
         const courseData = {
             nombre: formData.nombre,
             descripcion: formData.descripcion,
-            cupos: parseInt(formData.cupos),
+            cupos: parsedCupos,
             profesor_id: parseInt(formData.profesor_id),
-            horarios: validHorarios.length > 0 ? validHorarios : [], 
+            horarios: validHorarios.length > 0 ? validHorarios : [],
         };
         
         onSave(courseData);
@@ -126,7 +138,9 @@ const CourseModal = ({ editingCourse, professors, onClose, onSave }) => {
                             name="nombre"
                             value={formData.nombre}
                             onChange={handleChange}
+                            className={formErrors.nombre ? styles.inputError : ''}
                         />
+                        {formErrors.nombre && <span className={styles.errorMessage}>{formErrors.nombre}</span>}
                     </div>
                     <div className={styles.formGroup}>
                         <label htmlFor="descripcion">Descripción:</label>
@@ -146,7 +160,9 @@ const CourseModal = ({ editingCourse, professors, onClose, onSave }) => {
                             value={formData.cupos}
                             onChange={handleChange}
                             min="1"
+                            className={formErrors.cupos ? styles.inputError : ''}
                         />
+                        {formErrors.cupos && <span className={styles.errorMessage}>{formErrors.cupos}</span>}
                     </div>
                     <div className={styles.formGroup}>
                         <label htmlFor="profesor_id">Profesor asignado:</label>
@@ -155,14 +171,16 @@ const CourseModal = ({ editingCourse, professors, onClose, onSave }) => {
                             name="profesor_id"
                             value={formData.profesor_id}
                             onChange={handleChange}
+                            className={formErrors.profesor_id ? styles.inputError : ''}
                         >
                             <option value="">Seleccione un profesor</option>
-                            {professors.map(p => (
+                            {Array.isArray(professors) && professors.map(p => (
                                 <option key={p.id} value={p.id}>
                                     {p.name} {p.lastname}
                                 </option>
                             ))}
                         </select>
+                        {formErrors.profesor_id && <span className={styles.errorMessage}>{formErrors.profesor_id}</span>}
                     </div>
 
                     <div className={styles.formGroup}>
@@ -173,6 +191,7 @@ const CourseModal = ({ editingCourse, professors, onClose, onSave }) => {
                                     name="dia"
                                     value={horario.dia}
                                     onChange={(e) => handleHorarioChange(index, e)}
+                                    className={formErrors.horarios && !horario.dia ? styles.inputError : ''}
                                 >
                                     <option value="">Día</option>
                                     <option value="Lunes">Lunes</option>
@@ -188,6 +207,7 @@ const CourseModal = ({ editingCourse, professors, onClose, onSave }) => {
                                     name="hora_inicio"
                                     value={horario.hora_inicio}
                                     onChange={(e) => handleHorarioChange(index, e)}
+                                    className={formErrors.horarios && !horario.hora_inicio ? styles.inputError : ''}
                                 />
                                 <span>-</span>
                                 <input
@@ -195,6 +215,7 @@ const CourseModal = ({ editingCourse, professors, onClose, onSave }) => {
                                     name="hora_fin"
                                     value={horario.hora_fin}
                                     onChange={(e) => handleHorarioChange(index, e)}
+                                    className={formErrors.horarios && !horario.hora_fin ? styles.inputError : ''}
                                 />
                                 {formData.horarios.length > 1 && (
                                     <button
@@ -208,6 +229,7 @@ const CourseModal = ({ editingCourse, professors, onClose, onSave }) => {
                                 )}
                             </div>
                         ))}
+                        {formErrors.horarios && <span className={styles.errorMessage}>{formErrors.horarios}</span>}
                         <button
                             type="button"
                             onClick={addHorarioField}
@@ -228,6 +250,13 @@ const CourseModal = ({ editingCourse, professors, onClose, onSave }) => {
                     </div>
                 </form>
             </div>
+            {showLocalModal && (
+                <MessageModal
+                    message={localModalMessage}
+                    type="error"
+                    onClose={() => setShowLocalModal(false)}
+                />
+            )}
         </div>
     );
 };

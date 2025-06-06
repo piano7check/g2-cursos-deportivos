@@ -1,43 +1,57 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
-import { getCurrentUser } from '../services/userService';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { getCurrentUser } from '../services/userService'; 
 
-const UsuarioContext = createContext(null);
+const UsuarioContext = createContext();
 
-export const useUsuarioContext = () => useContext(UsuarioContext);
+export const useUsuarioContext = () => {
+    return useContext(UsuarioContext);
+};
 
 export const UsuarioProvider = ({ children }) => {
     const [usuario, setUsuario] = useState(null);
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState(null);
+    const [coursesLastUpdated, setCoursesLastUpdated] = useState(Date.now()); 
 
-    const verificarAutenticacion = async () => {
+    const verificarAutenticacion = useCallback(async () => {
+        setCargando(true);
         try {
-            setCargando(true);
-            setError(null); 
-            const userResponse = await getCurrentUser();
-            setUsuario(userResponse); 
-            return userResponse; 
+            const user = await getCurrentUser();
+            setUsuario(user);
+            setError(null);
         } catch (err) {
-            setError(err.message || 'Error al verificar autenticación.');
+            console.error("Error al verificar autenticación:", err);
             setUsuario(null);
-            return null; 
+            if (err.status !== 401) {
+                setError(err.message);
+            } else {
+                setError(null);
+            }
         } finally {
             setCargando(false);
         }
-    };
+    }, []);
+
+    const triggerCoursesUpdate = useCallback(() => {
+        setCoursesLastUpdated(Date.now()); 
+    }, []);
 
     useEffect(() => {
         verificarAutenticacion();
-    }, []); 
+    }, [verificarAutenticacion]);
+
+    const value = {
+        usuario,
+        cargando,
+        error,
+        setUsuario, 
+        verificarAutenticacion,
+        coursesLastUpdated, 
+        triggerCoursesUpdate 
+    };
 
     return (
-        <UsuarioContext.Provider value={{ 
-            usuario, 
-            setUsuario, 
-            cargando,
-            verificarAutenticacion,
-            error 
-        }}>
+        <UsuarioContext.Provider value={value}>
             {children}
         </UsuarioContext.Provider>
     );
