@@ -4,9 +4,10 @@ import { FaUsers, FaChalkboardTeacher, FaClipboardCheck, FaBookOpen, FaPlus, FaS
 import { useNavigate } from 'react-router-dom';
 
 import { getCursos, createCurso, updateCurso, deleteCurso, getProfesores } from '../../services/cursosService';
+import { logoutUser } from '../../services/authService'; 
 import CursosTable from '../../components/admin/cursos/CursosTable';
 import CourseModal from '../../components/admin/cursos/CourseModal';
-import MessageModal from '../../components/common/MessageModal';
+import MessageModal from '../../components/common/MessageModal'; 
 
 const AdminDashboard = () => {
     const [activeTab, setActiveTab] = useState('overview');
@@ -75,7 +76,6 @@ const AdminDashboard = () => {
         fetchCourses();
         fetchProfessors();
     }, [fetchCourses, fetchProfessors]);
-
 
     const handleNewCourseClick = () => {
         setEditingCourse(null);
@@ -158,9 +158,19 @@ const AdminDashboard = () => {
         setShowStatusModal(true);
     };
 
-    const handleLogout = () => {
-        document.cookie = 'access_token=; Max-Age=0; path=/;'; 
-        navigate('/login');
+    const handleLogout = async () => { 
+        try {
+            await logoutUser(); 
+            navigate('/login'); 
+        } catch (err) {
+            setStatusModalMessage(err.message || 'Error al cerrar sesión. Por favor, intente de nuevo.');
+            setStatusModalType('error');
+            setShowStatusModal(true);
+
+            if (err.status === 401) {
+                navigate('/login');
+            }
+        }
     };
 
     return (

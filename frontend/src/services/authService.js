@@ -1,4 +1,5 @@
 const API_BASE_URL = '/api/auth'; 
+const API_BASE_URL_USER = '/api/user'; 
 
 const handleResponse = async (response) => {
     if (!response.ok) {
@@ -33,4 +34,13 @@ export const loginUser = async (credentials) => {
         credentials: 'include',
     });
     return handleResponse(response);
+};
+
+export const logoutUser = async () => {
+    const response = await fetch(`${API_BASE_URL_USER}/logout`, { 
+        method: 'POST', 
+        credentials: 'include', 
+    });
+    
+    return handleResponse(response); 
 };
