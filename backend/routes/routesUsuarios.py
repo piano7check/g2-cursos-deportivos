@@ -22,3 +22,7 @@ def eliminar_mi_usuario(id):
 @validarPermisoUsuario 
 def editar_mi_usuario(id):
     return userProfileController.editarMiPerfil()
+
+@routes_usuarios.route('/logout', methods=['POST']) 
+def logout():
+    return userProfileController.logoutUsuario()

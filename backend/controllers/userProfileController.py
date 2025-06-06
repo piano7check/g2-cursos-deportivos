@@ -1,4 +1,4 @@
-from flask import jsonify, g, request
+from flask import jsonify, g, request, make_response
 from models.userModels import userModel
 from schemas.estudianteParcial import validarUsuarioParcial 
 import bcrypt 
@@ -41,8 +41,6 @@ class userProfileController:
             hashed = bcrypt.hashpw(password_bytes, bcrypt.gensalt())
             data_limpia["password"] = hashed.decode('utf-8')
 
-        # El editarUsuario en userModel debe ser capaz de manejar un ID específico
-        # Y la validación de permiso ya la hace validarPermisoUsuario en la ruta
         resultadoEdicion = userModel.editarUsuario(user_id, data_limpia)
         
         if "error" in resultadoEdicion:
@@ -65,3 +63,17 @@ class userProfileController:
             return jsonify(resultado), 500
             
         return jsonify({"message": "Su cuenta ha sido eliminada correctamente"}), 200
+    
+    @staticmethod
+    def logoutUsuario(): 
+        response = make_response(jsonify({"message": "Sesión cerrada correctamente"}), 200)
+        response.set_cookie(
+            "access_token", 
+            "", 
+            max_age=0, 
+            httponly=True, 
+            secure=False,
+            samesite="Lax",
+            path="/"
+        )
+        return response
