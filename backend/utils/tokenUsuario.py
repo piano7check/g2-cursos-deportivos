@@ -10,6 +10,7 @@ def generarToken(usuario):
     payload={
         "id" : usuario['id'],
         "name": usuario['name'],
+        "lastname": usuario['lastname'],
         "email": usuario['email'],
         "rol": usuario["rol"],
         "exp": datetime.datetime.now(datetime.timezone.utc)+ datetime.timedelta(days=1)
