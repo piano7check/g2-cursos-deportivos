@@ -9,10 +9,7 @@ class controllerAuth:
     @staticmethod
     def registroUsuario():
         data = request.get_json()
-        # esValido, errores = validarUsuario(data)
-        # if not esValido:
-        #     return jsonify({"error": errores}), 400
-
+        
         try:
             password = data['password'].encode('utf-8')
             hashed_password = bcrypt.hashpw(password, bcrypt.gensalt())

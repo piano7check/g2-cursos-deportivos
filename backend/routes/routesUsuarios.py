@@ -5,6 +5,7 @@ from middleware.validarToken import token_requerido
 from middleware.permisoUsuario import validarPermisoUsuario
 
 routes_usuarios = Blueprint("userRoutes", __name__) 
+
 @routes_usuarios.route('/me', methods=['GET'])
 @token_requerido
 def obtener_usuario_actual():
@@ -12,16 +13,15 @@ def obtener_usuario_actual():
 
 @routes_usuarios.route('/usuarios/<int:id>', methods=['DELETE'])
 @token_requerido
-@validarPermisoUsuario 
-def eliminar_mi_usuario(id): 
-    return userProfileController.eliminarMiCuenta()
-
+@validarPermisoUsuario
+def eliminar_usuario(id): 
+    return userProfileController.eliminarCuenta(id) 
 
 @routes_usuarios.route('/usuarios/<int:id>', methods=['PATCH'])
 @token_requerido
 @validarPermisoUsuario 
-def editar_mi_usuario(id):
-    return userProfileController.editarMiPerfil()
+def editar_usuario(id): 
+    return userProfileController.editarPerfil(id) 
 
 @routes_usuarios.route('/logout', methods=['POST']) 
 def logout():

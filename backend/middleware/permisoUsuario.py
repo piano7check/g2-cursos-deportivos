@@ -1,11 +1,11 @@
 from functools import wraps
-from flask import request, jsonify
+from flask import request, jsonify, g
 from utils.buscarUsuario import buscarUsuarioById
 
 def validarPermisoUsuario(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
-        usuario_actual = request.usuario
+        usuario_actual = g.usuario 
         id_objetivo = kwargs.get('id')
 
         if not id_objetivo:
@@ -22,10 +22,10 @@ def validarPermisoUsuario(f):
         rol_objetivo = usuario_objetivo['rol']
 
         if (
-            usuario_actual['id'] != id_objetivo and
-            jerarquia[rol_actual] <= jerarquia[rol_objetivo]
+            usuario_actual['id'] != id_objetivo and 
+            jerarquia[rol_actual] <= jerarquia[rol_objetivo] 
         ):
-            return jsonify({'error': 'No autorizado'}), 403
+            return jsonify({'error': 'No autorizado para realizar esta acción sobre este usuario'}), 403
 
         return f(*args, **kwargs)
     return wrapper

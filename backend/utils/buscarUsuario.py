@@ -9,7 +9,7 @@ def buscarUsuarioById(id_objetivo):
 
     try:
         with conexion.cursor(DictCursor) as cursor:
-            sql = "SELECT id, name, lastname, email, rol FROM users WHERE id = %s"
+            sql = "SELECT id, name, lastname, email, birthdate, rol FROM users WHERE id = %s"
             cursor.execute(sql, (id_objetivo,))
             usuario = cursor.fetchone()
         return usuario

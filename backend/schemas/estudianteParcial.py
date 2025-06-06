@@ -9,9 +9,8 @@ esquemaUsuarioParcial = {
     },
     'password': {
         'type': 'string',
-        'minlength': 8,
+        'minlength': 6,
         'maxlength': 32,
-        'regex': r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])[^\s]{8,32}$'
     }
 }
 
