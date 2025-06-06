@@ -9,9 +9,9 @@ class controllerAuth:
     @staticmethod
     def registroUsuario():
         data = request.get_json()
-        esValido, errores = validarUsuario(data)
-        if not esValido:
-            return jsonify({"error": errores}), 400
+        # esValido, errores = validarUsuario(data)
+        # if not esValido:
+        #     return jsonify({"error": errores}), 400
 
         try:
             password = data['password'].encode('utf-8')
@@ -50,6 +50,8 @@ class controllerAuth:
             "mensaje": "Login exitoso",
             "usuario": {
                 "id": resultado.get('id'),
+                "name": resultado.get('name'),
+                "lastname": resultado.get('lastname'),
                 "email": resultado.get('email'),
                 "rol": resultado.get('rol')
             }
