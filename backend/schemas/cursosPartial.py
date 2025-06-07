@@ -9,12 +9,14 @@ esquemaHorarioParcial = {
     'hora_inicio': {
         'type': 'string',
         'required': True,
-        'regex': r'^\d{2}:\d{2}$'
+        # CAMBIO AQUÍ: Permitir HH:MM:SS
+        'regex': r'^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9])?$' # Agregado ([0-5][0-9])? para que los segundos sean opcionales
     },
     'hora_fin': {
         'type': 'string',
         'required': True,
-        'regex': r'^\d{2}:\d{2}$'
+        # CAMBIO AQUÍ: Permitir HH:MM:SS
+        'regex': r'^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9])?$' # Agregado ([0-5][0-9])? para que los segundos sean opcionales
     }
 }
 
@@ -44,13 +46,13 @@ esquemaCursoParcial = {
     'categoria_id': {
         'type': 'integer',
         'min': 1,
-        'nullable': True
+        'nullable': True # Lo mantuve nullable=True según tu esquema. Si debe ser requerido, cámbialo a required=True
     },
     'horarios': {
         'type': 'list',
         'schema': {'type': 'dict', 'schema': esquemaHorarioParcial},
-        'empty': True,
-        'nullable': True
+        'empty': True, # Permitir lista vacía de horarios si no se envían
+        'nullable': True # Permitir que el campo 'horarios' sea nulo/no enviado en un PATCH
     }
 }
 
@@ -58,4 +60,3 @@ def validarCursoParcial(data):
     v = Validator(esquemaCursoParcial, require_all=False, purge_unknown=True)
     esValido = v.validate(data)
     return esValido, v.errors, v.document
-
