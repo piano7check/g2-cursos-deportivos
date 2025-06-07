@@ -1,0 +1,162 @@
+// frontend/src/components/admin/users/UserModal.jsx
+import React, { useState, useEffect } from 'react';
+import { FaTimes, FaSave } from 'react-icons/fa';
+import styles from '../../../routes/admin/AdminDashboard.module.css'; // Usar tus estilos
+
+const UserModal = ({ editingUser, onClose, onSave }) => {
+    const [userData, setUserData] = useState({
+        name: '',
+        lastname: '',
+        email: '',
+        password: '', // Solo se usa para creación o si se permite cambiar en edición
+        rol: '',
+        phone_number: '',
+        address: ''
+    });
+
+    useEffect(() => {
+        if (editingUser) {
+            // Si estamos editando, precargar los datos del usuario
+            setUserData({
+                name: editingUser.name || '',
+                lastname: editingUser.lastname || '',
+                email: editingUser.email || '',
+                password: '', // Nunca precargar la contraseña, el usuario deberá introducirla si quiere cambiarla
+                rol: editingUser.rol || '',
+                phone_number: editingUser.phone_number || '',
+                address: editingUser.address || ''
+            });
+        } else {
+            // Si es un nuevo usuario, inicializar con valores vacíos
+            setUserData({
+                name: '',
+                lastname: '',
+                email: '',
+                password: '',
+                rol: '',
+                phone_number: '',
+                address: ''
+            });
+        }
+    }, [editingUser]);
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setUserData(prevData => ({ ...prevData, [name]: value }));
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        const dataToSave = { ...userData };
+
+        // Eliminar la contraseña si está vacía y estamos editando
+        if (editingUser && dataToSave.password === '') {
+            delete dataToSave.password;
+        }
+        
+        onSave(dataToSave);
+    };
+
+    return (
+        <div className={styles.modalOverlay}>
+            <div className={styles.modal}>
+                <button className={styles.closeModalButton} onClick={onClose}>
+                    <FaTimes />
+                </button>
+                <h3>{editingUser ? 'Editar Usuario' : 'Crear Nuevo Usuario'}</h3>
+                <form onSubmit={handleSubmit}>
+                    <div className={styles.formGroup}>
+                        <label htmlFor="name">Nombre:</label>
+                        <input
+                            type="text"
+                            id="name"
+                            name="name"
+                            value={userData.name}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
+                    <div className={styles.formGroup}>
+                        <label htmlFor="lastname">Apellido:</label>
+                        <input
+                            type="text"
+                            id="lastname"
+                            name="lastname"
+                            value={userData.lastname}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
+                    <div className={styles.formGroup}>
+                        <label htmlFor="email">Email:</label>
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            value={userData.email}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
+                    {/* El campo de contraseña solo es requerido para nuevos usuarios, opcional para editar */}
+                    <div className={styles.formGroup}>
+                        <label htmlFor="password">Contraseña {editingUser ? '(dejar vacío para no cambiar)' : '*'}:</label>
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            value={userData.password}
+                            onChange={handleChange}
+                            required={!editingUser} // Requerido solo si no estamos editando
+                        />
+                    </div>
+                    <div className={styles.formGroup}>
+                        <label htmlFor="rol">Rol:</label>
+                        <select
+                            id="rol"
+                            name="rol"
+                            value={userData.rol}
+                            onChange={handleChange}
+                            required
+                        >
+                            <option value="">Seleccione un rol</option>
+                            <option value="estudiante">Estudiante</option>
+                            <option value="profesor">Profesor</option>
+                            <option value="admin">Administrador</option>
+                        </select>
+                    </div>
+                    <div className={styles.formGroup}>
+                        <label htmlFor="phone_number">Teléfono:</label>
+                        <input
+                            type="text"
+                            id="phone_number"
+                            name="phone_number"
+                            value={userData.phone_number}
+                            onChange={handleChange}
+                        />
+                    </div>
+                    <div className={styles.formGroup}>
+                        <label htmlFor="address">Dirección:</label>
+                        <input
+                            type="text"
+                            id="address"
+                            name="address"
+                            value={userData.address}
+                            onChange={handleChange}
+                        />
+                    </div>
+                    <div className={styles.modalActions}>
+                        <button type="submit" className={styles.saveButton}>
+                            <FaSave /> Guardar
+                        </button>
+                        <button type="button" onClick={onClose} className={styles.cancelButton}>
+                            <FaTimes /> Cancelar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+};
+
+export default UserModal;

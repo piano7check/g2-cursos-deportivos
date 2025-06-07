@@ -10,6 +10,9 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 def token_requerido(f):
     @wraps(f)
     def decorated(*args, **kwargs):
+        if request.method == 'OPTIONS':
+            return f(*args, **kwargs)
+
         token = None
         token = request.cookies.get('access_token')
         
@@ -33,3 +36,4 @@ def token_requerido(f):
 
         return f(*args, **kwargs)
     return decorated
+

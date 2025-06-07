@@ -2,8 +2,8 @@ from flask import request, jsonify, make_response
 import bcrypt
 from models.userModels import userModel
 from utils.validarLogin import validacionLogin
-from utils.tokenUsuario import generarToken
-from schemas.estudiantes import validarUsuario
+from utils.tokenUsuario import generarToken 
+from datetime import datetime
 
 class controllerAuth:
     @staticmethod
@@ -43,6 +43,7 @@ class controllerAuth:
             return jsonify(resultado), 400
 
         token = generarToken(resultado)
+        
         response_data = {
             "mensaje": "Login exitoso",
             "usuario": {
@@ -55,13 +56,28 @@ class controllerAuth:
         }
 
         response = make_response(jsonify(response_data), 200)
+        # Asegúrate de que secure=False para HTTP en desarrollo
         response.set_cookie(
             "access_token",
             token,
             httponly=True,
-            secure=False, 
-            samesite="Lax",
-            max_age=3600 * 24,
+            secure=False, # Esto es crucial para localhost con HTTP
+            samesite="Lax", # "Lax" es generalmente suficiente para localhost
+            max_age=3600 * 24, # 24 horas
             path="/"
         )
         return response
+
+    @staticmethod
+    def logoutUsuario():
+        response = make_response(jsonify({"mensaje": "Sesión cerrada correctamente"}), 200)
+        response.set_cookie(
+            "access_token", "",
+            httponly=True,
+            secure=False, # Mismo valor que en login
+            samesite="Lax", # Mismo valor que en login
+            expires=0,
+            path="/"
+        )
+        return response
+

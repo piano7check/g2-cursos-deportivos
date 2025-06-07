@@ -35,11 +35,11 @@ const UserProfilePage = () => {
                 current_password: '',
             });
         }
-       
+        
         if (!cargando && !usuario) {
             navigate('/login');
         }
-    }, [usuario, isEditing, cargando, navigate]); 
+    }, [usuario, isEditing, cargando, navigate]);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -94,11 +94,8 @@ const UserProfilePage = () => {
         }
 
         try {
-            if (!usuario || !usuario.id) {
-                showModal('No se pudo obtener el ID del usuario para actualizar.', 'error');
-                return;
-            }
-            const response = await updateCurrentUser(usuario.id, dataToUpdate);
+            // Ya no pasamos el usuario.id, ya que el servicio lo obtiene del token
+            const response = await updateCurrentUser(dataToUpdate);
             setUsuario(response.usuario);
             setIsEditing(false);
             showModal('Perfil actualizado exitosamente.', 'success');
@@ -115,11 +112,8 @@ const UserProfilePage = () => {
             async () => {
                 closeModal();
                 try {
-                    if (!usuario || !usuario.id) {
-                        showModal('No se pudo obtener el ID del usuario para eliminar.', 'error');
-                        return;
-                    }
-                    await deleteCurrentUser(usuario.id);
+                    // Ya no pasamos el usuario.id, ya que el servicio lo obtiene del token
+                    await deleteCurrentUser();
                     setUsuario(null);
                     showModal('Cuenta eliminada exitosamente.', 'success');
                     navigate('/login');
@@ -136,8 +130,8 @@ const UserProfilePage = () => {
             navigate('/dashboardAdmin');
         } else if (usuario && (usuario.rol === 'estudiante' || usuario.rol === 'profesor')) {
             navigate('/cursosEstudiantes');
-        } else 
-            navigate('/'); 
+        } else
+            navigate('/');
         
     };
 
@@ -171,7 +165,7 @@ const UserProfilePage = () => {
                 <div className={styles.profileHeader}>
                     <FaUserCircle className={styles.profileAvatar} />
                     <h2>{usuario.name || 'Usuario'} {usuario.lastname || ''}</h2>
-                    <p className={styles.userRole}>Rol: {usuario.rol}</p> 
+                    <p className={styles.userRole}>Rol: {usuario.rol}</p>
                 </div>
                 {!isEditing ? (
                     <div className={styles.profileDetails}>

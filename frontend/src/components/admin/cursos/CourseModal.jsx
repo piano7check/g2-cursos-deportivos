@@ -1,199 +1,188 @@
+// frontend/src/components/admin/cursos/CourseModal.jsx
 import React, { useState, useEffect } from 'react';
-import styles from '../../../routes/admin/AdminDashboard.module.css'; 
-import { FaPlusCircle, FaMinusCircle } from 'react-icons/fa'; 
-import MessageModal from '../../common/MessageModal';
+import { FaTimes, FaSave, FaPlus, FaTrash } from 'react-icons/fa';
+import styles from '../../../routes/admin/AdminDashboard.module.css'; // Usar tus estilos
 
-const CourseModal = ({ editingCourse, professors, onClose, onSave }) => {
-    const [formData, setFormData] = useState({
+const CourseModal = ({ editingCourse, professors, categories, onClose, onSave }) => {
+    const [courseData, setCourseData] = useState({
         nombre: '',
         descripcion: '',
-        cupos: 0,
+        cupos: '',
         profesor_id: '',
+        categoria_id: '',
         horarios: [{ dia: '', hora_inicio: '', hora_fin: '' }],
     });
-    const [formErrors, setFormErrors] = useState({});
-    const [showLocalModal, setShowLocalModal] = useState(false);
-    const [localModalMessage, setLocalModalMessage] = useState('');
+
+    // Función auxiliar para formatear HH:MM a HH:MM:SS
+    const formatTimeToSeconds = (timeString) => {
+        if (!timeString) return '';
+        // Si ya tiene segundos, lo devuelve tal cual. Si no, añade ":00"
+        return timeString.length === 5 ? `${timeString}:00` : timeString;
+    };
+
+    // Función auxiliar para formatear HH:MM:SS a HH:MM para el input type="time"
+    const formatTimeForInput = (timeString) => {
+        if (!timeString) return '';
+        // Corta los segundos si existen, para que el input type="time" lo maneje correctamente
+        return timeString.length === 8 ? timeString.substring(0, 5) : timeString;
+    };
 
     useEffect(() => {
         if (editingCourse) {
-            setFormData({
-                nombre: editingCourse.nombre || '', 
+            setCourseData({
+                nombre: editingCourse.nombre || '',
                 descripcion: editingCourse.descripcion || '',
-                cupos: editingCourse.cupos || 0,
-                profesor_id: editingCourse.profesor_id || '',
+                cupos: editingCourse.cupos || '',
+                // Asegurarse de que profesor_id y categoria_id se inicialicen como números si es posible
+                profesor_id: editingCourse.professor_id ? String(editingCourse.professor_id) : '', // Convertir a string para el select
+                categoria_id: editingCourse.categoria_id ? String(editingCourse.categoria_id) : '', // Convertir a string para el select
                 horarios: editingCourse.horarios && editingCourse.horarios.length > 0
                     ? editingCourse.horarios.map(h => ({
-                        dia: h.dia || '',
-                        hora_inicio: h.hora_inicio ? h.hora_inicio.substring(0, 5) : '', 
-                        hora_fin: h.hora_fin ? h.hora_fin.substring(0, 5) : ''
+                        dia: h.dia,
+                        hora_inicio: formatTimeToSeconds(h.hora_inicio),
+                        hora_fin: formatTimeToSeconds(h.hora_fin)
                     }))
                     : [{ dia: '', hora_inicio: '', hora_fin: '' }],
             });
         } else {
-            setFormData({
+            setCourseData({
                 nombre: '',
                 descripcion: '',
-                cupos: 0,
+                cupos: '',
                 profesor_id: '',
+                categoria_id: '',
                 horarios: [{ dia: '', hora_inicio: '', hora_fin: '' }],
             });
         }
-        setFormErrors({});
-        setLocalModalMessage('');
-        setShowLocalModal(false);
     }, [editingCourse]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-        setFormErrors(prev => ({ ...prev, [name]: undefined }));
+        setCourseData(prevData => ({ ...prevData, [name]: value }));
     };
 
     const handleHorarioChange = (index, e) => {
         const { name, value } = e.target;
-        const newHorarios = [...formData.horarios];
-        newHorarios[index] = {
-            ...newHorarios[index],
-            [name]: value
-        };
-        setFormData(prev => ({
-            ...prev,
-            horarios: newHorarios
-        }));
-        setFormErrors(prev => ({ ...prev, horarios: undefined }));
+        const newHorarios = [...courseData.horarios];
+        newHorarios[index] = { ...newHorarios[index], [name]: formatTimeToSeconds(value) };
+        setCourseData(prevData => ({ ...prevData, horarios: newHorarios }));
     };
 
-    const addHorarioField = () => {
-        setFormData(prev => ({
-            ...prev,
-            horarios: [...prev.horarios, { dia: '', hora_inicio: '', hora_fin: '' }]
+    const addHorario = () => {
+        setCourseData(prevData => ({
+            ...prevData,
+            horarios: [...prevData.horarios, { dia: '', hora_inicio: '', hora_fin: '' }],
         }));
     };
 
-    const removeHorarioField = (index) => {
-        const newHorarios = formData.horarios.filter((_, i) => i !== index);
-        setFormData(prev => ({
-            ...prev,
-            horarios: newHorarios.length > 0 ? newHorarios : [{ dia: '', hora_inicio: '', hora_fin: '' }]
+    const removeHorario = (index) => {
+        setCourseData(prevData => ({
+            ...prevData,
+            horarios: prevData.horarios.filter((_, i) => i !== index),
         }));
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-
-        let currentErrors = {};
-
-        if (!formData.nombre.trim()) {
-            currentErrors.nombre = 'El nombre es obligatorio.';
-        }
-        const parsedCupos = parseInt(formData.cupos);
-        if (isNaN(parsedCupos) || parsedCupos <= 0) {
-            currentErrors.cupos = 'Los cupos deben ser un número positivo.';
-        }
-        if (!formData.profesor_id) {
-            currentErrors.profesor_id = 'Debe seleccionar un profesor.';
-        }
-
-        const validHorarios = formData.horarios.filter(h =>
-            h.dia && h.hora_inicio && h.hora_fin
-        );
-
-        if (!editingCourse && validHorarios.length === 0) {
-            currentErrors.horarios = 'Para crear un curso, debe ingresar al menos un horario completo.';
-        }
-        
-        if (Object.keys(currentErrors).length > 0) {
-            setFormErrors(currentErrors);
-            const errorMessage = Object.values(currentErrors).join('\n');
-            setLocalModalMessage(`Por favor, corrija los siguientes errores:\n${errorMessage}`);
-            setShowLocalModal(true);
-            return;
-        }
-
-        const courseData = {
-            nombre: formData.nombre,
-            descripcion: formData.descripcion,
-            cupos: parsedCupos,
-            profesor_id: parseInt(formData.profesor_id),
-            horarios: validHorarios.length > 0 ? validHorarios : [],
+        // Convertir profesor_id y categoria_id a enteros antes de enviar
+        const dataToSave = {
+            ...courseData,
+            cupos: parseInt(courseData.cupos, 10),
+            profesor_id: parseInt(courseData.profesor_id, 10), // ¡NUEVA CONVERSIÓN!
+            categoria_id: courseData.categoria_id ? parseInt(courseData.categoria_id, 10) : null, // ¡NUEVA CONVERSIÓN! Manejar null para no requerido
         };
-        
-        onSave(courseData);
+        onSave(dataToSave);
     };
 
     return (
         <div className={styles.modalOverlay}>
             <div className={styles.modal}>
+                <button className={styles.closeModalButton} onClick={onClose}>
+                    <FaTimes />
+                </button>
                 <h3>{editingCourse ? 'Editar Curso' : 'Crear Nuevo Curso'}</h3>
                 <form onSubmit={handleSubmit}>
                     <div className={styles.formGroup}>
-                        <label htmlFor="nombre">Nombre del curso:</label>
+                        <label htmlFor="nombre">Nombre:</label>
                         <input
                             type="text"
                             id="nombre"
                             name="nombre"
-                            value={formData.nombre}
+                            value={courseData.nombre}
                             onChange={handleChange}
-                            className={formErrors.nombre ? styles.inputError : ''}
+                            required
                         />
-                        {formErrors.nombre && <span className={styles.errorMessage}>{formErrors.nombre}</span>}
                     </div>
                     <div className={styles.formGroup}>
                         <label htmlFor="descripcion">Descripción:</label>
                         <textarea
                             id="descripcion"
                             name="descripcion"
-                            value={formData.descripcion}
+                            value={courseData.descripcion}
                             onChange={handleChange}
+                            required
                         ></textarea>
                     </div>
                     <div className={styles.formGroup}>
-                        <label htmlFor="cupos">Cupos disponibles:</label>
+                        <label htmlFor="cupos">Cupos:</label>
                         <input
                             type="number"
                             id="cupos"
                             name="cupos"
-                            value={formData.cupos}
+                            value={courseData.cupos}
                             onChange={handleChange}
+                            required
                             min="1"
-                            className={formErrors.cupos ? styles.inputError : ''}
                         />
-                        {formErrors.cupos && <span className={styles.errorMessage}>{formErrors.cupos}</span>}
                     </div>
                     <div className={styles.formGroup}>
-                        <label htmlFor="profesor_id">Profesor asignado:</label>
+                        <label htmlFor="profesor_id">Profesor:</label>
                         <select
                             id="profesor_id"
                             name="profesor_id"
-                            value={formData.profesor_id}
+                            value={courseData.profesor_id}
                             onChange={handleChange}
-                            className={formErrors.profesor_id ? styles.inputError : ''}
+                            required
                         >
                             <option value="">Seleccione un profesor</option>
-                            {Array.isArray(professors) && professors.map(p => (
-                                <option key={p.id} value={p.id}>
-                                    {p.name} {p.lastname}
+                            {professors.map(prof => (
+                                <option key={prof.id} value={prof.id}>
+                                    {prof.name} {prof.lastname}
                                 </option>
                             ))}
                         </select>
-                        {formErrors.profesor_id && <span className={styles.errorMessage}>{formErrors.profesor_id}</span>}
+                    </div>
+                    <div className={styles.formGroup}>
+                        <label htmlFor="categoria_id">Categoría:</label>
+                        <select
+                            id="categoria_id"
+                            name="categoria_id"
+                            value={courseData.categoria_id}
+                            onChange={handleChange}
+                            // No es requerido aquí, ya que el esquema backend lo permite nulo
+                        >
+                            <option value="">Seleccione una categoría (opcional)</option>
+                            {categories.map(cat => (
+                                <option key={cat.id} value={cat.id}>
+                                    {cat.nombre}
+                                </option>
+                            ))}
+                        </select>
                     </div>
 
-                    <div className={styles.formGroup}>
-                        <label>Horarios:</label>
-                        {formData.horarios.map((horario, index) => (
-                            <div key={index} className={styles.horarioInputGroup}>
+                    <h4 className={styles.horariosTitle}>Horarios:</h4>
+                    {courseData.horarios.map((horario, index) => (
+                        <div key={index} className={styles.horarioItem}>
+                            <div className={styles.formGroup}>
+                                <label htmlFor={`dia-${index}`}>Día:</label>
                                 <select
+                                    id={`dia-${index}`}
                                     name="dia"
                                     value={horario.dia}
                                     onChange={(e) => handleHorarioChange(index, e)}
-                                    className={formErrors.horarios && !horario.dia ? styles.inputError : ''}
+                                    required
                                 >
-                                    <option value="">Día</option>
+                                    <option value="">Seleccione un día</option>
                                     <option value="Lunes">Lunes</option>
                                     <option value="Martes">Martes</option>
                                     <option value="Miércoles">Miércoles</option>
@@ -202,61 +191,50 @@ const CourseModal = ({ editingCourse, professors, onClose, onSave }) => {
                                     <option value="Sábado">Sábado</option>
                                     <option value="Domingo">Domingo</option>
                                 </select>
-                                <input
-                                    type="time"
-                                    name="hora_inicio"
-                                    value={horario.hora_inicio}
-                                    onChange={(e) => handleHorarioChange(index, e)}
-                                    className={formErrors.horarios && !horario.hora_inicio ? styles.inputError : ''}
-                                />
-                                <span>-</span>
-                                <input
-                                    type="time"
-                                    name="hora_fin"
-                                    value={horario.hora_fin}
-                                    onChange={(e) => handleHorarioChange(index, e)}
-                                    className={formErrors.horarios && !horario.hora_fin ? styles.inputError : ''}
-                                />
-                                {formData.horarios.length > 1 && (
-                                    <button
-                                        type="button"
-                                        onClick={() => removeHorarioField(index)}
-                                        className={styles.removeHorarioBtn}
-                                        title="Eliminar horario"
-                                    >
-                                        <FaMinusCircle />
-                                    </button>
-                                )}
                             </div>
-                        ))}
-                        {formErrors.horarios && <span className={styles.errorMessage}>{formErrors.horarios}</span>}
-                        <button
-                            type="button"
-                            onClick={addHorarioField}
-                            className={styles.addHorarioBtn}
-                            title="Añadir horario"
-                        >
-                            <FaPlusCircle /> Añadir otro horario
-                        </button>
-                    </div>
+                            <div className={styles.formGroup}>
+                                <label htmlFor={`hora_inicio-${index}`}>Hora Inicio:</label>
+                                <input
+                                    type="time"
+                                    id={`hora_inicio-${index}`}
+                                    name="hora_inicio"
+                                    value={formatTimeForInput(horario.hora_inicio)}
+                                    onChange={(e) => handleHorarioChange(index, e)}
+                                    required
+                                />
+                            </div>
+                            <div className={styles.formGroup}>
+                                <label htmlFor={`hora_fin-${index}`}>Hora Fin:</label>
+                                <input
+                                    type="time"
+                                    id={`hora_fin-${index}`}
+                                    name="hora_fin"
+                                    value={formatTimeForInput(horario.hora_fin)}
+                                    onChange={(e) => handleHorarioChange(index, e)}
+                                    required
+                                />
+                            </div>
+                            {courseData.horarios.length > 1 && (
+                                <button type="button" onClick={() => removeHorario(index)} className={styles.removeHorarioBtn}>
+                                    <FaTrash />
+                                </button>
+                            )}
+                        </div>
+                    ))}
+                    <button type="button" onClick={addHorario} className={styles.addHorarioBtn}>
+                        <FaPlus /> Añadir Horario
+                    </button>
 
-                    <div className={styles.formActions}>
+                    <div className={styles.modalActions}>
                         <button type="submit" className={styles.saveButton}>
-                            {editingCourse ? 'Guardar Cambios' : 'Crear Curso'}
+                            <FaSave /> Guardar
                         </button>
-                        <button type="button" className={styles.cancelButton} onClick={onClose}>
-                            Cancelar
+                        <button type="button" onClick={onClose} className={styles.cancelButton}>
+                            <FaTimes /> Cancelar
                         </button>
                     </div>
                 </form>
             </div>
-            {showLocalModal && (
-                <MessageModal
-                    message={localModalMessage}
-                    type="error"
-                    onClose={() => setShowLocalModal(false)}
-                />
-            )}
         </div>
     );
 };

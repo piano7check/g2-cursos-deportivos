@@ -1,14 +1,14 @@
-// frontend/src/components/admin/cursos/CursosTable.jsx
+// frontend/src/components/admin/users/UsersTable.jsx
 import React from 'react';
 import { FaEdit, FaTrash } from 'react-icons/fa';
 import styles from '../../../routes/admin/AdminDashboard.module.css'; // Asegúrate de que la ruta sea correcta
 
-const CursosTable = ({ courses, loading, error, onEdit, onDelete }) => {
+const UsersTable = ({ users, loading, error, onEdit, onDelete }) => {
     if (loading) {
         return (
             <div className={styles.loadingContainer}>
                 <div className={styles.spinner}></div>
-                <p>Cargando cursos...</p>
+                <p>Cargando usuarios...</p>
             </div>
         );
     }
@@ -16,15 +16,15 @@ const CursosTable = ({ courses, loading, error, onEdit, onDelete }) => {
     if (error) {
         return (
             <div className={styles.errorMessage}>
-                <p>Error al cargar los cursos: {error}</p>
+                <p>Error al cargar los usuarios: {error}</p>
             </div>
         );
     }
 
-    if (!courses || courses.length === 0) {
+    if (!users || users.length === 0) {
         return (
             <div className={styles.infoMessage}>
-                <p>No hay cursos registrados.</p>
+                <p>No hay usuarios registrados.</p>
             </div>
         );
     }
@@ -36,34 +36,36 @@ const CursosTable = ({ courses, loading, error, onEdit, onDelete }) => {
                     <tr>
                         <th>ID</th>
                         <th>Nombre</th>
-                        <th>Descripción</th>
-                        <th>Cupos</th>
-                        <th>Profesor</th>
-                        <th>Categoría</th>
+                        <th>Apellido</th>
+                        <th>Email</th>
+                        <th>Rol</th>
+                        <th>Teléfono</th>
+                        <th>Dirección</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {courses.map(course => (
-                        <tr key={course.id}>
-                            <td>{course.id}</td>
-                            <td>{course.name}</td>
-                            <td>{course.description}</td>
-                            <td>{course.capacity}</td>
-                            <td>{course.professor_name}</td>
-                            <td>{course.categoria_nombre}</td>
+                    {users.map(user => (
+                        <tr key={user.id}>
+                            <td>{user.id}</td>
+                            <td>{user.name}</td>
+                            <td>{user.lastname}</td>
+                            <td>{user.email}</td>
+                            <td>{user.rol}</td>
+                            <td>{user.phone_number}</td>
+                            <td>{user.address}</td>
                             <td className={styles.actionsCell}>
                                 <button
                                     className={`${styles.actionBtnIcon} ${styles.editActionBtn}`}
-                                    onClick={() => onEdit(course)}
-                                    title="Editar Curso"
+                                    onClick={() => onEdit(user)}
+                                    title="Editar Usuario"
                                 >
                                     <FaEdit />
                                 </button>
                                 <button
                                     className={`${styles.actionBtnIcon} ${styles.deleteActionBtn}`}
-                                    onClick={() => onDelete(course.id)} // Llama a onDelete con el ID del curso
-                                    title="Eliminar Curso"
+                                    onClick={() => onDelete(user.id)}
+                                    title="Eliminar Usuario"
                                 >
                                     <FaTrash />
                                 </button>
@@ -76,4 +78,4 @@ const CursosTable = ({ courses, loading, error, onEdit, onDelete }) => {
     );
 };
 
-export default CursosTable;
+export default UsersTable;

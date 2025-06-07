@@ -1,58 +1,78 @@
-const API_BASE_URL = '/api/user'; 
+const API_BASE_URL = 'http://localhost:5000/api';
 
 const handleResponse = async (response) => {
     if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Error desconocido', error: 'No se pudo parsear la respuesta de error.' }));
-        const error = new Error(errorData.message || 'Something went wrong');
+        const errorData = await response.json();
+        const error = new Error(errorData.error || 'Error desconocido');
         error.status = response.status;
-        error.data = errorData; 
+        error.data = errorData;
         throw error;
     }
-    if (response.status === 204 || response.headers.get('content-length') === '0') {
-        return {}; 
+    if (response.status === 204 || response.headers.get('Content-Length') === '0') {
+        return {};
     }
     return response.json();
 };
 
-export const getCurrentUser = async () => {
-    const response = await fetch(`${API_BASE_URL}/me`, {
-        method: 'GET',
+export const registerUser = async (userData) => {
+    const response = await fetch(`${API_BASE_URL}/auth/register`, {
+        method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        credentials: 'include',
-    });
-    const userData = await handleResponse(response);
-    return userData;
-};
-
-export const updateCurrentUser = async (userId, data) => {
-    const response = await fetch(`${API_BASE_URL}/usuarios/${userId}`, {
-        method: 'PATCH',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
+        body: JSON.stringify(userData),
         credentials: 'include',
     });
     return handleResponse(response);
 };
 
-export const deleteCurrentUser = async (userId) => {
-    const response = await fetch(`${API_BASE_URL}/usuarios/${userId}`, {
-        method: 'DELETE',
+export const loginUser = async (credentials) => {
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
+        body: JSON.stringify(credentials),
         credentials: 'include',
     });
     return handleResponse(response);
 };
 
 export const logoutUser = async () => {
-    const response = await fetch(`${API_BASE_URL}/logout`, {
-        method: 'POST', 
-        credentials: 'include', 
+    const response = await fetch(`${API_BASE_URL}/auth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+    });
+    localStorage.removeItem('token');
+    return handleResponse(response);
+};
+
+export const getCurrentUser = async () => {
+    const response = await fetch(`${API_BASE_URL}/user/me`, {
+        method: 'GET',
+        credentials: 'include',
+    });
+    return handleResponse(response);
+};
+
+export const updateCurrentUser = async (userData) => {
+    // La URL ya no incluye el ID, ya que el backend lo obtendrá del token en la cookie
+    const response = await fetch(`${API_BASE_URL}/user/profile`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+        credentials: 'include',
+    });
+    return handleResponse(response);
+};
+
+export const deleteCurrentUser = async () => {
+    // La URL ya no incluye el ID
+    const response = await fetch(`${API_BASE_URL}/user/profile`, {
+        method: 'DELETE',
+        credentials: 'include',
     });
     return handleResponse(response);
 };

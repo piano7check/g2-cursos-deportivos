@@ -1,76 +1,80 @@
-const API_BASE_URL = '/api/admin'; 
+const API_BASE_URL = 'http://localhost:5000/api';
+
+// No necesitamos getAuthHeader ya que el navegador enviará la cookie automáticamente
+// const getAuthHeader = () => {
+//     const token = localStorage.getItem('token');
+//     return token ? { 'Authorization': `Bearer ${token}` } : {};
+// };
 
 const handleResponse = async (response) => {
     if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Error desconocido', error: 'No se pudo parsear la respuesta de error.' }));
-        const error = new Error(errorData.message || 'Algo salió mal');
+        const errorData = await response.json();
+        const error = new Error(errorData.error || 'Algo salió mal');
         error.status = response.status;
-        error.data = errorData; 
+        error.data = errorData;
         throw error;
     }
     return response.json();
 };
 
 export const getCursos = async () => {
-    const response = await fetch(`${API_BASE_URL}/cursos`, {
+    const response = await fetch(`${API_BASE_URL}/admin/cursos`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
+            // No necesitamos Authorization header si el token va en cookie
         },
-        credentials: 'include', 
+        credentials: 'include', // Importante para enviar cookies
     });
     return handleResponse(response);
 };
 
-export const createCurso = async (courseData) => {
-    const response = await fetch(`${API_BASE_URL}/cursos`, {
+export const createCurso = async (cursoData) => {
+    const response = await fetch(`${API_BASE_URL}/admin/cursos`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            // No necesitamos Authorization header si el token va en cookie
         },
-        body: JSON.stringify(courseData),
-        credentials: 'include', 
+        body: JSON.stringify(cursoData),
+        credentials: 'include', // Importante para enviar cookies
     });
     return handleResponse(response);
 };
 
-export const updateCurso = async (cursoId, courseData) => {
-    const response = await fetch(`${API_BASE_URL}/cursos/${cursoId}`, {
-        method: 'PATCH', 
+export const updateCurso = async (id, cursoData) => {
+    const response = await fetch(`${API_BASE_URL}/admin/cursos/${id}`, {
+        method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
+            // No necesitamos Authorization header si el token va en cookie
         },
-        body: JSON.stringify(courseData),
-        credentials: 'include',
+        body: JSON.stringify(cursoData),
+        credentials: 'include', // Importante para enviar cookies
     });
     return handleResponse(response);
 };
 
-export const deleteCurso = async (cursoId) => {
-    const response = await fetch(`${API_BASE_URL}/cursos/${cursoId}`, {
+export const deleteCurso = async (id) => {
+    const response = await fetch(`${API_BASE_URL}/admin/cursos/${id}`, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',
+            // No necesitamos Authorization header si el token va en cookie
         },
-        credentials: 'include', 
+        credentials: 'include', // Importante para enviar cookies
     });
     return handleResponse(response);
 };
 
 export const getProfesores = async () => {
-    const response = await fetch(`${API_BASE_URL}/profesores`, {
+    const response = await fetch(`${API_BASE_URL}/admin/profesores`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
+            // No necesitamos Authorization header si el token va en cookie
         },
-        credentials: 'include', 
+        credentials: 'include', // Importante para enviar cookies
     });
-    const data = await handleResponse(response);
-
-    if (data && Array.isArray(data.profesores)) {
-        return data.profesores;
-    } else {
-        console.error("Formato de respuesta inesperado para profesores:", data);
-        return []; 
-    }
+    return handleResponse(response);
 };

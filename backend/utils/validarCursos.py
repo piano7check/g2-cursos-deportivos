@@ -1,37 +1,90 @@
-from datetime import datetime
-from utils.validarProfesor import verificar_disponibilidad_profesor
+# backend/utils/validarCursos.py (Debe estar así o similar)
+from datetime import datetime, time
+from models.cursosModels import CursosModel
+from models.categoriasModels import CategoriasModel # Necesario para validar_categoria_existente
+from utils.buscarUsuario import buscarUsuarioById # Necesario para validar_profesor
 
-def validar_horarios_y_disponibilidad_curso(profesor_id, horarios_data, curso_id_a_ignorar=None):
-    if not isinstance(horarios_data, list):
-        return False, "Los horarios deben ser una lista de objetos."
-
-    if not horarios_data:
-        return True, None
-
-    for horario in horarios_data:
-        if not all(k in horario for k in ['dia', 'hora_inicio', 'hora_fin']):
-            return False, "Cada horario debe tener 'dia', 'hora_inicio' y 'hora_fin'."
-
-        dia_str = horario['dia']
-        inicio_str = horario['hora_inicio']
-        fin_str = horario['hora_fin']
-
+def parse_time_strings_to_datetime_time(horarios_list):
+    """
+    Convierte las cadenas de 'hora_inicio' y 'hora_fin' a objetos datetime.time.
+    Si hay un error de formato, devuelve un diccionario con un error.
+    """
+    parsed_horarios = []
+    for horario in horarios_list:
         try:
-            hora_inicio_obj = datetime.strptime(inicio_str, '%H:%M').time()
-            hora_fin_obj = datetime.strptime(fin_str, '%H:%M').time()
+            # Intentar parsear las horas, esperando HH:MM:SS del frontend
+            hora_inicio_obj = datetime.strptime(horario['hora_inicio'], "%H:%M:%S").time()
+            hora_fin_obj = datetime.strptime(horario['hora_fin'], "%H:%M:%S").time()
 
-            if hora_inicio_obj >= hora_fin_obj:
-                return False, f"Horario inválido: La hora de inicio ({inicio_str}) debe ser anterior a la hora de fin ({fin_str}) para el {dia_str}."
-        except ValueError:
-            return False, f"Formato de hora inválido para el {dia_str}. Use HH:MM."
+            parsed_horarios.append({
+                'dia': horario['dia'],
+                'hora_inicio': hora_inicio_obj,
+                'hora_fin': hora_fin_obj
+            })
+        except ValueError as e:
+            return {"error": f"Error de formato de hora en el horario: {horario}. Detalle: {str(e)}"}
+        except KeyError as e:
+            return {"error": f"Falta clave en el objeto horario: {str(e)} para {horario}"}
+    return parsed_horarios
 
-    disponible, mensaje_conflicto = verificar_disponibilidad_profesor(
-        profesor_id,
-        horarios_data,
-        curso_id_a_ignorar=curso_id_a_ignorar
-    )
+def validar_horarios_y_disponibilidad_curso(profesor_id, horarios_a_validar, curso_id_a_ignorar=None):
+    """
+    Valida que los horarios proporcionados sean correctos y que el profesor esté disponible.
+    horarios_a_validar ya DEBE contener objetos datetime.time, no strings.
+    """
+    
+    # NO es necesario llamar a parse_time_strings_to_datetime_time aquí de nuevo
+    # porque ya se hace en controllerCursos.py antes de llamar a esta función.
+    horarios_parseados = horarios_a_validar # Asumimos que ya están parseados
 
-    if not disponible:
-        return False, mensaje_conflicto
+    # 1. Validar rangos de tiempo
+    for horario in horarios_parseados:
+        if not (time(8, 0, 0) <= horario['hora_inicio'] <= time(20, 0, 0) and
+                time(8, 0, 0) <= horario['hora_fin'] <= time(20, 0, 0)):
+            return False, f"Horarios fuera del rango permitido (8:00 - 20:00) para el día {horario['dia']}."
+        if horario['hora_inicio'] >= horario['hora_fin']:
+            return False, f"La hora de inicio debe ser anterior a la hora de fin para el día {horario['dia']}."
 
-    return True, None
+    # 2. Verificar disponibilidad del profesor
+    cursos_del_profesor = CursosModel.obtener_cursos_por_profesor(profesor_id)
+
+    if isinstance(cursos_del_profesor, dict) and "error" in cursos_del_profesor:
+        return False, f"Error al verificar disponibilidad del profesor: {cursos_del_profesor['error']}"
+
+    for curso_existente in cursos_del_profesor:
+        # Si estamos editando un curso, ignoramos los horarios de este mismo curso
+        if curso_id_a_ignorar and curso_existente['id'] == curso_id_a_ignorar:
+            continue
+
+        for horario_existente in curso_existente['horarios']:
+            # Aquí, hora_inicio y hora_fin YA VIENEN como strings "HH:MM:SS" de la DB
+            # Necesitamos convertirlos a objetos time para la comparación
+            try:
+                exist_start = datetime.strptime(horario_existente['hora_inicio'], "%H:%M:%S").time()
+                exist_end = datetime.strptime(horario_existente['hora_fin'], "%H:%M:%S").time()
+            except ValueError:
+                return False, f"Error interno al convertir horarios existentes de la DB a time: {horario_existente}"
+
+            for nuevo_horario in horarios_parseados: # nuevo_horario.hora_inicio ya es objeto time
+                if nuevo_horario['dia'] == horario_existente['dia']:
+                    # Comprobar solapamiento de horarios
+                    if not (nuevo_horario['hora_fin'] <= exist_start or nuevo_horario['hora_inicio'] >= exist_end):
+                        return False, f"El profesor no está disponible el {nuevo_horario['dia']} de {nuevo_horario['hora_inicio'].strftime('%H:%M')} a {nuevo_horario['hora_fin'].strftime('%H:%M')} debido a un conflicto con otro curso."
+    
+    return True, "Horarios válidos y profesor disponible."
+
+def validar_profesor(profesor_id):
+    """Verifica si un usuario con el ID dado existe y tiene el rol de 'profesor'."""
+    profesor = buscarUsuarioById(profesor_id)
+    if not profesor:
+        return False
+    if profesor.get('rol') != 'profesor':
+        return False
+    return True
+
+def validar_categoria_existente(categoria_id):
+    """Verifica si una categoría con el ID dado existe."""
+    categoria = CategoriasModel.obtener_categoria_por_id(categoria_id)
+    if not categoria:
+        return False, "La categoría especificada no existe."
+    return True, "Categoría válida."
