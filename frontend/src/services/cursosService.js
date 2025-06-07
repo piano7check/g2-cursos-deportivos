@@ -67,3 +67,28 @@ export const getProfesores = async () => {
     });
     return handleResponse(response);
 };
+
+export const buscarCursos = async (searchTermNombre, searchTermCategoria, searchTermProfesor) => {
+    const params = new URLSearchParams();
+    if (searchTermNombre) {
+        params.append('nombre', searchTermNombre);
+    }
+    if (searchTermCategoria) {
+        params.append('categoria', searchTermCategoria);
+    }
+    if (searchTermProfesor) {
+        params.append('profesor', searchTermProfesor);
+    }
+
+    const queryString = params.toString();
+    const url = `${API_BASE_URL}/admin/cursos/buscar${queryString ? `?${queryString}` : ''}`;
+
+    const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+    });
+    return handleResponse(response);
+};

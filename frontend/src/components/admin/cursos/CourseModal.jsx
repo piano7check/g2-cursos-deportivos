@@ -32,7 +32,7 @@ const CourseModal = ({ editingCourse, professors, categories, onClose, onSave })
                 categoria_id: editingCourse.categoria_id ? String(editingCourse.categoria_id) : '',
                 horarios: editingCourse.horarios && editingCourse.horarios.length > 0
                     ? editingCourse.horarios.map(h => ({
-                        dia: h.dia,
+                        dia: h.dia, 
                         hora_inicio: formatTimeToSeconds(h.hora_inicio),
                         hora_fin: formatTimeToSeconds(h.hora_fin)
                     }))
@@ -58,7 +58,11 @@ const CourseModal = ({ editingCourse, professors, categories, onClose, onSave })
     const handleHorarioChange = (index, e) => {
         const { name, value } = e.target;
         const newHorarios = [...courseData.horarios];
-        newHorarios[index] = { ...newHorarios[index], [name]: formatTimeToSeconds(value) };
+        if (name === 'dia') {
+            newHorarios[index] = { ...newHorarios[index], [name]: value };
+        } else { 
+            newHorarios[index] = { ...newHorarios[index], [name]: formatTimeToSeconds(value) };
+        }
         setCourseData(prevData => ({ ...prevData, horarios: newHorarios }));
     };
 
@@ -152,6 +156,7 @@ const CourseModal = ({ editingCourse, professors, categories, onClose, onSave })
                             name="categoria_id"
                             value={courseData.categoria_id}
                             onChange={handleChange}
+                            required
                         >
                             <option value="">Seleccione una categoría (opcional)</option>
                             {categories.map(cat => (

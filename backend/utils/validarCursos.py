@@ -28,12 +28,8 @@ def parse_time_strings_to_datetime_time(horarios_list):
 def validar_horarios_y_disponibilidad_curso(profesor_id, horarios_a_validar, curso_id_a_ignorar=None):
 
     horarios_parseados = horarios_a_validar 
-
     
     for horario in horarios_parseados:
-        if not (time(8, 0, 0) <= horario['hora_inicio'] <= time(20, 0, 0) and
-                time(8, 0, 0) <= horario['hora_fin'] <= time(20, 0, 0)):
-            return False, f"Horarios fuera del rango permitido (8:00 - 20:00) para el día {horario['dia']}."
         if horario['hora_inicio'] >= horario['hora_fin']:
             return False, f"La hora de inicio debe ser anterior a la hora de fin para el día {horario['dia']}."
 

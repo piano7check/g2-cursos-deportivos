@@ -21,13 +21,11 @@ esquemaHorarioParcial = {
 esquemaCursoParcial = {
     'nombre': {
         'type': 'string',
-        'minlength': 3,
         'maxlength': 100,
         'nullable': True
     },
     'descripcion': {
         'type': 'string',
-        'minlength': 5,
         'maxlength': 500,
         'nullable': True
     },

@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaUsers, FaChalkboardTeacher, FaBookOpen, FaPlus, FaSignOutAlt, FaHome, FaBars, FaTimes, FaTags } from 'react-icons/fa';
+import { FaUsers, FaChalkboardTeacher, FaBookOpen, FaPlus, FaSignOutAlt, FaHome, FaBars, FaTimes, FaTags, FaSearch, FaRedo } from 'react-icons/fa';
 
 import { useUsuarioContext } from '../../context/UsuarioContext';
-import { getCursos, createCurso, updateCurso, deleteCurso, getProfesores } from '../../services/cursosService';
+import { getCursos, createCurso, updateCurso, deleteCurso, getProfesores, buscarCursos } from '../../services/cursosService';
 import { getAllCategorias, createCategoria, updateCategoria, deleteCategoria } from '../../services/categoriasService';
 import { logoutUser } from '../../services/userService';
 
@@ -41,6 +41,10 @@ const AdminDashboard = () => {
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+    const [searchTermNombre, setSearchTermNombre] = useState('');
+    const [searchTermCategoria, setSearchTermCategoria] = useState('');
+    const [searchTermProfesor, setSearchTermProfesor] = useState('');
+
     const closeStatusModal = () => {
         setShowStatusModal(false);
         setStatusModalMessage('');
@@ -48,11 +52,16 @@ const AdminDashboard = () => {
         setStatusModalOnConfirm(null);
     };
 
-    const fetchCourses = useCallback(async () => {
+    const fetchCourses = useCallback(async (nombre = '', categoria = '', profesor = '') => {
         setLoadingCourses(true);
         setErrorCourses(null);
         try {
-            const response = await getCursos();
+            let response;
+            if (nombre || categoria || profesor) {
+                response = await buscarCursos(nombre, categoria, profesor);
+            } else {
+                response = await getCursos();
+            }
             const fetchedCourses = response.cursos.map(course => ({
                 id: course.id,
                 nombre: course.nombre, 
@@ -293,6 +302,28 @@ const AdminDashboard = () => {
         }
     };
 
+    const getActiveTabTitle = () => {
+        switch (activeTab) {
+            case 'overview': return 'Resumen del Panel';
+            case 'users': return 'Gestión de Usuarios';
+            case 'professors': return 'Gestión de Profesores';
+            case 'courses': return 'Gestión de Cursos';
+            case 'categories': return 'Gestión de Categorías';
+            default: return 'Panel de Administración';
+        }
+    };
+
+    const handleSearchCourses = () => {
+        fetchCourses(searchTermNombre, searchTermCategoria, searchTermProfesor);
+    };
+
+    const handleClearSearch = () => {
+        setSearchTermNombre('');
+        setSearchTermCategoria('');
+        setSearchTermProfesor('');
+        fetchCourses('', '', '');
+    };
+
     if (cargandoContext) {
         return (
             <div className={styles.loadingContainer}>
@@ -312,17 +343,6 @@ const AdminDashboard = () => {
             </div>
         );
     }
-
-    const getActiveTabTitle = () => {
-        switch (activeTab) {
-            case 'overview': return 'Resumen del Panel';
-            case 'users': return 'Gestión de Usuarios';
-            case 'professors': return 'Gestión de Profesores';
-            case 'courses': return 'Gestión de Cursos';
-            case 'categories': return 'Gestión de Categorías';
-            default: return 'Panel de Administración';
-        }
-    };
 
     return (
         <div className={styles.adminDashboard}>
@@ -377,12 +397,12 @@ const AdminDashboard = () => {
                         </div>
                     )}
                     {activeTab === 'users' && (
-                        <SectionCard title="Gestión de Usuarios">
+                        <SectionCard>
                             <p className={styles.text}>Aquí irá la tabla y gestión de usuarios.</p> 
                         </SectionCard>
                     )}
                     {activeTab === 'professors' && (
-                        <SectionCard title="Gestión de Profesores">
+                        <SectionCard>
                             <p className={styles.text}>Aquí irá la tabla y gestión de profesores.</p> 
                         </SectionCard>
                     )}
@@ -391,6 +411,32 @@ const AdminDashboard = () => {
                             <div className={styles.sectionHeader}>
                                 <button className={styles.addButton} onClick={handleNewCourseClick}>
                                     <FaPlus /> Nuevo Curso
+                                </button>
+                            </div>
+                            <div className={styles.searchBar}>
+                                <input
+                                    type="text"
+                                    placeholder="Buscar por nombre de curso"
+                                    value={searchTermNombre}
+                                    onChange={(e) => setSearchTermNombre(e.target.value)}
+                                />
+                                <input
+                                    type="text"
+                                    placeholder="Buscar por categoría"
+                                    value={searchTermCategoria}
+                                    onChange={(e) => setSearchTermCategoria(e.target.value)}
+                                />
+                                <input
+                                    type="text"
+                                    placeholder="Buscar por profesor"
+                                    value={searchTermProfesor}
+                                    onChange={(e) => setSearchTermProfesor(e.target.value)}
+                                />
+                                <button className={styles.searchButton} onClick={handleSearchCourses}>
+                                    <FaSearch /> Buscar
+                                </button>
+                                <button className={styles.clearSearchButton} onClick={handleClearSearch}>
+                                    <FaRedo /> Limpiar
                                 </button>
                             </div>
                             <CursosTable

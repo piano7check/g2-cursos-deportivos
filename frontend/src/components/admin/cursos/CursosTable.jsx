@@ -46,10 +46,10 @@ const CursosTable = ({ courses, loading, error, onEdit, onDelete }) => {
                     {courses.map(course => (
                         <tr key={course.id}>
                             <td>{course.id}</td>
-                            <td>{course.nombre}</td> {/* Usa 'nombre' */}
-                            <td>{course.descripcion}</td> {/* Usa 'descripcion' */}
-                            <td>{course.cupos}</td> {/* Usa 'cupos' */}
-                            <td>{course.profesor_nombre}</td> {/* Usa 'profesor_nombre' */}
+                            <td>{course.nombre}</td>
+                            <td>{course.descripcion}</td>
+                            <td>{course.cupos}</td>
+                            <td>{course.profesor_nombre}</td>
                             <td>{course.categoria_nombre}</td>
                             <td className={styles.actionsCell}>
                                 <button
