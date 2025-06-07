@@ -56,12 +56,12 @@ class CursosModel:
         try:
             with conexion.cursor(pymysql.cursors.DictCursor) as cursor:
                 sql = """SELECT c.*,
-                                u.name as profesor_nombre,
-                                u.lastname as profesor_apellido,
-                                cat.nombre as categoria_nombre
-                         FROM cursos c
-                         JOIN users u ON c.profesor_id = u.id
-                         LEFT JOIN categorias cat ON c.categoria_id = cat.id"""
+                                 u.name as profesor_nombre,
+                                 u.lastname as profesor_apellido,
+                                 cat.nombre as categoria_nombre
+                          FROM cursos c
+                          JOIN users u ON c.profesor_id = u.id
+                          LEFT JOIN categorias cat ON c.categoria_id = cat.id"""
                 cursor.execute(sql)
                 cursos = cursor.fetchall()
 
@@ -129,6 +129,71 @@ class CursosModel:
             conexion.close()
 
     @staticmethod
+    def buscar_cursos(nombre_curso=None, nombre_categoria=None, nombre_profesor=None):
+        conexion = obtenerConexion()
+        if conexion is None:
+            return {"error": "Error de conexión a BD"}
+
+        try:
+            with conexion.cursor(pymysql.cursors.DictCursor) as cursor:
+                base_sql = """
+                    SELECT c.*,
+                           u.name AS profesor_nombre,
+                           u.lastname AS profesor_apellido,
+                           cat.nombre AS categoria_nombre
+                    FROM cursos c
+                    JOIN users u ON c.profesor_id = u.id
+                    LEFT JOIN categorias cat ON c.categoria_id = cat.id
+                """
+                conditions = []
+                values = []
+
+                if nombre_curso:
+                    conditions.append("c.nombre LIKE %s")
+                    values.append(f"%{nombre_curso}%")
+                
+                if nombre_categoria:
+                    conditions.append("cat.nombre LIKE %s")
+                    values.append(f"%{nombre_categoria}%")
+
+                if nombre_profesor:
+                    conditions.append("(u.name LIKE %s OR u.lastname LIKE %s)")
+                    values.append(f"%{nombre_profesor}%")
+                    values.append(f"%{nombre_profesor}%") 
+
+                if conditions:
+                    sql_query = f"{base_sql} WHERE {' AND '.join(conditions)}"
+                else:
+                    sql_query = base_sql 
+
+                cursor.execute(sql_query, tuple(values))
+                cursos = cursor.fetchall()
+
+                for curso in cursos:
+                    cursor.execute(
+                        "SELECT dia, hora_inicio, hora_fin FROM horarios WHERE curso_id = %s",
+                        (curso['id'],)
+                    )
+                    horarios = cursor.fetchall()
+                    horarios_serializables = []
+                    for horario in horarios:
+                        horarios_serializables.append({
+                            'dia': horario['dia'],
+                            'hora_inicio': str(horario['hora_inicio']),
+                            'hora_fin': str(horario['hora_fin'])
+                        })
+                    curso['horarios'] = horarios_serializables
+                
+                return cursos
+
+        except pymysql.Error as e:
+            return {"error": "Error en base de datos", "codigo": e.args[0], "mensaje": e.args[1]}
+        except Exception as e:
+            return {"error": str(e)}
+        finally:
+            conexion.close()
+
+    @staticmethod
     def actualizar_curso(curso_id, data):
         conexion = obtenerConexion()
         if conexion is None:
@@ -151,7 +216,7 @@ class CursosModel:
                 if 'profesor_id' in data:
                     updates.append("profesor_id = %s")
                     values.append(data['profesor_id'])
-                if 'categoria_id' in data: 
+                if 'categoria_id' in data:
                     updates.append("categoria_id = %s")
                     values.append(data['categoria_id'])
 

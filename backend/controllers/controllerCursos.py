@@ -120,3 +120,20 @@ class ControllerCursos():
             return jsonify(resultado), resultado.get("codigo", 500)
 
         return jsonify(resultado), 200
+
+    @staticmethod
+    def buscarCursos():
+        nombre_curso = request.args.get('nombre', None)
+        nombre_categoria = request.args.get('categoria', None)
+        nombre_profesor = request.args.get('profesor', None)
+        
+        resultado = CursosModel.buscar_cursos(
+            nombre_curso=nombre_curso,
+            nombre_categoria=nombre_categoria,
+            nombre_profesor=nombre_profesor
+        )
+
+        if isinstance(resultado, dict) and 'error' in resultado:
+            return jsonify(resultado), resultado.get("codigo", 500)
+        
+        return jsonify({"cursos": resultado}), 200

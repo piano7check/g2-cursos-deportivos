@@ -28,6 +28,10 @@ def eliminar_curso(id):
 def editar_curso(id):
     return ControllerCursos.editarCurso(id)
 
+@routes_admin.route('/cursos/buscar', methods=['GET'])
+def buscar_cursos_admin():
+    return ControllerCursos.buscarCursos()
+
 @routes_admin.route('/usuarios', methods=['GET'])
 def mostrar_usuarios_admin(): 
     return adminUserController.mostrarUsuarios()
