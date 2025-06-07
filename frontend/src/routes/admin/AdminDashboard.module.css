@@ -18,6 +18,10 @@
     --edit-btn-hover: #e0a800;
     --delete-btn-table-color: #dc3545;
     --delete-btn-table-hover: #c82333;
+    --color-accent-light: rgba(56, 178, 172, 0.2);
+    --color-danger-light: rgba(229, 62, 62, 0.2);
+    --color-border-light: #e2e8f0;
+    --color-text-secondary: #718096;
 }
 
 .adminDashboard {
@@ -333,6 +337,10 @@
     border-bottom: 2px solid var(--border-color);
 }
 
+.dataTable th:last-child {
+    text-align: center;
+}
+
 .dataTable tbody tr {
     transition: background-color 0.2s ease-in-out;
 }
@@ -363,41 +371,53 @@
     justify-content: center;
     align-items: center;
     white-space: nowrap;
+    padding: 5px;
+    box-sizing: border-box;
+    min-width: 90px;
 }
 
 .actionBtnIcon {
-    background: none;
-    border: none;
+    background-color: transparent;
+    border: 1px solid var(--color-border-light);
+    padding: 8px;
+    border-radius: 4px;
     cursor: pointer;
-    color: var(--primary-color);
-    font-size: 1.1rem;
-    margin: 0 0.25rem;
-    padding: 0.3rem;
-    border-radius: 0.25rem;
-    transition: color 0.2s ease, background-color 0.2s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.2s ease-in-out;
+    font-size: 1rem;
+    color: var(--color-text-secondary);
 }
 
 .actionBtnIcon:hover {
-    color: var(--primary-dark);
-    background-color: rgba(66, 153, 225, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .editActionBtn {
-    color: var(--edit-btn-color);
+    color: var(--accent-color);
+    border-color: var(--color-accent-light);
 }
 
 .editActionBtn:hover {
-    background-color: rgba(255, 193, 7, 0.1);
-    color: var(--edit-btn-hover);
+    background-color: var(--accent-color);
+    color: var(--white);
 }
 
 .deleteActionBtn {
-    color: var(--delete-btn-table-color);
+    color: var(--danger-color);
+    border-color: var(--color-danger-light);
 }
 
 .deleteActionBtn:hover {
-    background-color: rgba(220, 53, 69, 0.1);
-    color: var(--delete-btn-table-hover);
+    background-color: var(--danger-color);
+    color: var(--white);
+}
+
+.dataTable td {
+    padding: 10px 15px;
+    vertical-align: middle;
 }
 
 .acceptBtn {
@@ -457,7 +477,7 @@
     text-align: center;
     padding: 20px;
     border-radius: 12px;
-    background-color: var(--card-bg-color);
+    background-color: var(--white);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -680,7 +700,7 @@
 @media (max-width: 768px) {
     .adminDashboard {
         flex-direction: column;
-        position: relative; /* Necesario para el backdrop */
+        position: relative;
     }
 
     .sidebar {
@@ -689,7 +709,7 @@
         left: 0;
         height: 100%;
         width: 250px;
-        transform: translateX(-100%); /* Oculta la sidebar */
+        transform: translateX(-100%);
         box-shadow: 4px 0 15px rgba(0, 0, 0, 0.2);
         padding: 1.5rem 1rem;
         z-index: 1000;
@@ -697,7 +717,7 @@
     }
 
     .sidebarOpen .sidebar {
-        transform: translateX(0); /* Muestra la sidebar */
+        transform: translateX(0);
     }
 
     .sidebarHeader {
@@ -824,8 +844,11 @@
         font-weight: bold;
         color: var(--primary-color);
     }
+
     .actionsCell {
-        justify-content: flex-end;
+        display: flex;
+        justify-content: center;
+        align-items: center;
         padding-top: 10px;
         border-top: 1px solid var(--border-color);
         margin-top: 10px;
