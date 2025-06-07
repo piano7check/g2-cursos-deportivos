@@ -1,7 +1,5 @@
-# backend/schemas/userSchema.py
 from cerberus import Validator
 
-# Esquema para la creación completa de un usuario
 esquema_usuario_completo = {
     'name': {'type': 'string', 'required': True, 'minlength': 2, 'maxlength': 50},
     'lastname': {'type': 'string', 'required': True, 'minlength': 2, 'maxlength': 50},
@@ -12,7 +10,6 @@ esquema_usuario_completo = {
     'address': {'type': 'string', 'required': False, 'nullable': True, 'maxlength': 100},
 }
 
-# Esquema para la actualización parcial de un usuario (PATCH)
 esquema_usuario_parcial = {
     'name': {'type': 'string', 'minlength': 2, 'maxlength': 50, 'nullable': True},
     'lastname': {'type': 'string', 'minlength': 2, 'maxlength': 50, 'nullable': True},

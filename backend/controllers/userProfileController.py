@@ -21,11 +21,11 @@ class userProfileController:
         return jsonify(usuario), 200
 
     @staticmethod
-    def editarPerfil(): # Remove 'id' argument, get from g.usuario
+    def editarPerfil(): 
         if 'usuario' not in g:
             return jsonify({"error": "Usuario no autenticado"}), 401
             
-        target_user_id = g.usuario['id'] # Get ID from the token
+        target_user_id = g.usuario['id'] 
         data = request.get_json()
 
         esValido, errores, data_limpia = validarUsuarioParcial(data)
@@ -63,7 +63,7 @@ class userProfileController:
             "access_token",
             new_token,
             httponly=True,
-            secure=False, # Set to True in production for HTTPS
+            secure=False, 
             samesite="Lax",
             max_age=3600 * 24,
             path="/"
@@ -71,11 +71,11 @@ class userProfileController:
         return response
 
     @staticmethod
-    def eliminarCuenta(): # Remove 'id' argument, get from g.usuario
+    def eliminarCuenta(): 
         if 'usuario' not in g:
             return jsonify({"error": "Usuario no autenticado"}), 401
             
-        target_user_id = g.usuario['id'] # Get ID from the token
+        target_user_id = g.usuario['id'] 
         resultado = userModel.eliminarUsuario(target_user_id)
             
         if "error" in resultado:

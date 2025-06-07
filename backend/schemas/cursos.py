@@ -1,4 +1,3 @@
-# backend/schemas/cursos.py
 from cerberus import Validator
 
 esquema_curso_completo = {
@@ -51,13 +50,11 @@ esquema_curso_completo = {
                 'hora_inicio': {
                     'type': 'string',
                     'required': True,
-                    # Regex para HH:MM:SS
                     'regex': r'^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$'
                 },
                 'hora_fin': {
                     'type': 'string',
                     'required': True,
-                    # Regex para HH:MM:SS
                     'regex': r'^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$'
                 }
             }

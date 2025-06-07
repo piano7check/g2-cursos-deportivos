@@ -9,14 +9,12 @@ esquemaHorarioParcial = {
     'hora_inicio': {
         'type': 'string',
         'required': True,
-        # CAMBIO AQUÍ: Permitir HH:MM:SS
-        'regex': r'^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9])?$' # Agregado ([0-5][0-9])? para que los segundos sean opcionales
+        'regex': r'^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9])?$'
     },
     'hora_fin': {
         'type': 'string',
         'required': True,
-        # CAMBIO AQUÍ: Permitir HH:MM:SS
-        'regex': r'^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9])?$' # Agregado ([0-5][0-9])? para que los segundos sean opcionales
+        'regex': r'^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9])?$' 
     }
 }
 
@@ -46,13 +44,13 @@ esquemaCursoParcial = {
     'categoria_id': {
         'type': 'integer',
         'min': 1,
-        'nullable': True # Lo mantuve nullable=True según tu esquema. Si debe ser requerido, cámbialo a required=True
+        'nullable': True 
     },
     'horarios': {
         'type': 'list',
         'schema': {'type': 'dict', 'schema': esquemaHorarioParcial},
-        'empty': True, # Permitir lista vacía de horarios si no se envían
-        'nullable': True # Permitir que el campo 'horarios' sea nulo/no enviado en un PATCH
+        'empty': True, 
+        'nullable': True 
     }
 }
 

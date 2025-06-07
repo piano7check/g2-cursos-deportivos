@@ -56,14 +56,13 @@ class controllerAuth:
         }
 
         response = make_response(jsonify(response_data), 200)
-        # Asegúrate de que secure=False para HTTP en desarrollo
         response.set_cookie(
             "access_token",
             token,
             httponly=True,
-            secure=False, # Esto es crucial para localhost con HTTP
-            samesite="Lax", # "Lax" es generalmente suficiente para localhost
-            max_age=3600 * 24, # 24 horas
+            secure=False, 
+            samesite="Lax", 
+            max_age=3600 * 24, 
             path="/"
         )
         return response
@@ -74,8 +73,8 @@ class controllerAuth:
         response.set_cookie(
             "access_token", "",
             httponly=True,
-            secure=False, # Mismo valor que en login
-            samesite="Lax", # Mismo valor que en login
+            secure=False,  
+            samesite="Lax", 
             expires=0,
             path="/"
         )
