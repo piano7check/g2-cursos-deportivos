@@ -38,7 +38,7 @@ const CursosTable = ({ courses, loading, error, onEdit, onDelete }) => {
                         <th>Nombre</th>
                         <th>Descripción</th>
                         <th>Cupos</th>
-                        <th>Profesor</th>
+                        <th>Profesor</th> 
                         <th>Categoría</th>
                         <th>Acciones</th>
                     </tr>
@@ -47,10 +47,10 @@ const CursosTable = ({ courses, loading, error, onEdit, onDelete }) => {
                     {courses.map(course => (
                         <tr key={course.id}>
                             <td>{course.id}</td>
-                            <td>{course.name}</td>
-                            <td>{course.description}</td>
-                            <td>{course.capacity}</td>
-                            <td>{course.professor_name}</td>
+                            <td>{course.nombre}</td> {/* Usa 'nombre' */}
+                            <td>{course.descripcion}</td> {/* Usa 'descripcion' */}
+                            <td>{course.cupos}</td> {/* Usa 'cupos' */}
+                            <td>{course.profesor_nombre}</td> {/* Usa 'profesor_nombre' */}
                             <td>{course.categoria_nombre}</td>
                             <td className={styles.actionsCell}>
                                 <button
@@ -62,7 +62,7 @@ const CursosTable = ({ courses, loading, error, onEdit, onDelete }) => {
                                 </button>
                                 <button
                                     className={`${styles.actionBtnIcon} ${styles.deleteActionBtn}`}
-                                    onClick={() => onDelete(course.id)} // Llama a onDelete con el ID del curso
+                                    onClick={() => onDelete(course.id)} 
                                     title="Eliminar Curso"
                                 >
                                     <FaTrash />

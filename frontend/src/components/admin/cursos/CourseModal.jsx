@@ -13,17 +13,13 @@ const CourseModal = ({ editingCourse, professors, categories, onClose, onSave })
         horarios: [{ dia: '', hora_inicio: '', hora_fin: '' }],
     });
 
-    // Función auxiliar para formatear HH:MM a HH:MM:SS
     const formatTimeToSeconds = (timeString) => {
         if (!timeString) return '';
-        // Si ya tiene segundos, lo devuelve tal cual. Si no, añade ":00"
         return timeString.length === 5 ? `${timeString}:00` : timeString;
     };
 
-    // Función auxiliar para formatear HH:MM:SS a HH:MM para el input type="time"
     const formatTimeForInput = (timeString) => {
         if (!timeString) return '';
-        // Corta los segundos si existen, para que el input type="time" lo maneje correctamente
         return timeString.length === 8 ? timeString.substring(0, 5) : timeString;
     };
 
@@ -33,9 +29,8 @@ const CourseModal = ({ editingCourse, professors, categories, onClose, onSave })
                 nombre: editingCourse.nombre || '',
                 descripcion: editingCourse.descripcion || '',
                 cupos: editingCourse.cupos || '',
-                // Asegurarse de que profesor_id y categoria_id se inicialicen como números si es posible
-                profesor_id: editingCourse.professor_id ? String(editingCourse.professor_id) : '', // Convertir a string para el select
-                categoria_id: editingCourse.categoria_id ? String(editingCourse.categoria_id) : '', // Convertir a string para el select
+                profesor_id: editingCourse.profesor_id ? String(editingCourse.profesor_id) : '',
+                categoria_id: editingCourse.categoria_id ? String(editingCourse.categoria_id) : '',
                 horarios: editingCourse.horarios && editingCourse.horarios.length > 0
                     ? editingCourse.horarios.map(h => ({
                         dia: h.dia,
@@ -54,7 +49,7 @@ const CourseModal = ({ editingCourse, professors, categories, onClose, onSave })
                 horarios: [{ dia: '', hora_inicio: '', hora_fin: '' }],
             });
         }
-    }, [editingCourse]);
+    }, [editingCourse, professors, categories]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -84,12 +79,11 @@ const CourseModal = ({ editingCourse, professors, categories, onClose, onSave })
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // Convertir profesor_id y categoria_id a enteros antes de enviar
         const dataToSave = {
             ...courseData,
             cupos: parseInt(courseData.cupos, 10),
-            profesor_id: parseInt(courseData.profesor_id, 10), // ¡NUEVA CONVERSIÓN!
-            categoria_id: courseData.categoria_id ? parseInt(courseData.categoria_id, 10) : null, // ¡NUEVA CONVERSIÓN! Manejar null para no requerido
+            profesor_id: parseInt(courseData.profesor_id, 10),
+            categoria_id: courseData.categoria_id ? parseInt(courseData.categoria_id, 10) : null,
         };
         onSave(dataToSave);
     };
@@ -146,7 +140,7 @@ const CourseModal = ({ editingCourse, professors, categories, onClose, onSave })
                         >
                             <option value="">Seleccione un profesor</option>
                             {professors.map(prof => (
-                                <option key={prof.id} value={prof.id}>
+                                <option key={prof.id} value={String(prof.id)}>
                                     {prof.name} {prof.lastname}
                                 </option>
                             ))}
@@ -159,11 +153,10 @@ const CourseModal = ({ editingCourse, professors, categories, onClose, onSave })
                             name="categoria_id"
                             value={courseData.categoria_id}
                             onChange={handleChange}
-                            // No es requerido aquí, ya que el esquema backend lo permite nulo
                         >
                             <option value="">Seleccione una categoría (opcional)</option>
                             {categories.map(cat => (
-                                <option key={cat.id} value={cat.id}>
+                                <option key={cat.id} value={String(cat.id)}>
                                     {cat.nombre}
                                 </option>
                             ))}

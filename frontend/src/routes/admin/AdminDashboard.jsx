@@ -23,7 +23,7 @@ const AdminDashboard = () => {
     const [activeTab, setActiveTab] = useState('overview');
     const [showCourseModal, setShowCourseModal] = useState(false);
     const [editingCourse, setEditingCourse] = useState(null);
-    const [professors, setProfessors] = useState([]);
+    const [professors, setProfessors] = useState([]); 
     const [courses, setCourses] = useState([]);
     const [loadingCourses, setLoadingCourses] = useState(true);
     const [errorCourses, setErrorCourses] = useState(null);
@@ -58,11 +58,11 @@ const AdminDashboard = () => {
             const response = await getCursos();
             const fetchedCourses = response.cursos.map(course => ({
                 id: course.id,
-                name: course.nombre,
-                description: course.descripcion,
-                capacity: course.cupos,
-                professor_id: course.profesor_id,
-                professor_name: `${course.profesor_nombre} ${course.profesor_apellido || ''}`.trim(),
+                nombre: course.nombre, // Aseguramos que sea 'nombre'
+                descripcion: course.descripcion, // Aseguramos que sea 'descripcion'
+                cupos: course.cupos, // Aseguramos que sea 'cupos'
+                profesor_id: course.profesor_id, 
+                profesor_nombre: `${course.profesor_nombre || ''} ${course.profesor_apellido || ''}`.trim(), // Para mostrar en tabla
                 horarios: course.horarios,
                 categoria_id: course.categoria_id,
                 categoria_nombre: course.categoria_nombre
@@ -83,11 +83,10 @@ const AdminDashboard = () => {
     const fetchProfessors = useCallback(async () => {
         try {
             const fetchedProfs = await getProfesores();
-            // Asegúrate de acceder a la clave correcta donde vienen los profesores
             if (fetchedProfs && fetchedProfs.profesores) {
                 setProfessors(fetchedProfs.profesores);
             } else {
-                setProfessors([]); // Asegurar que sea un array vacío si no hay data o el formato es incorrecto
+                setProfessors([]); 
                 console.warn("No se encontraron profesores o el formato de datos es incorrecto:", fetchedProfs);
             }
         } catch (err) {
@@ -105,7 +104,12 @@ const AdminDashboard = () => {
         setErrorCategories(null);
         try {
             const response = await getAllCategorias();
-            setCategories(response.categorias);
+            if (response && response.categorias) {
+                 setCategories(response.categorias);
+            } else {
+                 setCategories([]); 
+                 console.warn("No se encontraron categorías o el formato de datos es incorrecto:", response);
+            }
         } catch (err) {
             setStatusModalMessage(err.message || 'Error al cargar las categorías. Por favor, intente de nuevo.');
             setStatusModalType('error');
@@ -139,13 +143,15 @@ const AdminDashboard = () => {
     };
 
     const handleEditCourseClick = (course) => {
+        // CORRECCIÓN CLAVE: Mapear las propiedades del curso para que coincidan
+        // con las propiedades esperadas en el estado 'courseData' de CourseModal.jsx
         setEditingCourse({
             id: course.id,
-            nombre: course.name,
-            descripcion: course.description,
-            cupos: course.capacity,
-            profesor_id: course.professor_id,
-            categoria_id: course.categoria_id,
+            nombre: course.nombre, // Usar 'nombre' de los datos ya mapeados en fetchCourses
+            descripcion: course.descripcion, // Usar 'descripcion'
+            cupos: course.cupos, // Usar 'cupos'
+            profesor_id: course.profesor_id, // Usar 'profesor_id'
+            categoria_id: course.categoria_id, // Usar 'categoria_id'
             horarios: course.horarios && course.horarios.length > 0 ? course.horarios : [{ dia: '', hora_inicio: '', hora_fin: '' }],
         });
         setShowCourseModal(true);
@@ -183,10 +189,9 @@ const AdminDashboard = () => {
             }
             setShowCourseModal(false);
             setEditingCourse(null);
-            fetchCourses(); // Refrescar la lista de cursos
-            triggerCoursesUpdate(); // Para actualizar el contexto de usuario si fuera necesario
+            fetchCourses(); 
+            triggerCoursesUpdate(); 
         } catch (err) {
-            // Manejo de errores más robusto, accediendo a 'data' si existe
             const errorMessage = err.data?.detalle || err.message || 'Error desconocido al guardar curso.';
             setStatusModalMessage(`Error al guardar curso: ${errorMessage}`);
             setStatusModalType('error');
@@ -198,17 +203,16 @@ const AdminDashboard = () => {
     };
 
     const handleDeleteCourse = async (courseId) => {
-        // Mostrar modal de confirmación antes de eliminar
         setStatusModalMessage('¿Está seguro de que desea eliminar este curso? Esta acción es irreversible.');
         setStatusModalType('confirm');
         setStatusModalOnConfirm(() => async () => {
-            closeStatusModal(); // Cerrar el modal antes de proceder con la eliminación
+            closeStatusModal(); 
             try {
                 await deleteCurso(courseId);
                 setStatusModalMessage(`El curso se eliminó correctamente.`);
                 setStatusModalType('success');
                 setShowStatusModal(true);
-                fetchCourses(); // Refrescar la lista de cursos
+                fetchCourses(); 
                 triggerCoursesUpdate();
             } catch (err) {
                 const errorMessage = err.data?.detalle || err.message || 'Error desconocido al eliminar curso.';
@@ -220,7 +224,7 @@ const AdminDashboard = () => {
                 }
             }
         });
-        setShowStatusModal(true); // Asegurarse de que el modal se muestre
+        setShowStatusModal(true); 
     };
 
     // --- Manejo de Categorías ---
@@ -283,7 +287,7 @@ const AdminDashboard = () => {
                 }
             }
         });
-        setShowStatusModal(true); // Asegurarse de que el modal se muestre
+        setShowStatusModal(true); 
     };
 
     // --- Manejo de Sesión ---
@@ -291,8 +295,8 @@ const AdminDashboard = () => {
     const handleLogout = async () => {
         try {
             await logoutUser();
-            setUsuario(null); // Limpiar el usuario del contexto
-            navigate('/login'); // Redirigir al login
+            setUsuario(null); 
+            navigate('/login'); 
         } catch (err) {
             console.error('Error al cerrar sesión:', err);
             setStatusModalMessage(`Error al cerrar sesión: ${err.message || 'Error desconocido'}`);
@@ -330,7 +334,7 @@ const AdminDashboard = () => {
             {/* Sidebar */}
             <aside className={`${styles.sidebar} ${isSidebarOpen ? styles.sidebarOpen : ''}`}>
                 <button
-                    className={styles.closeSidebarButton} // Usar clase de CSS Module
+                    className={styles.closeSidebarButton} 
                     onClick={() => setIsSidebarOpen(false)}
                 >
                     <FaTimes />
@@ -338,7 +342,7 @@ const AdminDashboard = () => {
                 <div className={styles.sidebarHeader}>
                     <h2>Admin Panel</h2>
                 </div>
-                <nav className={styles.nav}> {/* Usar clase de CSS Module */}
+                <nav className={styles.nav}> 
                     <MenuItem icon={<FaHome />} text="Resumen" onClick={() => setActiveTab('overview')} active={activeTab === 'overview'} />
                     <MenuItem icon={<FaUsers />} text="Gestión de Usuarios" onClick={() => setActiveTab('users')} active={activeTab === 'users'} />
                     <MenuItem icon={<FaChalkboardTeacher />} text="Gestión de Profesores" onClick={() => setActiveTab('professors')} active={activeTab === 'professors'} />
@@ -358,9 +362,9 @@ const AdminDashboard = () => {
 
             {/* Contenido principal */}
             <div className={styles.mainContent}>
-                <header className={styles.header}> {/* Usar clase de CSS Module */}
+                <header className={styles.header}> 
                     <button
-                        className={styles.menuButton} // Usar clase de CSS Module
+                        className={styles.menuButton} 
                         onClick={() => setIsSidebarOpen(true)}
                     >
                         <FaBars />
@@ -398,12 +402,12 @@ const AdminDashboard = () => {
                     )}
                     {activeTab === 'users' && (
                         <SectionCard title="Gestión de Usuarios">
-                            <p className={styles.text}>Aquí irá la tabla y gestión de usuarios.</p> {/* Usar clase de CSS Module */}
+                            <p className={styles.text}>Aquí irá la tabla y gestión de usuarios.</p> 
                         </SectionCard>
                     )}
                     {activeTab === 'professors' && (
                         <SectionCard title="Gestión de Profesores">
-                            <p className={styles.text}>Aquí irá la tabla y gestión de profesores.</p> {/* Usar clase de CSS Module */}
+                            <p className={styles.text}>Aquí irá la tabla y gestión de profesores.</p> 
                         </SectionCard>
                     )}
                     {activeTab === 'courses' && (
@@ -447,8 +451,8 @@ const AdminDashboard = () => {
             {showCourseModal && (
                 <CourseModal
                     editingCourse={editingCourse}
-                    professors={professors}
-                    categories={categories}
+                    professors={professors} 
+                    categories={categories} 
                     onClose={() => { setShowCourseModal(false); setEditingCourse(null); }}
                     onSave={handleSaveCourse}
                 />
@@ -477,20 +481,20 @@ const AdminDashboard = () => {
 // Componente auxiliar para elementos del menú lateral
 const MenuItem = ({ icon, text, onClick, active }) => (
     <li
-        className={`${styles.navItem} ${active ? styles.active : ''}`} // Usar clases de CSS Module
+        className={`${styles.navItem} ${active ? styles.active : ''}`} 
         onClick={onClick}
     >
         {icon}
-        <span className={styles.navText}>{text}</span> {/* Usar clase del módulo */}
+        <span className={styles.navText}>{text}</span> 
     </li>
 );
 
 // Componente auxiliar para tarjetas de estadísticas
 const StatCard = ({ title, value, icon }) => (
-    <div className={styles.statCard}> {/* Usar clase del módulo */}
+    <div className={styles.statCard}> 
         <h3>{title}</h3>
         <p>{value}</p>
-        <div className={styles.statIcon}> {/* Usar clase del módulo */}
+        <div className={styles.statIcon}> 
             {icon}
         </div>
     </div>
@@ -498,8 +502,8 @@ const StatCard = ({ title, value, icon }) => (
 
 // Componente auxiliar para secciones del dashboard
 const SectionCard = ({ title, children }) => (
-    <div className={styles.dashboardSection}> {/* Usar clase del módulo */}
-        <h2 className={styles.sectionHeaderH2}> {/* Clase específica si es necesaria */}
+    <div className={styles.dashboardSection}> 
+        <h2 className={styles.sectionHeaderH2}> 
             {title}
         </h2>
         {children}
