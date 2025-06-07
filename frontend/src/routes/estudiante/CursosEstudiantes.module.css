@@ -4,34 +4,33 @@
   margin: 0 auto;
 }
 
-.header { /* <-- ESTE ES EL NUEVO ESTILO CLAVE */
+.header {
   display: flex;
-  justify-content: space-between; /* Empuja el título a la izquierda y el userInfo a la derecha */
-  align-items: center; /* Alinea verticalmente los elementos */
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 2rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid #e2e8f0; /* Un borde para separar visualmente el header */
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .title {
-  text-align: left; /* Ajustado a left para complementar el space-between */
-  margin: 0; /* Eliminar margen para mejor control con flex */
+  text-align: left;
+  margin: 0;
   color: #2d3748;
   font-size: 1.8rem;
 }
 
-.userInfo { /* <-- ESTE ES EL NUEVO ESTILO CLAVE */
-    display: flex;
-    align-items: center;
-    gap: 1rem; /* Espacio entre los elementos del userInfo */
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
-
 
 .cursosGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1.5rem;
-  align-items: start;  
+  align-items: start;
 }
 
 .cursoCard {

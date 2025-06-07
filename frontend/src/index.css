@@ -1,59 +1,49 @@
-/* src/index.css (o tu archivo CSS global) */
-
 :root {
-  /* Colores principales */
-  --color-primary-dark: #002a5c; /* Azul oscuro UAB */
-  --color-primary-light: #003366; /* Azul ligeramente más claro */
-  --color-accent-yellow: #eac145; /* Amarillo de acento UAB */
-  --color-accent-yellow-dark: #d4b13d; /* Amarillo oscuro para hover */
+  --color-primary-dark: #002a5c;
+  --color-primary-light: #003366;
+  --color-accent-yellow: #eac145;
+  --color-accent-yellow-dark: #d4b13d;
   --color-text-dark: #333;
   --color-text-light: #f8f9fa;
-  --color-bg-light: #f0f2f5; /* Fondo general */
+  --color-bg-light: #f0f2f5;
   --color-bg-white: #ffffff;
   --color-error: #dc3545;
   --color-error-bg: #f8d7da;
   --color-success: #28a745;
   --color-success-bg: #d4edda;
-
-  /* Sombras (inspiradas en Material Design / Tailwind CSS) */
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.07);
   --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.12);
   --shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.15);
-  --shadow-hover: 0 6px 18px rgba(0, 0, 0, 0.15); /* Para elementos interactivos */
+  --shadow-hover: 0 6px 18px rgba(0, 0, 0, 0.15);
   --shadow-button-hover: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
-/* Reglas globales */
 body {
   margin: 0;
   padding: 0;
-  font-family: 'Roboto Mono', monospace; /* Aplica la fuente por defecto a todo el body */
+  font-family: 'Roboto Mono', monospace;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: var(--color-bg-light); /* Fondo general de la app */
-  color: var(--color-text-dark); /* Color de texto por defecto */
+  background-color: var(--color-bg-light);
+  color: var(--color-text-dark);
 }
 
-/* Aplicación de box-sizing a todos los elementos */
 *, *::before, *::after {
   box-sizing: border-box;
 }
 
-/* Reset de márgenes en h1-h6 y p */
 h1, h2, h3, h4, h5, h6, p {
   margin-top: 0;
   margin-bottom: 0;
 }
 
-/* Eliminar el estilo por defecto de los enlaces */
 a {
   text-decoration: none;
   color: inherit;
 }
 
-/* Estilo base para botones */
 button {
   border: none;
   background: none;

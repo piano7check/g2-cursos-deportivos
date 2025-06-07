@@ -3,11 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { useUsuarioContext } from '../../context/UsuarioContext';
 import { updateCurrentUser, deleteCurrentUser } from '../../services/userService';
 import MessageModal from '../../components/common/MessageModal';
+import { FaUserCircle, FaEnvelope, FaIdCard, FaBuilding, FaEdit, FaTrash, FaSave, FaTimes, FaLock, FaArrowLeft } from 'react-icons/fa';
 import styles from './UserProfilePage.module.css';
-import { FaUserCircle, FaEnvelope, FaIdCard, FaBuilding, FaEdit, FaTrash, FaSave, FaTimes } from 'react-icons/fa';
 
 const UserProfilePage = () => {
-    const { usuario, cargando, error, verificarAutenticacion, setUsuario } = useUsuarioContext();
+    const { usuario, cargando, error, setUsuario } = useUsuarioContext();
     const navigate = useNavigate();
 
     const [isEditing, setIsEditing] = useState(false);
@@ -26,7 +26,7 @@ const UserProfilePage = () => {
     });
 
     useEffect(() => {
-        if (usuario && !isEditing) {
+        if (!cargando && usuario && !isEditing) {
             setFormData({
                 name: usuario.name || '',
                 lastname: usuario.lastname || '',
@@ -35,7 +35,11 @@ const UserProfilePage = () => {
                 current_password: '',
             });
         }
-    }, [usuario, isEditing]);
+       
+        if (!cargando && !usuario) {
+            navigate('/login');
+        }
+    }, [usuario, isEditing, cargando, navigate]); 
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -95,7 +99,7 @@ const UserProfilePage = () => {
                 return;
             }
             const response = await updateCurrentUser(usuario.id, dataToUpdate);
-            setUsuario(response.usuario); 
+            setUsuario(response.usuario);
             setIsEditing(false);
             showModal('Perfil actualizado exitosamente.', 'success');
         } catch (err) {
@@ -106,8 +110,8 @@ const UserProfilePage = () => {
 
     const handleDeleteAccount = () => {
         showModal(
-            '¿Está seguro de que desea eliminar su cuenta? Esta acción es irreversible.', 
-            'confirm', 
+            '¿Está seguro de que desea eliminar su cuenta? Esta acción es irreversible.',
+            'confirm',
             async () => {
                 closeModal();
                 try {
@@ -127,8 +131,23 @@ const UserProfilePage = () => {
         );
     };
 
+    const handleGoBack = () => {
+        if (usuario && usuario.rol === 'admin') {
+            navigate('/dashboardAdmin');
+        } else if (usuario && (usuario.rol === 'estudiante' || usuario.rol === 'profesor')) {
+            navigate('/cursosEstudiantes');
+        } else 
+            navigate('/'); 
+        
+    };
+
     if (cargando) {
-        return <div className={styles.loadingContainer}><p>Cargando perfil...</p></div>;
+        return (
+            <div className={styles.loadingContainer}>
+                <div className={styles.spinner}></div>
+                <p>Cargando perfil...</p>
+            </div>
+        );
     }
 
     if (error) {
@@ -141,32 +160,40 @@ const UserProfilePage = () => {
 
     return (
         <div className={styles.profilePageContainer}>
+            <header className={styles.pageHeader}>
+                <button onClick={handleGoBack} className={styles.backButton}>
+                    <FaArrowLeft /> Atrás
+                </button>
+                <h1>Perfil de Usuario</h1>
+            </header>
+
             <div className={styles.profileCard}>
                 <div className={styles.profileHeader}>
                     <FaUserCircle className={styles.profileAvatar} />
-                    <h2>Perfil de Usuario</h2>
+                    <h2>{usuario.name || 'Usuario'} {usuario.lastname || ''}</h2>
+                    <p className={styles.userRole}>Rol: {usuario.rol}</p> 
                 </div>
                 {!isEditing ? (
                     <div className={styles.profileDetails}>
                         <div className={styles.detailItem}>
                             <FaUserCircle className={styles.detailIcon} />
-                            <strong>Nombre:</strong> {usuario.name || 'No definido'}
+                            <span><strong>Nombre:</strong> {usuario.name || 'No definido'}</span>
                         </div>
                         <div className={styles.detailItem}>
                             <FaUserCircle className={styles.detailIcon} />
-                            <strong>Apellido:</strong> {usuario.lastname || 'No definido'}
+                            <span><strong>Apellido:</strong> {usuario.lastname || 'No definido'}</span>
                         </div>
                         <div className={styles.detailItem}>
                             <FaEnvelope className={styles.detailIcon} />
-                            <strong>Email:</strong> {usuario.email}
+                            <span><strong>Email:</strong> {usuario.email}</span>
                         </div>
                         <div className={styles.detailItem}>
                             <FaIdCard className={styles.detailIcon} />
-                            <strong>ID:</strong> {usuario.id}
+                            <span><strong>ID:</strong> {usuario.id}</span>
                         </div>
                         <div className={styles.detailItem}>
                             <FaBuilding className={styles.detailIcon} />
-                            <strong>Rol:</strong> {usuario.rol}
+                            <span><strong>Rol:</strong> {usuario.rol}</span>
                         </div>
                         <div className={styles.actions}>
                             <button className={styles.editButton} onClick={handleEditClick}>
@@ -211,28 +238,34 @@ const UserProfilePage = () => {
                                 disabled={true}
                             />
                         </div>
-                        <h4>Cambiar Contraseña (opcional)</h4>
+                        <h4 className={styles.passwordSectionTitle}>Cambiar Contraseña (opcional)</h4>
                         <div className={styles.formGroup}>
                             <label htmlFor="current_password">Contraseña Actual:</label>
-                            <input
-                                type="password"
-                                id="current_password"
-                                name="current_password"
-                                value={formData.current_password}
-                                onChange={handleChange}
-                                placeholder="Requiere para cambiar contraseña"
-                            />
+                            <div className={styles.inputWithIcon}>
+                                <FaLock className={styles.inputIcon} />
+                                <input
+                                    type="password"
+                                    id="current_password"
+                                    name="current_password"
+                                    value={formData.current_password}
+                                    onChange={handleChange}
+                                    placeholder="Requiere para cambiar contraseña"
+                                />
+                            </div>
                         </div>
                         <div className={styles.formGroup}>
                             <label htmlFor="password">Nueva Contraseña:</label>
-                            <input
-                                type="password"
-                                id="password"
-                                name="password"
-                                value={formData.password}
-                                onChange={handleChange}
-                                placeholder="Mínimo 6 caracteres"
-                            />
+                            <div className={styles.inputWithIcon}>
+                                <FaLock className={styles.inputIcon} />
+                                <input
+                                    type="password"
+                                    id="password"
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    placeholder="Mínimo 6 caracteres"
+                                />
+                            </div>
                         </div>
                         <div className={styles.actions}>
                             <button className={styles.saveButton} onClick={handleSaveProfile}>

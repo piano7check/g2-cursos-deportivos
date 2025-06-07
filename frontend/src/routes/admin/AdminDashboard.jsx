@@ -1,32 +1,35 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import styles from './AdminDashboard.module.css';
-import { FaUsers, FaChalkboardTeacher, FaClipboardCheck, FaBookOpen, FaPlus, FaSignOutAlt, FaHome } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-import { useUsuarioContext } from '../../context/UsuarioContext'; 
+import { FaUsers, FaChalkboardTeacher, FaClipboardCheck, FaBookOpen, FaPlus, FaSignOutAlt, FaHome, FaBars, FaTimes } from 'react-icons/fa';
 
+import { useUsuarioContext } from '../../context/UsuarioContext';
 import { getCursos, createCurso, updateCurso, deleteCurso, getProfesores } from '../../services/cursosService';
-import { logoutUser } from '../../services/userService'; // Importar logoutUser
+import { logoutUser } from '../../services/userService';
 import CursosTable from '../../components/admin/cursos/CursosTable';
 import CourseModal from '../../components/admin/cursos/CourseModal';
 import MessageModal from '../../components/common/MessageModal';
-import UserProfileWidget from '../../components/common/UserProfileWidget'; 
+import UserProfileWidget from '../../components/common/UserProfileWidget';
+
+import styles from './AdminDashboard.module.css';
 
 const AdminDashboard = () => {
-    const { usuario: contextUsuario, cargando: cargandoContext, triggerCoursesUpdate, setUsuario } = useUsuarioContext(); 
-    
+    const { usuario: contextUsuario, cargando: cargandoContext, triggerCoursesUpdate, setUsuario } = useUsuarioContext();
+    const navigate = useNavigate();
+
     const [activeTab, setActiveTab] = useState('overview');
     const [showCourseModal, setShowCourseModal] = useState(false);
     const [editingCourse, setEditingCourse] = useState(null);
-    const [professors, setProfessors] = useState([]); 
+    const [professors, setProfessors] = useState([]);
     const [courses, setCourses] = useState([]);
-    const [loadingCourses, setLoadingCourses] = useState(true); 
+    const [loadingCourses, setLoadingCourses] = useState(true);
     const [errorCourses, setErrorCourses] = useState(null);
-    const navigate = useNavigate();
 
     const [showStatusModal, setShowStatusModal] = useState(false);
     const [statusModalMessage, setStatusModalMessage] = useState('');
     const [statusModalType, setStatusModalType] = useState('info');
     const [statusModalOnConfirm, setStatusModalOnConfirm] = useState(null);
+
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     const closeStatusModal = () => {
         setShowStatusModal(false);
@@ -114,9 +117,9 @@ const AdminDashboard = () => {
                     profesor_id: courseData.profesor_id,
                     horarios: courseData.horarios,
                 };
-                
-                await updateCurso(editingCourse.id, dataToSendForPatch); 
-                setStatusModalMessage(`Curso "${courseData.nombre}" actualizado exitosamente.`); 
+
+                await updateCurso(editingCourse.id, dataToSendForPatch);
+                setStatusModalMessage(`Curso "${courseData.nombre}" actualizado exitosamente.`);
                 setStatusModalType('success');
                 setShowStatusModal(true);
             } else {
@@ -134,10 +137,10 @@ const AdminDashboard = () => {
             }
             setShowCourseModal(false);
             setEditingCourse(null);
-            fetchCourses(); 
-            triggerCoursesUpdate(); 
+            fetchCourses();
+            triggerCoursesUpdate();
         } catch (err) {
-            setStatusModalMessage(`Error al guardar el curso: ${err.data?.detalle || err.message || 'Error desconocido'}`); 
+            setStatusModalMessage(`Error al guardar el curso: ${err.data?.detalle || err.message || 'Error desconocido'}`);
             setStatusModalType('error');
             setShowStatusModal(true);
             if (err.status === 401) {
@@ -152,14 +155,14 @@ const AdminDashboard = () => {
         setStatusModalOnConfirm(() => async () => {
             closeStatusModal();
             try {
-                await deleteCurso(courseId); 
+                await deleteCurso(courseId);
                 setStatusModalMessage(`Curso ${courseId} eliminado exitosamente.`);
                 setStatusModalType('success');
                 setShowStatusModal(true);
                 fetchCourses();
-                triggerCoursesUpdate(); 
+                triggerCoursesUpdate();
             } catch (err) {
-                setStatusModalMessage(`Error al eliminar el curso: ${err.data?.detalle || err.message || 'Error desconocido'}`); 
+                setStatusModalMessage(`Error al eliminar el curso: ${err.data?.detalle || err.message || 'Error desconocido'}`);
                 setStatusModalType('error');
                 setShowStatusModal(true);
                 if (err.status === 401) {
@@ -170,17 +173,21 @@ const AdminDashboard = () => {
         setShowStatusModal(true);
     };
 
-    const handleLogout = async () => { // Hacer la función asíncrona
+    const handleLogout = async () => {
         try {
-            await logoutUser(); // Llamar al servicio de logout
-            setUsuario(null); // Limpiar el usuario del contexto
-            navigate('/login'); // Redirigir al login
+            await logoutUser();
+            setUsuario(null);
+            navigate('/login');
         } catch (error) {
             console.error("Error al cerrar sesión:", error);
-            setStatusModalMessage(`Error al cerrar sesión: ${error.message || 'Error desconocido'}`); 
+            setStatusModalMessage(`Error al cerrar sesión: ${error.message || 'Error desconocido'}`);
             setStatusModalType('error');
             setShowStatusModal(true);
         }
+    };
+
+    const toggleSidebar = () => {
+        setIsSidebarOpen(!isSidebarOpen);
     };
 
     if (cargandoContext) {
@@ -197,52 +204,62 @@ const AdminDashboard = () => {
     }
 
     return (
-        <div className={styles.adminDashboard}>
+        <div className={`${styles.adminDashboard} ${isSidebarOpen ? styles.sidebarOpen : ''}`}>
+            {isSidebarOpen && <div className={styles.mobileBackdrop} onClick={toggleSidebar}></div>}
+
             <aside className={styles.sidebar}>
-                <div className={styles.logo}>
-                    <h2>Admin Panel</h2>
+                <div className={styles.sidebarHeader}>
+                    <div className={styles.logo}>
+                        <h2>Admin Panel</h2>
+                    </div>
+                    <button className={styles.closeSidebarButton} onClick={toggleSidebar}>
+                        <FaTimes />
+                    </button>
                 </div>
                 <nav className={styles.nav}>
                     <button
                         className={`${styles.navItem} ${activeTab === 'overview' ? styles.active : ''}`}
-                        onClick={() => setActiveTab('overview')}
+                        onClick={() => { setActiveTab('overview'); setIsSidebarOpen(false); }}
                     >
-                        <FaHome /> Resumen
+                        <FaHome /> <span className={styles.navText}>Resumen</span>
                     </button>
                     <button
                         className={`${styles.navItem} ${activeTab === 'courses' ? styles.active : ''}`}
-                        onClick={() => setActiveTab('courses')}
+                        onClick={() => { setActiveTab('courses'); setIsSidebarOpen(false); }}
                     >
-                        <FaBookOpen /> Cursos
+                        <FaBookOpen /> <span className={styles.navText}>Cursos</span>
                     </button>
                     <button
                         className={`${styles.navItem} ${activeTab === 'users' ? styles.active : ''}`}
-                        onClick={() => setActiveTab('users')}
-                        disabled={true} 
+                        onClick={() => { setActiveTab('users'); setIsSidebarOpen(false); }}
+                        disabled={true}
                     >
-                        <FaUsers /> Usuarios (No implementado)
+                        <FaUsers /> <span className={styles.navText}>Usuarios (No implementado)</span>
                     </button>
                     <button
                         className={`${styles.navItem} ${activeTab === 'payments' ? styles.active : ''}`}
-                        onClick={() => setActiveTab('payments')}
-                        disabled={true} 
+                        onClick={() => { setActiveTab('payments'); setIsSidebarOpen(false); }}
+                        disabled={true}
                     >
-                        <FaClipboardCheck /> Validaciones de Pago (No implementado)
+                        <FaClipboardCheck /> <span className={styles.navText}>Validaciones de Pago (No implementado)</span>
                     </button>
                     <button
                         className={styles.navItem}
-                        onClick={handleLogout} 
+                        onClick={handleLogout}
                     >
-                        <FaSignOutAlt /> Cerrar Sesión
+                        <FaSignOutAlt /> <span className={styles.navText}>Cerrar Sesión</span>
                     </button>
                 </nav>
             </aside>
 
             <main className={styles.mainContent}>
                 <header className={styles.header}>
+                    <button className={styles.mobileMenuButton} onClick={toggleSidebar}>
+                        <FaBars />
+                    </button>
                     <h1>Bienvenido, Administrador</h1>
                     <div className={styles.userInfo}>
-                        <UserProfileWidget /> 
+                        <UserProfileWidget />
                     </div>
                 </header>
 
@@ -253,7 +270,7 @@ const AdminDashboard = () => {
                             <div className={styles.statsGrid}>
                                 <div className={styles.statCard}>
                                     <h3>Cursos Activos</h3>
-                                    <p>{courses.length}</p> 
+                                    <p>{courses.length}</p>
                                 </div>
                                 <div className={styles.statCard}>
                                     <h3>Profesores Registrados</h3>
