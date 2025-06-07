@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaUsers, FaChalkboardTeacher, FaClipboardCheck, FaBookOpen, FaPlus, FaSignOutAlt, FaHome, FaBars, FaTimes, FaTags } from 'react-icons/fa';
+import { FaUsers, FaChalkboardTeacher, FaBookOpen, FaPlus, FaSignOutAlt, FaHome, FaBars, FaTimes, FaTags } from 'react-icons/fa';
 
 import { useUsuarioContext } from '../../context/UsuarioContext';
 import { getCursos, createCurso, updateCurso, deleteCurso, getProfesores } from '../../services/cursosService';
@@ -14,7 +14,7 @@ import CategoriaModal from '../../components/admin/categorias/CategoriaModal';
 import MessageModal from '../../components/common/MessageModal';
 import UserProfileWidget from '../../components/common/UserProfileWidget';
 
-import styles from './AdminDashboard.module.css'; // Importa tus estilos CSS Modules
+import styles from './AdminDashboard.module.css';
 
 const AdminDashboard = () => {
     const { usuario: contextUsuario, cargando: cargandoContext, triggerCoursesUpdate, setUsuario } = useUsuarioContext();
@@ -36,20 +36,17 @@ const AdminDashboard = () => {
 
     const [showStatusModal, setShowStatusModal] = useState(false);
     const [statusModalMessage, setStatusModalMessage] = useState('');
-    const [statusModalType, setStatusModalType] = useState('info'); // 'info', 'success', 'error', 'confirm'
-    const [statusModalOnConfirm, setStatusModalOnConfirm] = useState(null); // Callback para el modal de confirmación
+    const [statusModalType, setStatusModalType] = useState('info');
+    const [statusModalOnConfirm, setStatusModalOnConfirm] = useState(null);
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-    // Función para cerrar el modal de estado/confirmación
     const closeStatusModal = () => {
         setShowStatusModal(false);
         setStatusModalMessage('');
         setStatusModalType('info');
         setStatusModalOnConfirm(null);
     };
-
-    // --- Funciones de carga de datos ---
 
     const fetchCourses = useCallback(async () => {
         setLoadingCourses(true);
@@ -58,11 +55,11 @@ const AdminDashboard = () => {
             const response = await getCursos();
             const fetchedCourses = response.cursos.map(course => ({
                 id: course.id,
-                nombre: course.nombre, // Aseguramos que sea 'nombre'
-                descripcion: course.descripcion, // Aseguramos que sea 'descripcion'
-                cupos: course.cupos, // Aseguramos que sea 'cupos'
+                nombre: course.nombre, 
+                descripcion: course.descripcion, 
+                cupos: course.cupos, 
                 profesor_id: course.profesor_id, 
-                profesor_nombre: `${course.profesor_nombre || ''} ${course.profesor_apellido || ''}`.trim(), // Para mostrar en tabla
+                profesor_nombre: `${course.profesor_nombre || ''} ${course.profesor_apellido || ''}`.trim(), 
                 horarios: course.horarios,
                 categoria_id: course.categoria_id,
                 categoria_nombre: course.categoria_nombre
@@ -122,7 +119,6 @@ const AdminDashboard = () => {
         }
     }, [navigate]);
 
-    // --- Efecto para cargar datos al iniciar ---
     useEffect(() => {
         if (!cargandoContext) {
             if (contextUsuario) {
@@ -135,23 +131,19 @@ const AdminDashboard = () => {
         }
     }, [cargandoContext, contextUsuario, fetchCourses, fetchProfessors, fetchCategories, navigate]);
 
-    // --- Manejo de Cursos ---
-
     const handleNewCourseClick = () => {
         setEditingCourse(null);
         setShowCourseModal(true);
     };
 
     const handleEditCourseClick = (course) => {
-        // CORRECCIÓN CLAVE: Mapear las propiedades del curso para que coincidan
-        // con las propiedades esperadas en el estado 'courseData' de CourseModal.jsx
         setEditingCourse({
             id: course.id,
-            nombre: course.nombre, // Usar 'nombre' de los datos ya mapeados en fetchCourses
-            descripcion: course.descripcion, // Usar 'descripcion'
-            cupos: course.cupos, // Usar 'cupos'
-            profesor_id: course.profesor_id, // Usar 'profesor_id'
-            categoria_id: course.categoria_id, // Usar 'categoria_id'
+            nombre: course.nombre, 
+            descripcion: course.descripcion, 
+            cupos: course.cupos, 
+            profesor_id: course.profesor_id, 
+            categoria_id: course.categoria_id, 
             horarios: course.horarios && course.horarios.length > 0 ? course.horarios : [{ dia: '', hora_inicio: '', hora_fin: '' }],
         });
         setShowCourseModal(true);
@@ -227,8 +219,6 @@ const AdminDashboard = () => {
         setShowStatusModal(true); 
     };
 
-    // --- Manejo de Categorías ---
-
     const handleNewCategoryClick = () => {
         setEditingCategory(null);
         setShowCategoryModal(true);
@@ -290,8 +280,6 @@ const AdminDashboard = () => {
         setShowStatusModal(true); 
     };
 
-    // --- Manejo de Sesión ---
-
     const handleLogout = async () => {
         try {
             await logoutUser();
@@ -304,8 +292,6 @@ const AdminDashboard = () => {
             setShowStatusModal(true);
         }
     };
-
-    // --- Carga y Restricción de Acceso ---
 
     if (cargandoContext) {
         return (
@@ -327,11 +313,19 @@ const AdminDashboard = () => {
         );
     }
 
-    // --- Renderizado del Dashboard ---
+    const getActiveTabTitle = () => {
+        switch (activeTab) {
+            case 'overview': return 'Resumen del Panel';
+            case 'users': return 'Gestión de Usuarios';
+            case 'professors': return 'Gestión de Profesores';
+            case 'courses': return 'Gestión de Cursos';
+            case 'categories': return 'Gestión de Categorías';
+            default: return 'Panel de Administración';
+        }
+    };
 
     return (
         <div className={styles.adminDashboard}>
-            {/* Sidebar */}
             <aside className={`${styles.sidebar} ${isSidebarOpen ? styles.sidebarOpen : ''}`}>
                 <button
                     className={styles.closeSidebarButton} 
@@ -341,6 +335,7 @@ const AdminDashboard = () => {
                 </button>
                 <div className={styles.sidebarHeader}>
                     <h2>Admin Panel</h2>
+                    <UserProfileWidget />
                 </div>
                 <nav className={styles.nav}> 
                     <MenuItem icon={<FaHome />} text="Resumen" onClick={() => setActiveTab('overview')} active={activeTab === 'overview'} />
@@ -350,7 +345,6 @@ const AdminDashboard = () => {
                     <MenuItem icon={<FaTags />} text="Gestión de Categorías" onClick={() => setActiveTab('categories')} active={activeTab === 'categories'} />
                 </nav>
                 <div className={styles.sidebarFooter}>
-                    <UserProfileWidget />
                     <button
                         onClick={handleLogout}
                         className={styles.logoutButton}
@@ -360,7 +354,6 @@ const AdminDashboard = () => {
                 </div>
             </aside>
 
-            {/* Contenido principal */}
             <div className={styles.mainContent}>
                 <header className={styles.header}> 
                     <button
@@ -369,15 +362,7 @@ const AdminDashboard = () => {
                     >
                         <FaBars />
                     </button>
-                    <h1>
-                        {
-                            activeTab === 'overview' ? 'Resumen del Panel' :
-                            activeTab === 'users' ? 'Gestión de Usuarios' :
-                            activeTab === 'professors' ? 'Gestión de Profesores' :
-                            activeTab === 'courses' ? 'Gestión de Cursos' :
-                            activeTab === 'categories' ? 'Gestión de Categorías' : ''
-                        }
-                    </h1>
+                    <h1>{getActiveTabTitle()}</h1>
                 </header>
 
                 <main className={styles.dashboardContent}>
@@ -388,15 +373,6 @@ const AdminDashboard = () => {
                                 <StatCard title="Profesores Activos" value={professors.length} icon={<FaChalkboardTeacher />} />
                                 <StatCard title="Cursos Publicados" value={courses.length} icon={<FaBookOpen />} />
                                 <StatCard title="Categorías Registradas" value={categories.length} icon={<FaTags />} />
-                            </div>
-                            {/* Actividad Reciente placeholder */}
-                            <div className={styles.recentActivity}>
-                                <h3>Actividad Reciente</h3>
-                                <ul>
-                                    <li>Nuevo curso añadido: Programación Avanzada</li>
-                                    <li>Usuario 'Juan Perez' registrado</li>
-                                    <li>Categoría 'Fitness' actualizada</li>
-                                </ul>
                             </div>
                         </div>
                     )}
@@ -411,9 +387,8 @@ const AdminDashboard = () => {
                         </SectionCard>
                     )}
                     {activeTab === 'courses' && (
-                        <SectionCard title="Gestión de Cursos">
+                        <SectionCard> 
                             <div className={styles.sectionHeader}>
-                                <h2>Gestión de Cursos</h2>
                                 <button className={styles.addButton} onClick={handleNewCourseClick}>
                                     <FaPlus /> Nuevo Curso
                                 </button>
@@ -428,9 +403,8 @@ const AdminDashboard = () => {
                         </SectionCard>
                     )}
                     {activeTab === 'categories' && (
-                        <SectionCard title="Gestión de Categorías">
+                        <SectionCard> 
                             <div className={styles.sectionHeader}>
-                                <h2>Gestión de Categorías</h2>
                                 <button className={styles.addButton} onClick={handleNewCategoryClick}>
                                     <FaPlus /> Nueva Categoría
                                 </button>
@@ -447,7 +421,6 @@ const AdminDashboard = () => {
                 </main>
             </div>
 
-            {/* Modals */}
             {showCourseModal && (
                 <CourseModal
                     editingCourse={editingCourse}
@@ -478,7 +451,6 @@ const AdminDashboard = () => {
     );
 };
 
-// Componente auxiliar para elementos del menú lateral
 const MenuItem = ({ icon, text, onClick, active }) => (
     <li
         className={`${styles.navItem} ${active ? styles.active : ''}`} 
@@ -489,7 +461,6 @@ const MenuItem = ({ icon, text, onClick, active }) => (
     </li>
 );
 
-// Componente auxiliar para tarjetas de estadísticas
 const StatCard = ({ title, value, icon }) => (
     <div className={styles.statCard}> 
         <h3>{title}</h3>
@@ -500,12 +471,8 @@ const StatCard = ({ title, value, icon }) => (
     </div>
 );
 
-// Componente auxiliar para secciones del dashboard
-const SectionCard = ({ title, children }) => (
+const SectionCard = ({ children }) => (
     <div className={styles.dashboardSection}> 
-        <h2 className={styles.sectionHeaderH2}> 
-            {title}
-        </h2>
         {children}
     </div>
 );

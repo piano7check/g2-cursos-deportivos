@@ -56,7 +56,6 @@ export const getCurrentUser = async () => {
 };
 
 export const updateCurrentUser = async (userData) => {
-    // La URL ya no incluye el ID, ya que el backend lo obtendrá del token en la cookie
     const response = await fetch(`${API_BASE_URL}/user/profile`, {
         method: 'PATCH',
         headers: {
@@ -69,7 +68,6 @@ export const updateCurrentUser = async (userData) => {
 };
 
 export const deleteCurrentUser = async () => {
-    // La URL ya no incluye el ID
     const response = await fetch(`${API_BASE_URL}/user/profile`, {
         method: 'DELETE',
         credentials: 'include',

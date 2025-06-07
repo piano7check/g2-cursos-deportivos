@@ -1,7 +1,6 @@
-// frontend/src/components/admin/users/UsersTable.jsx
 import React from 'react';
 import { FaEdit, FaTrash } from 'react-icons/fa';
-import styles from '../../../routes/admin/AdminDashboard.module.css'; // Asegúrate de que la ruta sea correcta
+import styles from '../../../routes/admin/AdminDashboard.module.css'; 
 
 const UsersTable = ({ users, loading, error, onEdit, onDelete }) => {
     if (loading) {

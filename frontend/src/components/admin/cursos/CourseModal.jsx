@@ -1,7 +1,6 @@
-// frontend/src/components/admin/cursos/CourseModal.jsx
 import React, { useState, useEffect } from 'react';
 import { FaTimes, FaSave, FaPlus, FaTrash } from 'react-icons/fa';
-import styles from '../../../routes/admin/AdminDashboard.module.css'; // Usar tus estilos
+import styles from '../../../routes/admin/AdminDashboard.module.css'; 
 
 const CourseModal = ({ editingCourse, professors, categories, onClose, onSave }) => {
     const [courseData, setCourseData] = useState({

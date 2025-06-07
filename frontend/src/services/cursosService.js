@@ -1,11 +1,5 @@
 const API_BASE_URL = 'http://localhost:5000/api';
 
-// No necesitamos getAuthHeader ya que el navegador enviará la cookie automáticamente
-// const getAuthHeader = () => {
-//     const token = localStorage.getItem('token');
-//     return token ? { 'Authorization': `Bearer ${token}` } : {};
-// };
-
 const handleResponse = async (response) => {
     if (!response.ok) {
         const errorData = await response.json();
@@ -22,9 +16,8 @@ export const getCursos = async () => {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
-            // No necesitamos Authorization header si el token va en cookie
         },
-        credentials: 'include', // Importante para enviar cookies
+        credentials: 'include',
     });
     return handleResponse(response);
 };
@@ -34,10 +27,9 @@ export const createCurso = async (cursoData) => {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            // No necesitamos Authorization header si el token va en cookie
         },
         body: JSON.stringify(cursoData),
-        credentials: 'include', // Importante para enviar cookies
+        credentials: 'include',
     });
     return handleResponse(response);
 };
@@ -47,10 +39,9 @@ export const updateCurso = async (id, cursoData) => {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
-            // No necesitamos Authorization header si el token va en cookie
         },
         body: JSON.stringify(cursoData),
-        credentials: 'include', // Importante para enviar cookies
+        credentials: 'include',
     });
     return handleResponse(response);
 };
@@ -60,9 +51,8 @@ export const deleteCurso = async (id) => {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',
-            // No necesitamos Authorization header si el token va en cookie
         },
-        credentials: 'include', // Importante para enviar cookies
+        credentials: 'include',
     });
     return handleResponse(response);
 };
@@ -72,9 +62,8 @@ export const getProfesores = async () => {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
-            // No necesitamos Authorization header si el token va en cookie
         },
-        credentials: 'include', // Importante para enviar cookies
+        credentials: 'include',
     });
     return handleResponse(response);
 };

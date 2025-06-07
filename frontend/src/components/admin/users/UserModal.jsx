@@ -1,14 +1,13 @@
-// frontend/src/components/admin/users/UserModal.jsx
 import React, { useState, useEffect } from 'react';
 import { FaTimes, FaSave } from 'react-icons/fa';
-import styles from '../../../routes/admin/AdminDashboard.module.css'; // Usar tus estilos
+import styles from '../../../routes/admin/AdminDashboard.module.css';
 
 const UserModal = ({ editingUser, onClose, onSave }) => {
     const [userData, setUserData] = useState({
         name: '',
         lastname: '',
         email: '',
-        password: '', // Solo se usa para creación o si se permite cambiar en edición
+        password: '', 
         rol: '',
         phone_number: '',
         address: ''
@@ -16,18 +15,16 @@ const UserModal = ({ editingUser, onClose, onSave }) => {
 
     useEffect(() => {
         if (editingUser) {
-            // Si estamos editando, precargar los datos del usuario
             setUserData({
                 name: editingUser.name || '',
                 lastname: editingUser.lastname || '',
                 email: editingUser.email || '',
-                password: '', // Nunca precargar la contraseña, el usuario deberá introducirla si quiere cambiarla
+                password: '', 
                 rol: editingUser.rol || '',
                 phone_number: editingUser.phone_number || '',
                 address: editingUser.address || ''
             });
         } else {
-            // Si es un nuevo usuario, inicializar con valores vacíos
             setUserData({
                 name: '',
                 lastname: '',
@@ -49,7 +46,6 @@ const UserModal = ({ editingUser, onClose, onSave }) => {
         e.preventDefault();
         const dataToSave = { ...userData };
 
-        // Eliminar la contraseña si está vacía y estamos editando
         if (editingUser && dataToSave.password === '') {
             delete dataToSave.password;
         }
@@ -98,7 +94,6 @@ const UserModal = ({ editingUser, onClose, onSave }) => {
                             required
                         />
                     </div>
-                    {/* El campo de contraseña solo es requerido para nuevos usuarios, opcional para editar */}
                     <div className={styles.formGroup}>
                         <label htmlFor="password">Contraseña {editingUser ? '(dejar vacío para no cambiar)' : '*'}:</label>
                         <input
@@ -107,7 +102,7 @@ const UserModal = ({ editingUser, onClose, onSave }) => {
                             name="password"
                             value={userData.password}
                             onChange={handleChange}
-                            required={!editingUser} // Requerido solo si no estamos editando
+                            required={!editingUser} 
                         />
                     </div>
                     <div className={styles.formGroup}>

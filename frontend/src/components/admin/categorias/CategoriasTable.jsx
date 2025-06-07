@@ -1,7 +1,6 @@
-    // frontend/src/components/admin/categorias/CategoriasTable.jsx
     import React from 'react';
     import { FaEdit, FaTrash } from 'react-icons/fa';
-    import styles from '../../../routes/admin/AdminDashboard.module.css'; // Ruta correcta a los estilos
+    import styles from '../../../routes/admin/AdminDashboard.module.css'; 
 
     const CategoriasTable = ({ categories, loading, error, onEdit, onDelete }) => {
         if (loading) {

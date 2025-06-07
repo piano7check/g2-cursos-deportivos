@@ -94,7 +94,6 @@ const UserProfilePage = () => {
         }
 
         try {
-            // Ya no pasamos el usuario.id, ya que el servicio lo obtiene del token
             const response = await updateCurrentUser(dataToUpdate);
             setUsuario(response.usuario);
             setIsEditing(false);
@@ -112,7 +111,6 @@ const UserProfilePage = () => {
             async () => {
                 closeModal();
                 try {
-                    // Ya no pasamos el usuario.id, ya que el servicio lo obtiene del token
                     await deleteCurrentUser();
                     setUsuario(null);
                     showModal('Cuenta eliminada exitosamente.', 'success');

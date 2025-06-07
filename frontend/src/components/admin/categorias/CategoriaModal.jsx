@@ -1,7 +1,6 @@
-    // frontend/src/components/admin/categorias/CategoriaModal.jsx
     import React, { useState, useEffect } from 'react';
     import { FaTimes, FaSave } from 'react-icons/fa';
-    import styles from '../../../routes/admin/AdminDashboard.module.css'; // Usar tus estilos
+    import styles from '../../../routes/admin/AdminDashboard.module.css';
 
     const CategoriaModal = ({ editingCategory, onClose, onSave }) => {
         const [categoryData, setCategoryData] = useState({
@@ -10,12 +9,10 @@
 
         useEffect(() => {
             if (editingCategory) {
-                // Si estamos editando, precargar los datos de la categoría
                 setCategoryData({
                     nombre: editingCategory.nombre || ''
                 });
             } else {
-                // Si es una nueva categoría, inicializar con valores vacíos
                 setCategoryData({
                     nombre: ''
                 });
