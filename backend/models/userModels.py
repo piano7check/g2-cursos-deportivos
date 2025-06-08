@@ -184,12 +184,24 @@ class userModel:
                 conexion.close()
 
     @staticmethod
-    def getTotalUsersCount():
+    def getTotalUsersCount(filtros=None): # Ahora acepta filtros
         conexion = obtenerConexion()
         try:
             with conexion.cursor() as cursor:
-                sql = "SELECT COUNT(*) FROM users"
-                cursor.execute(sql)
+                base_sql = "SELECT COUNT(*) FROM users"
+                condiciones = []
+                valores = []
+
+                if filtros:
+                    for campo, valor in filtros.items():
+                        if campo in ['name', 'lastname', 'email']:
+                            condiciones.append(f"{campo} LIKE %s")
+                            valores.append(f"%{valor}%")
+
+                if condiciones:
+                    base_sql += " WHERE " + " AND ".join(condiciones)
+
+                cursor.execute(base_sql, valores)
                 count = cursor.fetchone()[0]
                 return count
         except Exception as e:

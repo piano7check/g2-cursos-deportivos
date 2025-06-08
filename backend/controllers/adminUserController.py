@@ -119,8 +119,16 @@ class adminUserController:
         try:
             limit = int(request.args.get('limit', 10))
             offset = int(request.args.get('offset', 0))
+            name = request.args.get('name', '')
+            lastname = request.args.get('lastname', '')
+            email = request.args.get('email', '')
 
-            usuarios = userModel.obtenerUsuarios(limit, offset)
+            filtros = {}
+            if name: filtros['name'] = name
+            if lastname: filtros['lastname'] = lastname
+            if email: filtros['email'] = email
+
+            usuarios = userModel.obtenerUsuarios(limit, offset, filtros)
 
             if isinstance(usuarios, dict) and 'error' in usuarios:
                 return jsonify({"message": "Error al obtener usuarios", "error": usuarios["error"]}), 500
@@ -152,7 +160,16 @@ class adminUserController:
     @staticmethod
     def getTotalUsers():
         try:
-            count = userModel.getTotalUsersCount()
+            name = request.args.get('name', '')
+            lastname = request.args.get('lastname', '')
+            email = request.args.get('email', '')
+
+            filtros = {}
+            if name: filtros['name'] = name
+            if lastname: filtros['lastname'] = lastname
+            if email: filtros['email'] = email
+
+            count = userModel.getTotalUsersCount(filtros)
             if isinstance(count, dict) and 'error' in count:
                 return jsonify({"message": "Error al obtener el conteo total de usuarios", "error": count["error"]}), 500
             return jsonify({"total_users": count}), 200
