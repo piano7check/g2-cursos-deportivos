@@ -157,10 +157,18 @@ class userModel:
                 valores = []
 
                 if filtros:
-                    for campo, valor in filtros.items():
-                        if campo in ['name', 'lastname', 'email']:
-                            condiciones.append(f"{campo} LIKE %s")
-                            valores.append(f"%{valor}%")
+                    if 'name' in filtros:
+                        condiciones.append("name LIKE %s")
+                        valores.append(f"%{filtros['name']}%")
+                    if 'lastname' in filtros:
+                        condiciones.append("lastname LIKE %s")
+                        valores.append(f"%{filtros['lastname']}%")
+                    if 'email' in filtros:
+                        condiciones.append("email LIKE %s")
+                        valores.append(f"%{filtros['email']}%")
+                    if 'rol' in filtros and filtros['rol']: 
+                        condiciones.append("rol = %s")
+                        valores.append(filtros['rol'])
 
                 if condiciones:
                     base_sql += " WHERE " + " AND ".join(condiciones)
@@ -184,7 +192,7 @@ class userModel:
                 conexion.close()
 
     @staticmethod
-    def getTotalUsersCount(filtros=None): # Ahora acepta filtros
+    def getTotalUsersCount(filtros=None):
         conexion = obtenerConexion()
         try:
             with conexion.cursor() as cursor:
@@ -193,10 +201,18 @@ class userModel:
                 valores = []
 
                 if filtros:
-                    for campo, valor in filtros.items():
-                        if campo in ['name', 'lastname', 'email']:
-                            condiciones.append(f"{campo} LIKE %s")
-                            valores.append(f"%{valor}%")
+                    if 'name' in filtros:
+                        condiciones.append("name LIKE %s")
+                        valores.append(f"%{filtros['name']}%")
+                    if 'lastname' in filtros:
+                        condiciones.append("lastname LIKE %s")
+                        valores.append(f"%{filtros['lastname']}%")
+                    if 'email' in filtros:
+                        condiciones.append("email LIKE %s")
+                        valores.append(f"%{filtros['email']}%")
+                    if 'rol' in filtros and filtros['rol']: 
+                        condiciones.append("rol = %s")
+                        valores.append(filtros['rol'])
 
                 if condiciones:
                     base_sql += " WHERE " + " AND ".join(condiciones)

@@ -122,11 +122,13 @@ class adminUserController:
             name = request.args.get('name', '')
             lastname = request.args.get('lastname', '')
             email = request.args.get('email', '')
+            rol = request.args.get('rol', '') 
 
             filtros = {}
             if name: filtros['name'] = name
             if lastname: filtros['lastname'] = lastname
             if email: filtros['email'] = email
+            if rol: filtros['rol'] = rol 
 
             usuarios = userModel.obtenerUsuarios(limit, offset, filtros)
 
@@ -163,11 +165,13 @@ class adminUserController:
             name = request.args.get('name', '')
             lastname = request.args.get('lastname', '')
             email = request.args.get('email', '')
+            rol = request.args.get('rol', '')
 
             filtros = {}
             if name: filtros['name'] = name
             if lastname: filtros['lastname'] = lastname
             if email: filtros['email'] = email
+            if rol: filtros['rol'] = rol 
 
             count = userModel.getTotalUsersCount(filtros)
             if isinstance(count, dict) and 'error' in count:
@@ -179,7 +183,7 @@ class adminUserController:
     @staticmethod
     def buscarUsuarioPorCampo():
         try:
-            campos_validos = ['name', 'lastname', 'email']
+            campos_validos = ['name', 'lastname', 'email', 'rol'] 
             filtros = {}
 
             for campo in campos_validos:
@@ -188,7 +192,7 @@ class adminUserController:
                     filtros[campo] = valor
 
             if not filtros:
-                return jsonify({"error": "Debe especificar al menos un campo de búsqueda válido (name, lastname, email)"}), 400
+                return jsonify({"error": "Debe especificar al menos un campo de búsqueda válido (name, lastname, email, rol)"}), 400
 
             limit = int(request.args.get('limit', 10))
             offset = int(request.args.get('offset', 0))
