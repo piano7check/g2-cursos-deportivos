@@ -21,18 +21,6 @@ def editar_perfil_actual():
 def eliminar_cuenta_actual():
     return userProfileController.eliminarCuenta()
 
-# @routes_usuarios.route('/usuarios/<int:id>', methods=['DELETE'])
-# @token_requerido
-# @validarPermisoUsuario
-# def eliminar_usuario(id):
-#     return userProfileController.eliminarCuenta(id)
-
-# @routes_usuarios.route('/usuarios/<int:id>', methods=['PATCH'])
-# @token_requerido
-# @validarPermisoUsuario
-# def editar_usuario(id):
-#     return userProfileController.editarPerfil(id)
-
 @routes_usuarios.route('/logout', methods=['POST'])
 def logout():
     return userProfileController.logoutUsuario()

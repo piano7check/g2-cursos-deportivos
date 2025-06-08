@@ -17,6 +17,7 @@ CREATE TABLE `cursos` (
   `descripcion` text,
   `cupos` int NOT NULL,
   `profesor_id` int NOT NULL,
+  'categoria_id' int NOT NULL,
   PRIMARY KEY (`id`),
   KEY `profesor_id` (`profesor_id`),
   CONSTRAINT `cursos_ibfk_1` FOREIGN KEY (`profesor_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
@@ -68,3 +69,8 @@ CREATE TABLE `validaciones_pago` (
   KEY `reserva_id` (`reserva_id`),
   CONSTRAINT `validaciones_pago_ibfk_1` FOREIGN KEY (`reserva_id`) REFERENCES `reservas` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE 'categorias'(
+  'id' INT NOT NULL AUTO_INCREMENT,
+  'nombre' VARCHAR(100)
+)

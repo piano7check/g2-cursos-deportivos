@@ -32,6 +32,11 @@ def editar_curso(id):
 def buscar_cursos_admin():
     return ControllerCursos.buscarCursos()
 
+#----------------------------------------------------------------------------------------------------#
+@routes_admin.route('/usuarios', methods=['POST'])
+def crear_usuario_admin():
+    return adminUserController.crearUsuario()
+
 @routes_admin.route('/usuarios', methods=['GET'])
 def mostrar_usuarios_admin(): 
     return adminUserController.mostrarUsuarios()
