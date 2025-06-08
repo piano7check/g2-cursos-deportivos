@@ -1,7 +1,7 @@
 from flask import request, jsonify, make_response, g
 import bcrypt
 from models.userModels import userModel
-from schemas.userSchema import validarUsuarioCompleto, validarUsuarioParcial 
+from schemas.userSchema import validarUsuarioCompleto, validarUsuarioParcial
 from utils.buscarUsuario import buscarUsuarioById
 from utils.tokenUsuario import generarToken
 from models.cursosModels import CursosModel
@@ -150,6 +150,16 @@ class adminUserController:
             return jsonify({"error": f"Error inesperado al mostrar usuarios: {str(e)}"}), 500
 
     @staticmethod
+    def getTotalUsers():
+        try:
+            count = userModel.getTotalUsersCount()
+            if isinstance(count, dict) and 'error' in count:
+                return jsonify({"message": "Error al obtener el conteo total de usuarios", "error": count["error"]}), 500
+            return jsonify({"total_users": count}), 200
+        except Exception as e:
+            return jsonify({"error": f"Error inesperado al obtener el conteo de usuarios: {str(e)}"}), 500
+
+    @staticmethod
     def buscarUsuarioPorCampo():
         try:
             campos_validos = ['name', 'lastname', 'email']
@@ -201,4 +211,3 @@ class adminUserController:
         if "error" in result:
             return jsonify({"message": "Error al obtener profesores", "error": result["error"]}), 500
         return jsonify({"profesores": result}), 200
-

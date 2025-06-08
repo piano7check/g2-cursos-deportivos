@@ -1,6 +1,6 @@
 from data.conexion import obtenerConexion
 import pymysql.err
-from datetime import datetime, date 
+from datetime import datetime, date
 from utils.buscarUsuario import buscarUsuarioById
 
 class userModel:
@@ -11,7 +11,10 @@ class userModel:
             conexion = obtenerConexion()
             with conexion.cursor() as cursor:
                 if 'birthdate' in data and isinstance(data['birthdate'], str):
-                    data['birthdate'] = datetime.strptime(data['birthdate'], '%Y-%m-%d').date()
+                    try:
+                        data['birthdate'] = datetime.strptime(data['birthdate'], '%Y-%m-%d').date()
+                    except ValueError:
+                        return {"error": "Formato de fecha de nacimiento inválido en el modelo. Use %Y-%m-%d"}
 
                 sql = """
                     INSERT INTO users (name, lastname, birthdate, email, password, rol)
@@ -88,7 +91,7 @@ class userModel:
                     try:
                         data["birthdate"] = datetime.strptime(data["birthdate"], '%Y-%m-%d').date()
                     except ValueError:
-                        return {"error": "Formato de fecha de nacimiento inválido. Use YYYY-MM-DD"}, 400
+                        return {"error": "Formato de fecha de nacimiento inválido. Use %Y-%m-%d"}, 400
 
 
                 if "name" in data:
@@ -181,13 +184,28 @@ class userModel:
                 conexion.close()
 
     @staticmethod
+    def getTotalUsersCount():
+        conexion = obtenerConexion()
+        try:
+            with conexion.cursor() as cursor:
+                sql = "SELECT COUNT(*) FROM users"
+                cursor.execute(sql)
+                count = cursor.fetchone()[0]
+                return count
+        except Exception as e:
+            return {"error": str(e)}
+        finally:
+            if conexion:
+                conexion.close()
+
+    @staticmethod
     def obtener_profesores():
         conexion = obtenerConexion()
         if conexion is None:
             return {"error": "Error de conexión a BD"}
         try:
             with conexion.cursor(pymysql.cursors.DictCursor) as cursor:
-                sql = "SELECT id, name, lastname FROM users WHERE rol = 'profesor'"
+                sql = "SELECT id, name, lastname, email, rol, birthdate FROM users WHERE rol = 'profesor'"
                 cursor.execute(sql)
                 profesores = cursor.fetchall()
             return profesores
