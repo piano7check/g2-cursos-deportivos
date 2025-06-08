@@ -323,7 +323,7 @@
     position: relative;
     width: 90%;
     max-width: 600px;
-    height: 90vh;
+    height: auto; 
     max-height: 90vh;
     overflow-y: auto;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
@@ -370,11 +370,11 @@
 .formGroup input[type="text"],
 .formGroup input[type="number"],
 .formGroup input[type="time"],
+.formGroup input[type="email"], 
+.formGroup input[type="password"], 
+.formGroup input[type="date"], 
 .formGroup textarea,
-.formGroup select,
-.formGroup input[type="email"],
-.formGroup input[type="password"],
-.formGroup input[type="date"] { /* Añadimos input types para UserModal */
+.formGroup select {
     width: 100%;
     padding: 10px 12px;
     border: 1px solid #ccc;
@@ -733,7 +733,7 @@
     align-items: center;
 }
 
-.searchBar input[type="text"] {
+.searchBar input {
     flex: 1;
     min-width: 150px;
     padding: 10px 12px;
@@ -743,10 +743,11 @@
     transition: border-color 0.2s ease;
 }
 
-.searchBar input[type="text"]:focus {
+.searchBar input:focus {
     border-color: #3498db;
     outline: none;
 }
+
 
 .searchButton, .clearSearchButton {
     background-color: #3498db;
@@ -776,7 +777,6 @@
     transform: translateY(-2px);
 }
 
-/* Nueva clase para el contenedor de paginación */
 .paginationControls {
     display: flex;
     justify-content: center;
@@ -789,7 +789,6 @@
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
-/* Estilos para los botones de paginación */
 .paginationButton {
     background-color: #3498db;
     color: white;
@@ -828,6 +827,7 @@
         align-items: stretch;
     }
     .searchBar input[type="text"],
+    .searchBar input[type="email"],
     .searchButton,
     .clearSearchButton {
         width: 100%;
@@ -841,4 +841,28 @@
         width: 100%;
         justify-content: center;
     }
+    .modal {
+        max-width: 95%; 
+        padding: 20px;
+    }
+}
+
+.formGroup input[type="date"] {
+    appearance: none; 
+    -webkit-appearance: none; 
+    box-sizing: border-box; 
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+    color: #333;
+    background-color: #fff;
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.formGroup input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.5);
+    opacity: 0.7;
+    cursor: pointer;
 }

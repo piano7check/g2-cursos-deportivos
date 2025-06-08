@@ -53,11 +53,16 @@ const AdminDashboard = () => {
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-    const [searchTermNombre, setSearchTermNombre] = useState('');
-    const [searchTermCategoria, setSearchTermCategoria] = useState('');
-    const [searchTermProfesor, setSearchTermProfesor] = useState('');
+    const [searchTermCourseName, setSearchTermCourseName] = useState('');
+    const [searchTermCourseCategory, setSearchTermCourseCategory] = useState('');
+    const [searchTermCourseProfessor, setSearchTermCourseProfessor] = useState('');
+
+    const [searchTermUserName, setSearchTermUserName] = useState('');
+    const [searchTermUserLastname, setSearchTermUserLastname] = useState('');
+    const [searchTermUserEmail, setSearchTermUserEmail] = useState('');
 
     const debounceTimeoutRef = useRef(null);
+    const debounceTimeoutUserSearchRef = useRef(null);
 
     const closeStatusModal = () => {
         setShowStatusModal(false);
@@ -142,12 +147,12 @@ const AdminDashboard = () => {
         }
     }, [navigate]);
 
-    const fetchUsers = useCallback(async (page, limit) => {
+    const fetchUsers = useCallback(async (page, limit, name = '', lastname = '', email = '') => {
         setLoadingUsers(true);
         setErrorUsers(null);
         try {
             const offset = (page - 1) * limit;
-            const response = await getAllUsers(limit, offset);
+            const response = await getAllUsers(limit, offset, name, lastname, email);
             if (response && response.usuarios) {
                 setUsers(response.usuarios);
             } else {
@@ -166,9 +171,9 @@ const AdminDashboard = () => {
         }
     }, [navigate]);
 
-    const fetchTotalUsers = useCallback(async () => {
+    const fetchTotalUsers = useCallback(async (name = '', lastname = '', email = '') => {
         try {
-            const response = await getTotalUsersCount();
+            const response = await getTotalUsersCount(name, lastname, email);
             if (response && typeof response.total_users === 'number') {
                 setTotalUsersCount(response.total_users);
             } else {
@@ -187,7 +192,7 @@ const AdminDashboard = () => {
                 fetchCourses();
                 fetchProfessors();
                 fetchCategories();
-                fetchTotalUsers();
+                fetchTotalUsers(); 
             } else {
                 navigate('/login');
             }
@@ -196,9 +201,10 @@ const AdminDashboard = () => {
 
     useEffect(() => {
         if (activeTab === 'users' && contextUsuario) {
-            fetchUsers(currentPage, usersPerPage);
+            fetchUsers(currentPage, usersPerPage, searchTermUserName, searchTermUserLastname, searchTermUserEmail);
+            fetchTotalUsers(searchTermUserName, searchTermUserLastname, searchTermUserEmail);
         }
-    }, [activeTab, currentPage, usersPerPage, fetchUsers, contextUsuario]);
+    }, [activeTab, currentPage, usersPerPage, fetchUsers, fetchTotalUsers, contextUsuario, searchTermUserName, searchTermUserLastname, searchTermUserEmail]);
 
 
     useEffect(() => {
@@ -206,9 +212,9 @@ const AdminDashboard = () => {
             clearTimeout(debounceTimeoutRef.current);
         }
 
-        if (searchTermNombre || searchTermCategoria || searchTermProfesor) {
+        if (searchTermCourseName || searchTermCourseCategory || searchTermCourseProfessor) {
             debounceTimeoutRef.current = setTimeout(() => {
-                fetchCourses(searchTermNombre, searchTermCategoria, searchTermProfesor);
+                fetchCourses(searchTermCourseName, searchTermCourseCategory, searchTermCourseProfessor);
             }, 500);
         } else {
             fetchCourses();
@@ -219,7 +225,7 @@ const AdminDashboard = () => {
                 clearTimeout(debounceTimeoutRef.current);
             }
         };
-    }, [searchTermNombre, searchTermCategoria, searchTermProfesor, fetchCourses]);
+    }, [searchTermCourseName, searchTermCourseCategory, searchTermCourseProfessor, fetchCourses]);
 
     const handleNewUserClick = () => {
         setEditingUser(null);
@@ -246,8 +252,8 @@ const AdminDashboard = () => {
             }
             setShowUserModal(false);
             setEditingUser(null);
-            fetchUsers(currentPage, usersPerPage);
-            fetchTotalUsers();
+            fetchUsers(currentPage, usersPerPage, searchTermUserName, searchTermUserLastname, searchTermUserEmail);
+            fetchTotalUsers(searchTermUserName, searchTermUserLastname, searchTermUserEmail);
         } catch (err) {
             const errorMessage = err.data?.error || err.message || 'Error desconocido al guardar usuario.';
             setStatusModalMessage(`Error al guardar usuario: ${errorMessage}`);
@@ -269,8 +275,8 @@ const AdminDashboard = () => {
                 setStatusModalMessage(`El usuario se eliminó correctamente.`);
                 setStatusModalType('success');
                 setShowStatusModal(true);
-                fetchUsers(currentPage, usersPerPage);
-                fetchTotalUsers();
+                fetchUsers(currentPage, usersPerPage, searchTermUserName, searchTermUserLastname, searchTermUserEmail);
+                fetchTotalUsers(searchTermUserName, searchTermUserLastname, searchTermUserEmail);
             } catch (err) {
                 const errorMessage = err.data?.error || err.message || 'Error desconocido al eliminar usuario.';
                 setStatusModalMessage(`Error al eliminar usuario: ${errorMessage}`);
@@ -287,6 +293,14 @@ const AdminDashboard = () => {
     const handlePageChange = (pageNumber) => {
         setCurrentPage(pageNumber);
     };
+
+    const handleClearUserSearch = () => {
+        setSearchTermUserName('');
+        setSearchTermUserLastname('');
+        setSearchTermUserEmail('');
+        setCurrentPage(1);
+    };
+
 
     const handleNewCourseClick = () => {
         setEditingCourse(null);
@@ -344,7 +358,7 @@ const AdminDashboard = () => {
             }
             setShowCourseModal(false);
             setEditingCourse(null);
-            fetchCourses(searchTermNombre, searchTermCategoria, searchTermProfesor);
+            fetchCourses(searchTermCourseName, searchTermCourseCategory, searchTermCourseProfessor);
             triggerCoursesUpdate();
         } catch (err) {
             const errorMessage = err.data?.detalle || err.message || 'Error desconocido al guardar curso.';
@@ -367,7 +381,7 @@ const AdminDashboard = () => {
                 setStatusModalMessage(`El curso se eliminó correctamente.`);
                 setStatusModalType('success');
                 setShowStatusModal(true);
-                fetchCourses(searchTermNombre, searchTermCategoria, searchTermProfesor);
+                fetchCourses(searchTermCourseName, searchTermCourseCategory, searchTermCourseProfessor);
                 triggerCoursesUpdate();
             } catch (err) {
                 const errorMessage = err.data?.detalle || err.message || 'Error desconocido al eliminar curso.';
@@ -467,10 +481,10 @@ const AdminDashboard = () => {
         }
     };
 
-    const handleClearSearch = () => {
-        setSearchTermNombre('');
-        setSearchTermCategoria('');
-        setSearchTermProfesor('');
+    const handleClearCourseSearch = () => {
+        setSearchTermCourseName('');
+        setSearchTermCourseCategory('');
+        setSearchTermCourseProfessor('');
     };
 
     if (cargandoContext) {
@@ -552,6 +566,29 @@ const AdminDashboard = () => {
                                     <FaPlus /> Nuevo Usuario
                                 </button>
                             </div>
+                            <div className={styles.searchBar}>
+                                <input
+                                    type="text"
+                                    placeholder="Buscar por nombre"
+                                    value={searchTermUserName}
+                                    onChange={(e) => setSearchTermUserName(e.target.value)}
+                                />
+                                <input
+                                    type="text"
+                                    placeholder="Buscar por apellido"
+                                    value={searchTermUserLastname}
+                                    onChange={(e) => setSearchTermUserLastname(e.target.value)}
+                                />
+                                <input
+                                    type="email"
+                                    placeholder="Buscar por email"
+                                    value={searchTermUserEmail}
+                                    onChange={(e) => setSearchTermUserEmail(e.target.value)}
+                                />
+                                <button className={styles.clearSearchButton} onClick={handleClearUserSearch}>
+                                    <FaRedo /> Limpiar Búsqueda
+                                </button>
+                            </div>
                             <UsersTable
                                 users={users}
                                 loading={loadingUsers}
@@ -581,22 +618,22 @@ const AdminDashboard = () => {
                                 <input
                                     type="text"
                                     placeholder="Buscar por nombre de curso"
-                                    value={searchTermNombre}
-                                    onChange={(e) => setSearchTermNombre(e.target.value)}
+                                    value={searchTermCourseName}
+                                    onChange={(e) => setSearchTermCourseName(e.target.value)}
                                 />
                                 <input
                                     type="text"
                                     placeholder="Buscar por categoría"
-                                    value={searchTermCategoria}
-                                    onChange={(e) => setSearchTermCategoria(e.target.value)}
+                                    value={searchTermCourseCategory}
+                                    onChange={(e) => setSearchTermCourseCategory(e.target.value)}
                                 />
                                 <input
                                     type="text"
                                     placeholder="Buscar por profesor"
-                                    value={searchTermProfesor}
-                                    onChange={(e) => setSearchTermProfesor(e.target.value)}
+                                    value={searchTermCourseProfessor}
+                                    onChange={(e) => setSearchTermCourseProfessor(e.target.value)}
                                 />
-                                <button className={styles.clearSearchButton} onClick={handleClearSearch}>
+                                <button className={styles.clearSearchButton} onClick={handleClearCourseSearch}>
                                     <FaRedo /> Limpiar Búsqueda
                                 </button>
                             </div>
