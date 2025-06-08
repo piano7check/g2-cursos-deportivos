@@ -83,7 +83,7 @@ const UserModal = ({ editingUser, onClose, onSave }) => {
                     <div className={styles.formGroup}>
                         <label htmlFor="email">Email:</label>
                         <input
-                            type="email" /* Este input ahora será estilizado por la nueva regla CSS */
+                            type="email" 
                             id="email"
                             name="email"
                             value={userData.email}
@@ -94,7 +94,7 @@ const UserModal = ({ editingUser, onClose, onSave }) => {
                     <div className={styles.formGroup}>
                         <label htmlFor="password">Contraseña {editingUser ? '(dejar vacío para no cambiar)' : '*'}:</label>
                         <input
-                            type="password" /* Este input ahora será estilizado por la nueva regla CSS */
+                            type="password" 
                             id="password"
                             name="password"
                             value={userData.password}
@@ -120,7 +120,7 @@ const UserModal = ({ editingUser, onClose, onSave }) => {
                     <div className={styles.formGroup}>
                         <label htmlFor="birthdate">Fecha de Nacimiento:</label>
                         <input
-                            type="date" /* Este input ahora será estilizado por la nueva regla CSS */
+                            type="date" 
                             id="birthdate"
                             name="birthdate"
                             value={userData.birthdate}
