@@ -5,7 +5,7 @@ import { FaUsers, FaChalkboardTeacher, FaBookOpen, FaPlus, FaSignOutAlt, FaHome,
 import { useUsuarioContext } from '../../context/UsuarioContext';
 import { getCursos, createCurso, updateCurso, deleteCurso, getProfesores, buscarCursos } from '../../services/cursosService';
 import { getAllCategorias, createCategoria, updateCategoria, deleteCategoria } from '../../services/categoriasService';
-import { logoutUser } from '../../services/userService';
+import { logoutUser, getAllUsers, createUserAdmin, updateUserAdmin, deleteUserAdmin, getTotalUsersCount } from '../../services/userService';
 
 import CursosTable from '../../components/admin/cursos/CursosTable';
 import CourseModal from '../../components/admin/cursos/CourseModal';
@@ -13,6 +13,8 @@ import CategoriasTable from '../../components/admin/categorias/CategoriasTable';
 import CategoriaModal from '../../components/admin/categorias/CategoriaModal';
 import MessageModal from '../../components/common/MessageModal';
 import UserProfileWidget from '../../components/common/UserProfileWidget';
+import UsersTable from '../../components/admin/users/UsersTable';
+import UserModal from '../../components/admin/users/UserModal';
 
 import styles from './AdminDashboard.module.css';
 
@@ -21,9 +23,10 @@ const AdminDashboard = () => {
     const navigate = useNavigate();
 
     const [activeTab, setActiveTab] = useState('overview');
+
     const [showCourseModal, setShowCourseModal] = useState(false);
     const [editingCourse, setEditingCourse] = useState(null);
-    const [professors, setProfessors] = useState([]); 
+    const [professors, setProfessors] = useState([]);
     const [courses, setCourses] = useState([]);
     const [loadingCourses, setLoadingCourses] = useState(true);
     const [errorCourses, setErrorCourses] = useState(null);
@@ -33,6 +36,15 @@ const AdminDashboard = () => {
     const [errorCategories, setErrorCategories] = useState(null);
     const [showCategoryModal, setShowCategoryModal] = useState(false);
     const [editingCategory, setEditingCategory] = useState(null);
+
+    const [users, setUsers] = useState([]);
+    const [loadingUsers, setLoadingUsers] = useState(true);
+    const [errorUsers, setErrorUsers] = useState(null);
+    const [showUserModal, setShowUserModal] = useState(false);
+    const [editingUser, setEditingUser] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [usersPerPage] = useState(10);
+    const [totalUsersCount, setTotalUsersCount] = useState(0);
 
     const [showStatusModal, setShowStatusModal] = useState(false);
     const [statusModalMessage, setStatusModalMessage] = useState('');
@@ -66,11 +78,11 @@ const AdminDashboard = () => {
             }
             const fetchedCourses = response.cursos.map(course => ({
                 id: course.id,
-                nombre: course.nombre, 
-                descripcion: course.descripcion, 
-                cupos: course.cupos, 
-                profesor_id: course.profesor_id, 
-                profesor_nombre: `${course.profesor_nombre || ''} ${course.profesor_apellido || ''}`.trim(), 
+                nombre: course.nombre,
+                descripcion: course.descripcion,
+                cupos: course.cupos,
+                profesor_id: course.profesor_id,
+                profesor_nombre: `${course.profesor_nombre || ''} ${course.profesor_apellido || ''}`.trim(),
                 horarios: course.horarios,
                 categoria_id: course.categoria_id,
                 categoria_nombre: course.categoria_nombre
@@ -94,7 +106,7 @@ const AdminDashboard = () => {
             if (fetchedProfs && fetchedProfs.profesores) {
                 setProfessors(fetchedProfs.profesores);
             } else {
-                setProfessors([]); 
+                setProfessors([]);
                 console.warn("No se encontraron profesores o el formato de datos es incorrecto:", fetchedProfs);
             }
         } catch (err) {
@@ -113,10 +125,10 @@ const AdminDashboard = () => {
         try {
             const response = await getAllCategorias();
             if (response && response.categorias) {
-                 setCategories(response.categorias);
+                setCategories(response.categorias);
             } else {
-                 setCategories([]); 
-                 console.warn("No se encontraron categorías o el formato de datos es incorrecto:", response);
+                setCategories([]);
+                console.warn("No se encontraron categorías o el formato de datos es incorrecto:", response);
             }
         } catch (err) {
             setStatusModalMessage(err.message || 'Error al cargar las categorías. Por favor, intente de nuevo.');
@@ -130,17 +142,64 @@ const AdminDashboard = () => {
         }
     }, [navigate]);
 
+    const fetchUsers = useCallback(async (page, limit) => {
+        setLoadingUsers(true);
+        setErrorUsers(null);
+        try {
+            const offset = (page - 1) * limit;
+            const response = await getAllUsers(limit, offset);
+            if (response && response.usuarios) {
+                setUsers(response.usuarios);
+            } else {
+                setUsers([]);
+                console.warn("No se encontraron usuarios o el formato de datos es incorrecto:", response);
+            }
+        } catch (err) {
+            setStatusModalMessage(err.message || 'Error al cargar los usuarios. Por favor, intente de nuevo.');
+            setStatusModalType('error');
+            setShowStatusModal(true);
+            if (err.status === 401) {
+                navigate('/login');
+            }
+        } finally {
+            setLoadingUsers(false);
+        }
+    }, [navigate]);
+
+    const fetchTotalUsers = useCallback(async () => {
+        try {
+            const response = await getTotalUsersCount();
+            if (response && typeof response.total_users === 'number') {
+                setTotalUsersCount(response.total_users);
+            } else {
+                console.warn("No se pudo obtener el conteo total de usuarios o el formato es incorrecto:", response);
+                setTotalUsersCount(0);
+            }
+        } catch (err) {
+            console.error('Error al obtener el conteo total de usuarios:', err);
+            setTotalUsersCount(0);
+        }
+    }, []);
+
     useEffect(() => {
         if (!cargandoContext) {
             if (contextUsuario) {
-                fetchCourses(); 
+                fetchCourses();
                 fetchProfessors();
                 fetchCategories();
+                fetchTotalUsers();
             } else {
                 navigate('/login');
             }
         }
-    }, [cargandoContext, contextUsuario, fetchCourses, fetchProfessors, fetchCategories, navigate]);
+    }, [cargandoContext, contextUsuario, fetchCourses, fetchProfessors, fetchCategories, fetchTotalUsers, navigate]);
+
+    useEffect(() => {
+        if (activeTab === 'users' && contextUsuario) {
+            fetchUsers(currentPage, usersPerPage);
+        }
+    }, [activeTab, currentPage, usersPerPage, fetchUsers, contextUsuario]);
+
 
     useEffect(() => {
         if (debounceTimeoutRef.current) {
@@ -150,7 +209,7 @@ const AdminDashboard = () => {
         if (searchTermNombre || searchTermCategoria || searchTermProfesor) {
             debounceTimeoutRef.current = setTimeout(() => {
                 fetchCourses(searchTermNombre, searchTermCategoria, searchTermProfesor);
-            }, 500); 
+            }, 500);
         } else {
             fetchCourses();
         }
@@ -160,7 +219,74 @@ const AdminDashboard = () => {
                 clearTimeout(debounceTimeoutRef.current);
             }
         };
-    }, [searchTermNombre, searchTermCategoria, searchTermProfesor, fetchCourses]); 
+    }, [searchTermNombre, searchTermCategoria, searchTermProfesor, fetchCourses]);
+
+    const handleNewUserClick = () => {
+        setEditingUser(null);
+        setShowUserModal(true);
+    };
+
+    const handleEditUserClick = (user) => {
+        setEditingUser(user);
+        setShowUserModal(true);
+    };
+
+    const handleSaveUser = async (userData) => {
+        try {
+            if (editingUser) {
+                await updateUserAdmin(editingUser.id, userData);
+                setStatusModalMessage(`El usuario "${userData.name} ${userData.lastname}" se actualizó correctamente.`);
+                setStatusModalType('success');
+                setShowStatusModal(true);
+            } else {
+                const response = await createUserAdmin(userData);
+                setStatusModalMessage(`El usuario "${response.name || userData.name}" se creó correctamente.`);
+                setStatusModalType('success');
+                setShowStatusModal(true);
+            }
+            setShowUserModal(false);
+            setEditingUser(null);
+            fetchUsers(currentPage, usersPerPage);
+            fetchTotalUsers();
+        } catch (err) {
+            const errorMessage = err.data?.error || err.message || 'Error desconocido al guardar usuario.';
+            setStatusModalMessage(`Error al guardar usuario: ${errorMessage}`);
+            setStatusModalType('error');
+            setShowStatusModal(true);
+            if (err.status === 401) {
+                navigate('/login');
+            }
+        }
+    };
+
+    const handleDeleteUser = async (userId) => {
+        setStatusModalMessage('¿Está seguro de que desea eliminar este usuario? Esta acción es irreversible.');
+        setStatusModalType('confirm');
+        setStatusModalOnConfirm(() => async () => {
+            closeStatusModal();
+            try {
+                await deleteUserAdmin(userId);
+                setStatusModalMessage(`El usuario se eliminó correctamente.`);
+                setStatusModalType('success');
+                setShowStatusModal(true);
+                fetchUsers(currentPage, usersPerPage);
+                fetchTotalUsers();
+            } catch (err) {
+                const errorMessage = err.data?.error || err.message || 'Error desconocido al eliminar usuario.';
+                setStatusModalMessage(`Error al eliminar usuario: ${errorMessage}`);
+                setStatusModalType('error');
+                setShowStatusModal(true);
+                if (err.status === 401) {
+                    navigate('/login');
+                }
+            }
+        });
+        setShowStatusModal(true);
+    };
+
+    const handlePageChange = (pageNumber) => {
+        setCurrentPage(pageNumber);
+    };
 
     const handleNewCourseClick = () => {
         setEditingCourse(null);
@@ -170,11 +296,11 @@ const AdminDashboard = () => {
     const handleEditCourseClick = (course) => {
         setEditingCourse({
             id: course.id,
-            nombre: course.nombre, 
-            descripcion: course.descripcion, 
-            cupos: course.cupos, 
-            profesor_id: course.profesor_id ? String(course.profesor_id) : '', 
-            categoria_id: course.categoria_id ? String(course.categoria_id) : '', 
+            nombre: course.nombre,
+            descripcion: course.descripcion,
+            cupos: course.cupos,
+            profesor_id: course.profesor_id ? String(course.profesor_id) : '',
+            categoria_id: course.categoria_id ? String(course.categoria_id) : '',
             horarios: course.horarios && course.horarios.length > 0
                 ? course.horarios.map(h => ({
                     dia: h.dia,
@@ -218,8 +344,8 @@ const AdminDashboard = () => {
             }
             setShowCourseModal(false);
             setEditingCourse(null);
-            fetchCourses(searchTermNombre, searchTermCategoria, searchTermProfesor); 
-            triggerCoursesUpdate(); 
+            fetchCourses(searchTermNombre, searchTermCategoria, searchTermProfesor);
+            triggerCoursesUpdate();
         } catch (err) {
             const errorMessage = err.data?.detalle || err.message || 'Error desconocido al guardar curso.';
             setStatusModalMessage(`Error al guardar curso: ${errorMessage}`);
@@ -235,13 +361,13 @@ const AdminDashboard = () => {
         setStatusModalMessage('¿Está seguro de que desea eliminar este curso? Esta acción es irreversible.');
         setStatusModalType('confirm');
         setStatusModalOnConfirm(() => async () => {
-            closeStatusModal(); 
+            closeStatusModal();
             try {
                 await deleteCurso(courseId);
                 setStatusModalMessage(`El curso se eliminó correctamente.`);
                 setStatusModalType('success');
                 setShowStatusModal(true);
-                fetchCourses(searchTermNombre, searchTermCategoria, searchTermProfesor); 
+                fetchCourses(searchTermNombre, searchTermCategoria, searchTermProfesor);
                 triggerCoursesUpdate();
             } catch (err) {
                 const errorMessage = err.data?.detalle || err.message || 'Error desconocido al eliminar curso.';
@@ -253,7 +379,7 @@ const AdminDashboard = () => {
                 }
             }
         });
-        setShowStatusModal(true); 
+        setShowStatusModal(true);
     };
 
     const handleNewCategoryClick = () => {
@@ -314,14 +440,14 @@ const AdminDashboard = () => {
                 }
             }
         });
-        setShowStatusModal(true); 
+        setShowStatusModal(true);
     };
 
     const handleLogout = async () => {
         try {
             await logoutUser();
-            setUsuario(null); 
-            navigate('/login'); 
+            setUsuario(null);
+            navigate('/login');
         } catch (err) {
             console.error('Error al cerrar sesión:', err);
             setStatusModalMessage(`Error al cerrar sesión: ${err.message || 'Error desconocido'}`);
@@ -371,7 +497,7 @@ const AdminDashboard = () => {
         <div className={styles.adminDashboard}>
             <aside className={`${styles.sidebar} ${isSidebarOpen ? styles.sidebarOpen : ''}`}>
                 <button
-                    className={styles.closeSidebarButton} 
+                    className={styles.closeSidebarButton}
                     onClick={() => setIsSidebarOpen(false)}
                 >
                     <FaTimes />
@@ -380,7 +506,7 @@ const AdminDashboard = () => {
                     <h2>Admin Panel</h2>
                     <UserProfileWidget />
                 </div>
-                <nav className={styles.nav}> 
+                <nav className={styles.nav}>
                     <MenuItem icon={<FaHome />} text="Resumen" onClick={() => setActiveTab('overview')} active={activeTab === 'overview'} />
                     <MenuItem icon={<FaUsers />} text="Gestión de Usuarios" onClick={() => setActiveTab('users')} active={activeTab === 'users'} />
                     <MenuItem icon={<FaChalkboardTeacher />} text="Gestión de Profesores" onClick={() => setActiveTab('professors')} active={activeTab === 'professors'} />
@@ -398,9 +524,9 @@ const AdminDashboard = () => {
             </aside>
 
             <div className={styles.mainContent}>
-                <header className={styles.header}> 
+                <header className={styles.header}>
                     <button
-                        className={styles.menuButton} 
+                        className={styles.menuButton}
                         onClick={() => setIsSidebarOpen(true)}
                     >
                         <FaBars />
@@ -412,7 +538,7 @@ const AdminDashboard = () => {
                     {activeTab === 'overview' && (
                         <div className={styles.overviewSection}>
                             <div className={styles.statsGrid}>
-                                <StatCard title="Usuarios Totales" value="150" icon={<FaUsers />} />
+                                <StatCard title="Usuarios Totales" value={totalUsersCount} icon={<FaUsers />} />
                                 <StatCard title="Profesores Activos" value={professors.length} icon={<FaChalkboardTeacher />} />
                                 <StatCard title="Cursos Publicados" value={courses.length} icon={<FaBookOpen />} />
                                 <StatCard title="Categorías Registradas" value={categories.length} icon={<FaTags />} />
@@ -421,16 +547,31 @@ const AdminDashboard = () => {
                     )}
                     {activeTab === 'users' && (
                         <SectionCard>
-                            <p className={styles.text}>Aquí irá la tabla y gestión de usuarios.</p> 
+                            <div className={styles.sectionHeader}>
+                                <button className={styles.addButton} onClick={handleNewUserClick}>
+                                    <FaPlus /> Nuevo Usuario
+                                </button>
+                            </div>
+                            <UsersTable
+                                users={users}
+                                loading={loadingUsers}
+                                error={errorUsers}
+                                onEdit={handleEditUserClick}
+                                onDelete={handleDeleteUser}
+                                currentPage={currentPage}
+                                itemsPerPage={usersPerPage}
+                                totalItems={totalUsersCount}
+                                onPageChange={handlePageChange}
+                            />
                         </SectionCard>
                     )}
                     {activeTab === 'professors' && (
                         <SectionCard>
-                            <p className={styles.text}>Aquí irá la tabla y gestión de profesores.</p> 
+                            <p className={styles.text}>Aquí irá la tabla y gestión de profesores. (Los datos de profesores ya se cargan y se usan en el resumen)</p>
                         </SectionCard>
                     )}
                     {activeTab === 'courses' && (
-                        <SectionCard> 
+                        <SectionCard>
                             <div className={styles.sectionHeader}>
                                 <button className={styles.addButton} onClick={handleNewCourseClick}>
                                     <FaPlus /> Nuevo Curso
@@ -455,10 +596,6 @@ const AdminDashboard = () => {
                                     value={searchTermProfesor}
                                     onChange={(e) => setSearchTermProfesor(e.target.value)}
                                 />
-                                {/* Eliminamos los botones de Buscar y Limpiar manuales */}
-                                {/* <button className={styles.searchButton} onClick={handleSearchCourses}>
-                                    <FaSearch /> Buscar
-                                </button> */}
                                 <button className={styles.clearSearchButton} onClick={handleClearSearch}>
                                     <FaRedo /> Limpiar Búsqueda
                                 </button>
@@ -473,7 +610,7 @@ const AdminDashboard = () => {
                         </SectionCard>
                     )}
                     {activeTab === 'categories' && (
-                        <SectionCard> 
+                        <SectionCard>
                             <div className={styles.sectionHeader}>
                                 <button className={styles.addButton} onClick={handleNewCategoryClick}>
                                     <FaPlus /> Nueva Categoría
@@ -494,8 +631,8 @@ const AdminDashboard = () => {
             {showCourseModal && (
                 <CourseModal
                     editingCourse={editingCourse}
-                    professors={professors} 
-                    categories={categories} 
+                    professors={professors}
+                    categories={categories}
                     onClose={() => { setShowCourseModal(false); setEditingCourse(null); }}
                     onSave={handleSaveCourse}
                 />
@@ -506,6 +643,14 @@ const AdminDashboard = () => {
                     editingCategory={editingCategory}
                     onClose={() => { setShowCategoryModal(false); setEditingCategory(null); }}
                     onSave={handleSaveCategory}
+                />
+            )}
+
+            {showUserModal && (
+                <UserModal
+                    editingUser={editingUser}
+                    onClose={() => { setShowUserModal(false); setEditingUser(null); }}
+                    onSave={handleSaveUser}
                 />
             )}
 
@@ -523,26 +668,26 @@ const AdminDashboard = () => {
 
 const MenuItem = ({ icon, text, onClick, active }) => (
     <li
-        className={`${styles.navItem} ${active ? styles.active : ''}`} 
+        className={`${styles.navItem} ${active ? styles.active : ''}`}
         onClick={onClick}
     >
         {icon}
-        <span className={styles.navText}>{text}</span> 
+        <span className={styles.navText}>{text}</span>
     </li>
 );
 
 const StatCard = ({ title, value, icon }) => (
-    <div className={styles.statCard}> 
+    <div className={styles.statCard}>
         <h3>{title}</h3>
         <p>{value}</p>
-        <div className={styles.statIcon}> 
+        <div className={styles.statIcon}>
             {icon}
         </div>
     </div>
 );
 
 const SectionCard = ({ children }) => (
-    <div className={styles.dashboardSection}> 
+    <div className={styles.dashboardSection}>
         {children}
     </div>
 );

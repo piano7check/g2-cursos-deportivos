@@ -1,8 +1,8 @@
 import React from 'react';
-import { FaEdit, FaTrash } from 'react-icons/fa';
-import styles from '../../../routes/admin/AdminDashboard.module.css'; 
+import { FaEdit, FaTrash, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import styles from '../../../routes/admin/AdminDashboard.module.css';
 
-const UsersTable = ({ users, loading, error, onEdit, onDelete }) => {
+const UsersTable = ({ users, loading, error, onEdit, onDelete, currentPage, itemsPerPage, totalItems, onPageChange }) => {
     if (loading) {
         return (
             <div className={styles.loadingContainer}>
@@ -28,6 +28,8 @@ const UsersTable = ({ users, loading, error, onEdit, onDelete }) => {
         );
     }
 
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+
     return (
         <div className={styles.tableContainer}>
             <table className={styles.dataTable}>
@@ -38,8 +40,7 @@ const UsersTable = ({ users, loading, error, onEdit, onDelete }) => {
                         <th>Apellido</th>
                         <th>Email</th>
                         <th>Rol</th>
-                        <th>Teléfono</th>
-                        <th>Dirección</th>
+                        <th>Nacimiento</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -51,8 +52,7 @@ const UsersTable = ({ users, loading, error, onEdit, onDelete }) => {
                             <td>{user.lastname}</td>
                             <td>{user.email}</td>
                             <td>{user.rol}</td>
-                            <td>{user.phone_number}</td>
-                            <td>{user.address}</td>
+                            <td>{user.birthdate ? user.birthdate.split('T')[0] : 'N/A'}</td>
                             <td className={styles.actionsCell}>
                                 <button
                                     className={`${styles.actionBtnIcon} ${styles.editActionBtn}`}
@@ -73,6 +73,26 @@ const UsersTable = ({ users, loading, error, onEdit, onDelete }) => {
                     ))}
                 </tbody>
             </table>
+
+            {totalItems > itemsPerPage && (
+                <div className={styles.paginationControls}>
+                    <button
+                        onClick={() => onPageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className={styles.paginationButton}
+                    >
+                        <FaChevronLeft /> Anterior
+                    </button>
+                    <span>Página {currentPage} de {totalPages}</span>
+                    <button
+                        onClick={() => onPageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        className={styles.paginationButton}
+                    >
+                        Siguiente <FaChevronRight />
+                    </button>
+                </div>
+            )}
         </div>
     );
 };

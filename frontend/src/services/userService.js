@@ -74,3 +74,51 @@ export const deleteCurrentUser = async () => {
     });
     return handleResponse(response);
 };
+
+export const getAllUsers = async (limit = 10, offset = 0) => {
+    const response = await fetch(`${API_BASE_URL}/admin/usuarios?limit=${limit}&offset=${offset}`, {
+        method: 'GET',
+        credentials: 'include',
+    });
+    return handleResponse(response);
+};
+
+export const getTotalUsersCount = async () => {
+    const response = await fetch(`${API_BASE_URL}/admin/usuarios/count`, {
+        method: 'GET',
+        credentials: 'include',
+    });
+    return handleResponse(response);
+};
+
+export const createUserAdmin = async (userData) => {
+    const response = await fetch(`${API_BASE_URL}/admin/usuarios`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+        credentials: 'include',
+    });
+    return handleResponse(response);
+};
+
+export const updateUserAdmin = async (userId, userData) => {
+    const response = await fetch(`${API_BASE_URL}/admin/usuarios/${userId}`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+        credentials: 'include',
+    });
+    return handleResponse(response);
+};
+
+export const deleteUserAdmin = async (userId) => {
+    const response = await fetch(`${API_BASE_URL}/admin/usuarios/${userId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+    });
+    return handleResponse(response);
+};

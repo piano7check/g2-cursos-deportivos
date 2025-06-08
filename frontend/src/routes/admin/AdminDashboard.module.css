@@ -321,9 +321,9 @@
     padding: 30px;
     border-radius: 12px;
     position: relative;
-    width: 90%; 
+    width: 90%;
     max-width: 600px;
-    height: 90vh; 
+    height: 90vh;
     max-height: 90vh;
     overflow-y: auto;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
@@ -371,7 +371,10 @@
 .formGroup input[type="number"],
 .formGroup input[type="time"],
 .formGroup textarea,
-.formGroup select {
+.formGroup select,
+.formGroup input[type="email"],
+.formGroup input[type="password"],
+.formGroup input[type="date"] { /* Añadimos input types para UserModal */
     width: 100%;
     padding: 10px 12px;
     border: 1px solid #ccc;
@@ -412,7 +415,7 @@
 
 .horarioItem .formGroup {
     flex: 1 1 150px;
-    margin-bottom: 0; 
+    margin-bottom: 0;
     min-width: 120px;
 }
 
@@ -517,21 +520,21 @@
 
 .messageModal {
     background: white;
-    padding: 25px; 
+    padding: 25px;
     border-radius: 12px;
-    width: 90%; 
-    max-width: 350px; 
+    width: 90%;
+    max-width: 350px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     animation: fadeInScale 0.3s ease-out forwards;
     display: flex;
     flex-direction: column;
     align-items: center;
-    text-align: center; 
+    text-align: center;
     box-sizing: border-box;
 }
 
-.messageIcon { 
-    font-size: 4rem; 
+.messageIcon {
+    font-size: 4rem;
     margin-bottom: 15px;
 }
 
@@ -540,17 +543,17 @@
 .errorModal .messageIcon { color: #dc3545; }
 .confirmModal .messageIcon { color: #f39c12; }
 
-.messageTitle { 
+.messageTitle {
     margin-top: 0;
     margin-bottom: 15px;
     font-size: 1.4rem;
-    color: #333; 
+    color: #333;
     width: 100%;
     text-align: center;
     word-break: break-word;
 }
 
-.messageText { 
+.messageText {
     margin-bottom: 25px;
     color: #555;
     line-height: 1.4;
@@ -561,23 +564,23 @@
 
 .messageActions {
     display: flex;
-    flex-wrap: wrap; 
-    justify-content: center; 
-    gap: 15px; 
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
     width: 100%;
 }
 
-.messageButton { 
+.messageButton {
     padding: 10px 15px;
     border: none;
     border-radius: 8px;
     cursor: pointer;
     font-size: 0.95rem;
     transition: background-color 0.2s ease, transform 0.2s ease;
-    flex-grow: 1; 
-    flex-basis: auto; 
-    max-width: 150px; 
-    min-width: 100px; 
+    flex-grow: 1;
+    flex-basis: auto;
+    max-width: 150px;
+    min-width: 100px;
     text-align: center;
 }
 
@@ -773,6 +776,52 @@
     transform: translateY(-2px);
 }
 
+/* Nueva clase para el contenedor de paginación */
+.paginationControls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #f0f2f5;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+/* Estilos para los botones de paginación */
+.paginationButton {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.paginationButton:hover:not(:disabled) {
+    background-color: #2980b9;
+    transform: translateY(-2px);
+}
+
+.paginationButton:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.paginationControls span {
+    font-size: 1rem;
+    color: #555;
+    font-weight: bold;
+}
+
+
 @media (max-width: 600px) {
     .searchBar {
         flex-direction: column;
@@ -783,5 +832,13 @@
     .clearSearchButton {
         width: 100%;
         margin-bottom: 10px;
+    }
+    .paginationControls {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .paginationButton {
+        width: 100%;
+        justify-content: center;
     }
 }
