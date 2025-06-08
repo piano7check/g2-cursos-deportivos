@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaUsers, FaChalkboardTeacher, FaBookOpen, FaPlus, FaSignOutAlt, FaHome, FaBars, FaTimes, FaTags, FaSearch, FaRedo } from 'react-icons/fa';
 
@@ -44,6 +44,8 @@ const AdminDashboard = () => {
     const [searchTermNombre, setSearchTermNombre] = useState('');
     const [searchTermCategoria, setSearchTermCategoria] = useState('');
     const [searchTermProfesor, setSearchTermProfesor] = useState('');
+
+    const debounceTimeoutRef = useRef(null);
 
     const closeStatusModal = () => {
         setShowStatusModal(false);
@@ -131,7 +133,7 @@ const AdminDashboard = () => {
     useEffect(() => {
         if (!cargandoContext) {
             if (contextUsuario) {
-                fetchCourses();
+                fetchCourses(); 
                 fetchProfessors();
                 fetchCategories();
             } else {
@@ -139,6 +141,26 @@ const AdminDashboard = () => {
             }
         }
     }, [cargandoContext, contextUsuario, fetchCourses, fetchProfessors, fetchCategories, navigate]);
+
+    useEffect(() => {
+        if (debounceTimeoutRef.current) {
+            clearTimeout(debounceTimeoutRef.current);
+        }
+
+        if (searchTermNombre || searchTermCategoria || searchTermProfesor) {
+            debounceTimeoutRef.current = setTimeout(() => {
+                fetchCourses(searchTermNombre, searchTermCategoria, searchTermProfesor);
+            }, 500); 
+        } else {
+            fetchCourses();
+        }
+
+        return () => {
+            if (debounceTimeoutRef.current) {
+                clearTimeout(debounceTimeoutRef.current);
+            }
+        };
+    }, [searchTermNombre, searchTermCategoria, searchTermProfesor, fetchCourses]); 
 
     const handleNewCourseClick = () => {
         setEditingCourse(null);
@@ -151,9 +173,15 @@ const AdminDashboard = () => {
             nombre: course.nombre, 
             descripcion: course.descripcion, 
             cupos: course.cupos, 
-            profesor_id: course.profesor_id, 
-            categoria_id: course.categoria_id, 
-            horarios: course.horarios && course.horarios.length > 0 ? course.horarios : [{ dia: '', hora_inicio: '', hora_fin: '' }],
+            profesor_id: course.profesor_id ? String(course.profesor_id) : '', 
+            categoria_id: course.categoria_id ? String(course.categoria_id) : '', 
+            horarios: course.horarios && course.horarios.length > 0
+                ? course.horarios.map(h => ({
+                    dia: h.dia,
+                    hora_inicio: h.hora_inicio,
+                    hora_fin: h.hora_fin
+                }))
+                : [{ dia: '', hora_inicio: '', hora_fin: '' }],
         });
         setShowCourseModal(true);
     };
@@ -190,7 +218,7 @@ const AdminDashboard = () => {
             }
             setShowCourseModal(false);
             setEditingCourse(null);
-            fetchCourses(); 
+            fetchCourses(searchTermNombre, searchTermCategoria, searchTermProfesor); 
             triggerCoursesUpdate(); 
         } catch (err) {
             const errorMessage = err.data?.detalle || err.message || 'Error desconocido al guardar curso.';
@@ -213,7 +241,7 @@ const AdminDashboard = () => {
                 setStatusModalMessage(`El curso se eliminó correctamente.`);
                 setStatusModalType('success');
                 setShowStatusModal(true);
-                fetchCourses(); 
+                fetchCourses(searchTermNombre, searchTermCategoria, searchTermProfesor); 
                 triggerCoursesUpdate();
             } catch (err) {
                 const errorMessage = err.data?.detalle || err.message || 'Error desconocido al eliminar curso.';
@@ -313,15 +341,10 @@ const AdminDashboard = () => {
         }
     };
 
-    const handleSearchCourses = () => {
-        fetchCourses(searchTermNombre, searchTermCategoria, searchTermProfesor);
-    };
-
     const handleClearSearch = () => {
         setSearchTermNombre('');
         setSearchTermCategoria('');
         setSearchTermProfesor('');
-        fetchCourses('', '', '');
     };
 
     if (cargandoContext) {
@@ -432,11 +455,12 @@ const AdminDashboard = () => {
                                     value={searchTermProfesor}
                                     onChange={(e) => setSearchTermProfesor(e.target.value)}
                                 />
-                                <button className={styles.searchButton} onClick={handleSearchCourses}>
+                                {/* Eliminamos los botones de Buscar y Limpiar manuales */}
+                                {/* <button className={styles.searchButton} onClick={handleSearchCourses}>
                                     <FaSearch /> Buscar
-                                </button>
+                                </button> */}
                                 <button className={styles.clearSearchButton} onClick={handleClearSearch}>
-                                    <FaRedo /> Limpiar
+                                    <FaRedo /> Limpiar Búsqueda
                                 </button>
                             </div>
                             <CursosTable
