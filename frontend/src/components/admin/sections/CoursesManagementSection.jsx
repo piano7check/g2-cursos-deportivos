@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { FaPlus, FaRedo } from 'react-icons/fa';
-import { getCursos, createCurso, updateCurso, deleteCurso, buscarCursos, getProfesores } from '../../../services/cursosService'; 
-import { getAllCategorias } from '../../../services/categoriasService'; 
-import CursosTable from '../cursos/CursosTable';         
-import CourseModal from '../cursos/CourseModal';         
-import SectionCard from '../layout/SectionCard';         
-import styles from '../../../routes/admin/AdminDashboard.module.css'; 
-
+import { getCursos, createCurso, updateCurso, deleteCurso, buscarCursos, getProfesores } from '../../../services/cursosService';
+import { getAllCategorias } from '../../../services/categoriasService';
+import CursosTable from '../cursos/CursosTable';
+import CourseModal from '../cursos/CourseModal';
+import SectionCard from '../layout/SectionCard';
+import styles from '../../../routes/admin/AdminDashboard.module.css';
 
 const CoursesManagementSection = ({ showMessage, contextUsuario, navigate }) => {
     const [courses, setCourses] = useState([]);
@@ -15,19 +14,15 @@ const CoursesManagementSection = ({ showMessage, contextUsuario, navigate }) => 
     const [showCourseModal, setShowCourseModal] = useState(false);
     const [editingCourse, setEditingCourse] = useState(null);
 
-    
     const [professors, setProfessors] = useState([]);
     const [categories, setCategories] = useState([]);
 
-
-    
     const [searchTermCourseName, setSearchTermCourseName] = useState('');
     const [searchTermCourseCategory, setSearchTermCourseCategory] = useState('');
     const [searchTermCourseProfessor, setSearchTermCourseProfessor] = useState('');
 
     const debounceTimeoutRef = useRef(null);
 
-    
     const fetchCourses = useCallback(async (nombre = '', categoria = '', profesor = '') => {
         setLoadingCourses(true);
         setErrorCourses(null);
@@ -47,7 +42,8 @@ const CoursesManagementSection = ({ showMessage, contextUsuario, navigate }) => 
                 profesor_nombre: `${course.profesor_nombre || ''} ${course.profesor_apellido || ''}`.trim(),
                 horarios: course.horarios,
                 categoria_id: course.categoria_id,
-                categoria_nombre: course.categoria_nombre
+                categoria_nombre: course.categoria_nombre,
+                coste: course.coste 
             }));
             setCourses(fetchedCourses);
         } catch (err) {
@@ -60,7 +56,6 @@ const CoursesManagementSection = ({ showMessage, contextUsuario, navigate }) => 
         }
     }, [showMessage, navigate]);
 
-    
     const fetchProfessors = useCallback(async () => {
         try {
             const fetchedProfs = await getProfesores();
@@ -68,7 +63,6 @@ const CoursesManagementSection = ({ showMessage, contextUsuario, navigate }) => 
                 setProfessors(fetchedProfs.profesores);
             } else {
                 setProfessors([]);
-                console.warn("No se encontraron profesores o el formato de datos es incorrecto:", fetchedProfs);
             }
         } catch (err) {
             showMessage({ message: err.message || 'Error cargando profesores para el modal de cursos.', type: 'error' });
@@ -78,7 +72,6 @@ const CoursesManagementSection = ({ showMessage, contextUsuario, navigate }) => 
         }
     }, [showMessage, navigate]);
 
-    
     const fetchCategories = useCallback(async () => {
         try {
             const response = await getAllCategorias();
@@ -86,7 +79,6 @@ const CoursesManagementSection = ({ showMessage, contextUsuario, navigate }) => 
                 setCategories(response.categorias);
             } else {
                 setCategories([]);
-                console.warn("No se encontraron categorías o el formato de datos es incorrecto:", response);
             }
         } catch (err) {
             showMessage({ message: err.message || 'Error al cargar las categorías para el modal de cursos.', type: 'error' });
@@ -96,18 +88,15 @@ const CoursesManagementSection = ({ showMessage, contextUsuario, navigate }) => 
         }
     }, [showMessage, navigate]);
 
-
-    
     useEffect(() => {
         if (contextUsuario) {
-            fetchCourses(); 
-            fetchProfessors(); 
-            fetchCategories(); 
+            fetchCourses();
+            fetchProfessors();
+            fetchCategories();
         }
     }, [contextUsuario, fetchCourses, fetchProfessors, fetchCategories]);
 
 
-    
     useEffect(() => {
         if (debounceTimeoutRef.current) {
             clearTimeout(debounceTimeoutRef.current);
@@ -118,7 +107,6 @@ const CoursesManagementSection = ({ showMessage, contextUsuario, navigate }) => 
                 fetchCourses(searchTermCourseName, searchTermCourseCategory, searchTermCourseProfessor);
             }, 500);
         } else {
-            
             fetchCourses();
         }
 
@@ -130,14 +118,12 @@ const CoursesManagementSection = ({ showMessage, contextUsuario, navigate }) => 
     }, [searchTermCourseName, searchTermCourseCategory, searchTermCourseProfessor, fetchCourses]);
 
 
-    
     const handleNewCourseClick = () => {
         setEditingCourse(null);
         setShowCourseModal(true);
     };
 
     const handleEditCourseClick = (course) => {
-        
         setEditingCourse({
             id: course.id,
             nombre: course.nombre,
@@ -145,13 +131,14 @@ const CoursesManagementSection = ({ showMessage, contextUsuario, navigate }) => 
             cupos: course.cupos,
             profesor_id: course.profesor_id ? String(course.profesor_id) : '',
             categoria_id: course.categoria_id ? String(course.categoria_id) : '',
+            coste: course.coste !== undefined && course.coste !== null ? String(course.coste) : '',
             horarios: course.horarios && course.horarios.length > 0
                 ? course.horarios.map(h => ({
                     dia: h.dia,
                     hora_inicio: h.hora_inicio,
                     hora_fin: h.hora_fin
                 }))
-                : [{ dia: '', hora_inicio: '', hora_fin: '' }], 
+                : [{ dia: '', hora_inicio: '', hora_fin: '' }],
         });
         setShowCourseModal(true);
     };
@@ -159,26 +146,26 @@ const CoursesManagementSection = ({ showMessage, contextUsuario, navigate }) => 
     const handleSaveCourse = async (courseData) => {
         try {
             if (editingCourse) {
-                
                 const dataToSendForPatch = {
                     nombre: courseData.nombre,
                     descripcion: courseData.descripcion,
                     cupos: courseData.cupos,
                     profesor_id: courseData.profesor_id,
                     categoria_id: courseData.categoria_id,
+                    coste: courseData.coste, 
                     horarios: courseData.horarios,
                 };
 
                 await updateCurso(editingCourse.id, dataToSendForPatch);
                 showMessage({ message: `El curso "${courseData.nombre}" se actualizó correctamente.`, type: 'success' });
             } else {
-                
                 const dataToSend = {
                     nombre: courseData.nombre,
                     descripcion: courseData.descripcion,
                     cupos: courseData.cupos,
                     profesor_id: courseData.profesor_id,
                     categoria_id: courseData.categoria_id,
+                    coste: courseData.coste, 
                     horarios: courseData.horarios,
                 };
                 const response = await createCurso(dataToSend);
@@ -186,7 +173,7 @@ const CoursesManagementSection = ({ showMessage, contextUsuario, navigate }) => 
             }
             setShowCourseModal(false);
             setEditingCourse(null);
-            fetchCourses(searchTermCourseName, searchTermCourseCategory, searchTermCourseProfessor); 
+            fetchCourses(searchTermCourseName, searchTermCourseCategory, searchTermCourseProfessor);
         } catch (err) {
             const errorMessage = err.data?.detalle || err.message || 'Error desconocido al guardar curso.';
             showMessage({ message: `Error al guardar curso: ${errorMessage}`, type: 'error' });
@@ -204,7 +191,7 @@ const CoursesManagementSection = ({ showMessage, contextUsuario, navigate }) => 
                 try {
                     await deleteCurso(courseId);
                     showMessage({ message: `El curso se eliminó correctamente.`, type: 'success' });
-                    fetchCourses(searchTermCourseName, searchTermCourseCategory, searchTermCourseProfessor); 
+                    fetchCourses(searchTermCourseName, searchTermCourseCategory, searchTermCourseProfessor);
                 } catch (err) {
                     const errorMessage = err.data?.detalle || err.message || 'Error desconocido al eliminar curso.';
                     showMessage({ message: `Error al eliminar curso: ${errorMessage}`, type: 'error' });
@@ -216,7 +203,6 @@ const CoursesManagementSection = ({ showMessage, contextUsuario, navigate }) => 
         });
     };
 
-    
     const handleClearCourseSearch = () => {
         setSearchTermCourseName('');
         setSearchTermCourseCategory('');
@@ -263,8 +249,8 @@ const CoursesManagementSection = ({ showMessage, contextUsuario, navigate }) => 
             {showCourseModal && (
                 <CourseModal
                     editingCourse={editingCourse}
-                    professors={professors} 
-                    categories={categories} 
+                    professors={professors}
+                    categories={categories}
                     onClose={() => { setShowCourseModal(false); setEditingCourse(null); }}
                     onSave={handleSaveCourse}
                 />

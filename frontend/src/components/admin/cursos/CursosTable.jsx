@@ -1,6 +1,6 @@
 import React from 'react';
 import { FaEdit, FaTrash } from 'react-icons/fa';
-import styles from '../../../routes/admin/AdminDashboard.module.css'; 
+import styles from '../../../routes/admin/AdminDashboard.module.css';
 
 const CursosTable = ({ courses, loading, error, onEdit, onDelete }) => {
     if (loading) {
@@ -37,7 +37,8 @@ const CursosTable = ({ courses, loading, error, onEdit, onDelete }) => {
                         <th>Nombre</th>
                         <th>Descripción</th>
                         <th>Cupos</th>
-                        <th>Profesor</th> 
+                        <th>Costo</th>
+                        <th>Profesor</th>
                         <th>Categoría</th>
                         <th>Acciones</th>
                     </tr>
@@ -49,6 +50,13 @@ const CursosTable = ({ courses, loading, error, onEdit, onDelete }) => {
                             <td>{course.nombre}</td>
                             <td>{course.descripcion}</td>
                             <td>{course.cupos}</td>
+                            <td>
+                                {
+                                    !isNaN(parseFloat(course.coste)) ?
+                                        `${parseFloat(course.coste).toFixed(2)} bs.` :
+                                        '0.00 bs'
+                                }
+                            </td>
                             <td>{course.profesor_nombre}</td>
                             <td>{course.categoria_nombre}</td>
                             <td className={styles.actionsCell}>
@@ -61,7 +69,7 @@ const CursosTable = ({ courses, loading, error, onEdit, onDelete }) => {
                                 </button>
                                 <button
                                     className={`${styles.actionBtnIcon} ${styles.deleteActionBtn}`}
-                                    onClick={() => onDelete(course.id)} 
+                                    onClick={() => onDelete(course.id)}
                                     title="Eliminar Curso"
                                 >
                                     <FaTrash />
