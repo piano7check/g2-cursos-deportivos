@@ -1,6 +1,7 @@
 from data.conexion import obtenerConexion
 import pymysql.cursors
-from decimal import Decimal 
+from decimal import Decimal
+
 class CursosModel:
     @staticmethod
     def crear_curso(data):
@@ -10,6 +11,8 @@ class CursosModel:
 
         try:
             with conexion.cursor() as cursor:
+                conexion.begin()
+
                 sql_curso = """INSERT INTO cursos(nombre, descripcion, cupos, profesor_id, categoria_id, coste)
                                VALUES (%s, %s, %s, %s, %s, %s)"""
                 cursor.execute(sql_curso, (
@@ -18,7 +21,7 @@ class CursosModel:
                     data['cupos'],
                     data['profesor_id'],
                     data.get('categoria_id'),
-                    Decimal(data['coste']) if isinstance(data['coste'], (float, str)) else data['coste'] 
+                    Decimal(data['coste']) if isinstance(data['coste'], (float, str)) else data['coste']
                 ))
                 curso_id = cursor.lastrowid
 
@@ -148,9 +151,9 @@ class CursosModel:
             with conexion.cursor(pymysql.cursors.DictCursor) as cursor:
                 base_sql = """
                     SELECT c.*,
-                           u.name AS profesor_nombre,
-                           u.lastname AS profesor_apellido,
-                           cat.nombre AS categoria_nombre
+                            u.name AS profesor_nombre,
+                            u.lastname AS profesor_apellido,
+                            cat.nombre AS categoria_nombre
                     FROM cursos c
                     JOIN users u ON c.profesor_id = u.id
                     LEFT JOIN categorias cat ON c.categoria_id = cat.id
@@ -289,6 +292,72 @@ class CursosModel:
         except Exception as e:
             return {"error": "Error al eliminar curso",
             "detalles": str(e)}
+        finally:
+            if conexion:
+                conexion.close()
+
+    @staticmethod
+    def obtener_cursos_con_estado_reserva(estudiante_id):
+        conexion = obtenerConexion()
+        if conexion is None:
+            return {"error": "Error de conexión a la base de datos"}
+
+        try:
+            with conexion.cursor(pymysql.cursors.DictCursor) as cursor:
+                sql_cursos = """
+                    SELECT
+                        c.id,
+                        c.nombre,
+                        c.descripcion,
+                        c.cupos,
+                        c.coste,
+                        c.profesor_id,
+                        c.categoria_id,
+                        p.name AS profesor_nombre,
+                        p.lastname AS profesor_apellido,
+                        cat.nombre AS categoria_nombre
+                    FROM cursos c
+                    JOIN users p ON c.profesor_id = p.id
+                    LEFT JOIN categorias cat ON c.categoria_id = cat.id
+                    ORDER BY c.nombre
+                """
+                cursor.execute(sql_cursos)
+                cursos_data = cursor.fetchall()
+
+                for curso in cursos_data:
+                    if 'coste' in curso and isinstance(curso['coste'], Decimal):
+                        curso['coste'] = str(curso['coste'])
+
+                    cursor.execute(
+                        "SELECT dia, hora_inicio, hora_fin FROM horarios WHERE curso_id = %s",
+                        (curso['id'],)
+                    )
+                    horarios = cursor.fetchall()
+                    curso['horarios'] = [
+                        {
+                            'dia': h['dia'],
+                            'hora_inicio': str(h['hora_inicio']),
+                            'hora_fin': str(h['hora_fin'])
+                        } for h in horarios
+                    ]
+
+                    # Verificar si el estudiante tiene una reserva activa para este curso
+                    sql_check_reserva = """
+                        SELECT id FROM reservas
+                        WHERE curso_id = %s AND estudiante_id = %s AND estado IN ('pendiente', 'validado')
+                    """
+                    cursor.execute(sql_check_reserva, (curso['id'], estudiante_id))
+                    reserva_activa = cursor.fetchone()
+                    
+                    curso['is_reserved_by_student'] = bool(reserva_activa)
+                    curso['reserva_id_activa'] = reserva_activa['id'] if reserva_activa else None
+
+                return {"cursos": cursos_data}
+
+        except pymysql.Error as e:
+            return {"error": "Error en la base de datos", "codigo": e.args[0], "mensaje": e.args[1]}
+        except Exception as e:
+            return {"error": f"Error interno del servidor: {str(e)}"}
         finally:
             if conexion:
                 conexion.close()

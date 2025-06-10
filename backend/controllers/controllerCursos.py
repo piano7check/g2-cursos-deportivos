@@ -1,4 +1,4 @@
-from flask import jsonify, request
+from flask import jsonify, request, g
 from models.cursosModels import CursosModel
 from schemas.cursos import validarCurso
 from schemas.cursosPartial import validarCursoParcial
@@ -37,7 +37,7 @@ class ControllerCursos():
 
         horarios_a_validar = data.get('horarios')
         if not isinstance(horarios_a_validar, list) or not horarios_a_validar:
-             return jsonify({"error": "Se requiere al menos un horario válido para el curso."}), 400
+            return jsonify({"error": "Se requiere al menos un horario válido para el curso."}), 400
 
         horarios_parseados = parse_time_strings_to_datetime_time(horarios_a_validar)
         if "error" in horarios_parseados:
@@ -137,3 +137,17 @@ class ControllerCursos():
             return jsonify(resultado), resultado.get("codigo", 500)
         
         return jsonify({"cursos": resultado}), 200
+
+    @staticmethod
+    def obtenerCursosEstudiantes():
+        estudiante_id = g.usuario.get('id')
+
+        if not estudiante_id:
+            return jsonify({"error": "ID de estudiante no encontrado en el token"}), 400
+
+        cursos_data = CursosModel.obtener_cursos_con_estado_reserva(estudiante_id)
+
+        if 'error' in cursos_data:
+            return jsonify(cursos_data), cursos_data.get('status_code', 500)
+        
+        return jsonify(cursos_data), 200
