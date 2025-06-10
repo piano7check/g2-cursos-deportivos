@@ -14,7 +14,7 @@ esquemaHorarioParcial = {
     'hora_fin': {
         'type': 'string',
         'required': True,
-        'regex': r'^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9])?$' 
+        'regex': r'^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9])?$'
     }
 }
 
@@ -42,13 +42,19 @@ esquemaCursoParcial = {
     'categoria_id': {
         'type': 'integer',
         'min': 1,
-        'nullable': True 
+        'nullable': True
+    },
+    'coste': {
+        'type': 'float', 
+        'min': 0.0,
+        'max': 999999.99, 
+        'nullable': True
     },
     'horarios': {
         'type': 'list',
         'schema': {'type': 'dict', 'schema': esquemaHorarioParcial},
-        'empty': True, 
-        'nullable': True 
+        'empty': True,
+        'nullable': True
     }
 }
 

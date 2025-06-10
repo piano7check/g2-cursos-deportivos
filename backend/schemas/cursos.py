@@ -6,7 +6,6 @@ esquema_curso_completo = {
         'required': True,
         'maxlength': 100,
         'empty': False,
-        'regex': r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$'
     },
     'descripcion': {
         'type': 'string',
@@ -30,6 +29,12 @@ esquema_curso_completo = {
         'nullable': True,
         'min': 1,
         'required': False
+    },
+    'coste': {
+        'type': 'float', 
+        'required': True,
+        'min': 0.0,
+        'max': 999999.99 
     },
     'horarios': {
         'type': 'list',
@@ -66,4 +71,3 @@ def validarCurso(data):
     v = Validator(esquema_curso_completo, purge_unknown=True)
     es_valido = v.validate(data)
     return es_valido, v.errors
-

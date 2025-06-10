@@ -1,6 +1,6 @@
 from data.conexion import obtenerConexion
 import pymysql.cursors
-
+from decimal import Decimal 
 class CursosModel:
     @staticmethod
     def crear_curso(data):
@@ -10,14 +10,15 @@ class CursosModel:
 
         try:
             with conexion.cursor() as cursor:
-                sql_curso = """INSERT INTO cursos(nombre, descripcion, cupos, profesor_id, categoria_id)
-                               VALUES (%s, %s, %s, %s, %s)"""
+                sql_curso = """INSERT INTO cursos(nombre, descripcion, cupos, profesor_id, categoria_id, coste)
+                               VALUES (%s, %s, %s, %s, %s, %s)"""
                 cursor.execute(sql_curso, (
                     data['nombre'],
                     data['descripcion'],
                     data['cupos'],
                     data['profesor_id'],
-                    data.get('categoria_id') 
+                    data.get('categoria_id'),
+                    Decimal(data['coste']) if isinstance(data['coste'], (float, str)) else data['coste'] 
                 ))
                 curso_id = cursor.lastrowid
 
@@ -45,7 +46,8 @@ class CursosModel:
             conexion.rollback()
             return {"error": str(e)}
         finally:
-            conexion.close()
+            if conexion:
+                conexion.close()
 
     @staticmethod
     def obtener_cursos():
@@ -59,13 +61,16 @@ class CursosModel:
                                  u.name as profesor_nombre,
                                  u.lastname as profesor_apellido,
                                  cat.nombre as categoria_nombre
-                          FROM cursos c
-                          JOIN users u ON c.profesor_id = u.id
-                          LEFT JOIN categorias cat ON c.categoria_id = cat.id"""
+                           FROM cursos c
+                           JOIN users u ON c.profesor_id = u.id
+                           LEFT JOIN categorias cat ON c.categoria_id = cat.id"""
                 cursor.execute(sql)
                 cursos = cursor.fetchall()
 
                 for curso in cursos:
+                    if 'coste' in curso and isinstance(curso['coste'], Decimal):
+                        curso['coste'] = str(curso['coste'])
+
                     cursor.execute(
                         "SELECT dia, hora_inicio, hora_fin FROM horarios WHERE curso_id = %s",
                         (curso['id'],)
@@ -87,7 +92,8 @@ class CursosModel:
         except Exception as e:
             return {"error": str(e)}
         finally:
-            conexion.close()
+            if conexion:
+                conexion.close()
 
     @staticmethod
     def obtener_cursos_por_profesor(profesor_id):
@@ -97,14 +103,17 @@ class CursosModel:
 
         try:
             with conexion.cursor(pymysql.cursors.DictCursor) as cursor:
-                sql = """SELECT c.id, c.nombre, c.descripcion, c.cupos, c.profesor_id, c.categoria_id, cat.nombre as categoria_nombre
-                         FROM cursos c
-                         LEFT JOIN categorias cat ON c.categoria_id = cat.id
-                         WHERE c.profesor_id = %s"""
+                sql = """SELECT c.id, c.nombre, c.descripcion, c.cupos, c.profesor_id, c.categoria_id, c.coste, cat.nombre as categoria_nombre
+                           FROM cursos c
+                           LEFT JOIN categorias cat ON c.categoria_id = cat.id
+                           WHERE c.profesor_id = %s"""
                 cursor.execute(sql, (profesor_id,))
                 cursos = cursor.fetchall()
 
                 for curso in cursos:
+                    if 'coste' in curso and isinstance(curso['coste'], Decimal):
+                        curso['coste'] = str(curso['coste'])
+
                     cursor.execute(
                         "SELECT dia, hora_inicio, hora_fin FROM horarios WHERE curso_id = %s",
                         (curso['id'],)
@@ -126,7 +135,8 @@ class CursosModel:
         except Exception as e:
             return {"error": str(e)}
         finally:
-            conexion.close()
+            if conexion:
+                conexion.close()
 
     @staticmethod
     def buscar_cursos(nombre_curso=None, nombre_categoria=None, nombre_profesor=None):
@@ -159,17 +169,20 @@ class CursosModel:
                 if nombre_profesor:
                     conditions.append("(u.name LIKE %s OR u.lastname LIKE %s)")
                     values.append(f"%{nombre_profesor}%")
-                    values.append(f"%{nombre_profesor}%") 
+                    values.append(f"%{nombre_profesor}%")
 
                 if conditions:
                     sql_query = f"{base_sql} WHERE {' AND '.join(conditions)}"
                 else:
-                    sql_query = base_sql 
+                    sql_query = base_sql
 
                 cursor.execute(sql_query, tuple(values))
                 cursos = cursor.fetchall()
 
                 for curso in cursos:
+                    if 'coste' in curso and isinstance(curso['coste'], Decimal):
+                        curso['coste'] = str(curso['coste'])
+
                     cursor.execute(
                         "SELECT dia, hora_inicio, hora_fin FROM horarios WHERE curso_id = %s",
                         (curso['id'],)
@@ -191,7 +204,8 @@ class CursosModel:
         except Exception as e:
             return {"error": str(e)}
         finally:
-            conexion.close()
+            if conexion:
+                conexion.close()
 
     @staticmethod
     def actualizar_curso(curso_id, data):
@@ -219,6 +233,9 @@ class CursosModel:
                 if 'categoria_id' in data:
                     updates.append("categoria_id = %s")
                     values.append(data['categoria_id'])
+                if 'coste' in data:
+                    updates.append("coste = %s")
+                    values.append(Decimal(data['coste']) if isinstance(data['coste'], (float, str)) else data['coste'])
 
                 if updates:
                     sql_update_curso = f"UPDATE cursos SET {', '.join(updates)} WHERE id = %s"
@@ -255,7 +272,8 @@ class CursosModel:
             conexion.rollback()
             return {"error": str(e)}
         finally:
-            conexion.close()
+            if conexion:
+                conexion.close()
 
     @staticmethod
     def eliminar_curso(id):
@@ -272,4 +290,5 @@ class CursosModel:
             return {"error": "Error al eliminar curso",
             "detalles": str(e)}
         finally:
-            conexion.close()
+            if conexion:
+                conexion.close()
