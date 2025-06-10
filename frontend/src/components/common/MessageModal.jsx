@@ -6,44 +6,40 @@ const MessageModal = ({ message, type, onClose, onConfirm }) => {
     let icon = null;
     let title = '';
     
-    // No necesitamos bgColor, textColor, borderColor aquí porque los controlaremos completamente con CSS Modules
-    // a través de las clases específicas como styles.successModal, styles.errorModal, etc.
-
     switch (type) {
         case 'success':
-            icon = <FaCheckCircle />; // Icono sin clases Tailwind aquí
+            icon = <FaCheckCircle />; 
             title = 'Éxito';
             break;
         case 'error':
-            icon = <FaTimesCircle />; // Icono sin clases Tailwind aquí
+            icon = <FaTimesCircle />; 
             title = 'Error';
             break;
         case 'confirm':
-            icon = <FaExclamationCircle />; // Icono sin clases Tailwind aquí
+            icon = <FaExclamationCircle />;
             title = 'Confirmación Necesaria';
             break;
-        default: // 'info'
-            icon = <FaExclamationCircle />; // Icono sin clases Tailwind aquí
+        default:
+            icon = <FaExclamationCircle />; 
             title = 'Información';
             break;
     }
 
-    // Aplicar la clase de estilo del tipo de modal dinámicamente
-    const modalTypeClass = styles[`${type}Modal`]; // Ej: styles.confirmModal, styles.errorModal
-    const buttonTypeClass = styles[`${type}Button`]; // Ej: styles.confirmButton, styles.infoButton
-    const cancelButtonTypeClass = styles[`cancelConfirmButton`]; // Clase para el botón de cancelar en confirmación
+    const modalTypeClass = styles[`${type}Modal`]; 
+    const buttonTypeClass = styles[`${type}Button`];
+    const cancelButtonTypeClass = styles[`cancelConfirmButton`];
 
     return (
         <div className={styles.modalOverlay}>
             <div className={`${styles.messageModal} ${modalTypeClass}`}>
-                <div className={styles.messageIcon}> {/* Nuevo div para el icono */}
+                <div className={styles.messageIcon}> 
                     {icon}
                 </div>
-                <h4 className={styles.messageTitle}>{title}</h4> {/* Usando clases de CSS Modules */}
-                <p className={styles.messageText}>{message}</p> {/* Usando clases de CSS Modules */}
+                <h4 className={styles.messageTitle}>{title}</h4> 
+                <p className={styles.messageText}>{message}</p> 
 
                 {type === 'confirm' ? (
-                    <div className={styles.messageActions}> {/* Usando clase de CSS Modules */}
+                    <div className={styles.messageActions}>
                         <button
                             onClick={onConfirm}
                             className={`${styles.messageButton} ${buttonTypeClass}`}
@@ -58,7 +54,7 @@ const MessageModal = ({ message, type, onClose, onConfirm }) => {
                         </button>
                     </div>
                 ) : (
-                    <div className={styles.messageActions}> {/* Usando clase de CSS Modules */}
+                    <div className={styles.messageActions}> 
                         <button
                             onClick={onClose}
                             className={`${styles.messageButton} ${buttonTypeClass}`}

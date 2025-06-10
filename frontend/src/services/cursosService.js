@@ -2,11 +2,11 @@ const API_BASE_URL = 'http://localhost:5000/api';
 
 const handleResponse = async (response) => {
     if (!response.ok) {
-        const errorData = await response.json();
-        const error = new Error(errorData.error || 'Algo salió mal');
-        error.status = response.status;
-        error.data = errorData;
-        throw error;
+        const errorData = await response.json().catch(() => ({}));
+        if (response.status === 401) {
+            throw new Error(errorData.message || 'No autorizado. Por favor, inicie sesión.', { cause: 'unauthorized' });
+        }
+        throw new Error(errorData.error || errorData.message || 'Algo salió mal en la solicitud.');
     }
     return response.json();
 };
@@ -91,4 +91,20 @@ export const buscarCursos = async (searchTermNombre, searchTermCategoria, search
         credentials: 'include',
     });
     return handleResponse(response);
+};
+
+export const getCursosEstudiantes = async () => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/estudiante/cursosEstudiantes`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            cache: 'no-store',
+        });
+        return handleResponse(response);
+    } catch (error) {
+        throw error;
+    }
 };

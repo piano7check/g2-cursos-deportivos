@@ -1,191 +1,258 @@
 .container {
-  padding: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 .header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 15px 20px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 
 .title {
-  text-align: left;
-  margin: 0;
-  color: #2d3748;
-  font-size: 1.8rem;
+    font-size: 2.2rem;
+    color: var(--color-primary-dark);
+    margin: 0;
+    flex-grow: 1;
 }
 
 .userInfo {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 15px;
 }
 
 .cursosGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
-  align-items: start;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
 }
 
 .cursoCard {
-  background: white;
-  border-radius: 0.5rem;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-  padding: 1.5rem;
-  transition: all 0.2s ease;
-  border: 1px solid #e2e8f0;
-}
-
-.cursoCard:hover {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+    background-color: #ffffff;
+    border-radius: 15px;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
 }
 
 .cursoCard.expanded {
-  border-color: #3498db;
+    box-shadow: var(--shadow-md);
+    transform: translateY(-5px);
 }
 
 .cursoHeader {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+    padding: 20px;
+    background-color: var(--color-primary-light);
+    color: var(--color-text-light);
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .cursoNombre {
-  margin: 0;
-  color: #2b6cb0;
-  font-size: 1.2rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid #edf2f7;
+    font-size: 1.8rem;
+    margin: 0;
+    line-height: 1.2;
 }
 
 .cursoResumen {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1rem;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.cursoResumen p {
+    margin: 0;
+    font-weight: 500;
 }
 
 .detailsButton {
-  background-color: #4299e1;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 0.25rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-weight: 500;
+    background: none;
+    border: 1px solid var(--color-accent-yellow);
+    color: var(--color-accent-yellow);
+    padding: 8px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
 }
 
 .detailsButton:hover {
-  background-color: #3182ce;
-}
-
-.detailsButton[aria-expanded="true"] {
-  background-color: #2c5282;
+    background-color: var(--color-accent-yellow);
+    color: var(--color-primary-dark);
+    transform: translateY(-2px);
 }
 
 .cursoDetalles {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px dashed #e2e8f0;
-  animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.horariosContainer {
-  margin-top: 0.75rem;
-}
-
-.horariosList {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.horariosList li {
-  display: flex;
-  justify-content: space-between;
-  padding: 0.25rem 0;
-}
-
-.dia {
-  font-weight: 500;
-  color: #4a5568;
-}
-
-.horas {
-  color: #718096;
-}
-
-.profesorInfo {
-  margin: 0.75rem 0;
-  color: #4a5568;
+    padding: 20px;
+    color: var(--color-text-dark);
+    line-height: 1.5;
+    background-color: var(--color-bg-white);
+    border-bottom-left-radius: 15px;
+    border-bottom-right-radius: 15px;
+    flex-grow: 1;
 }
 
 .cursoDescripcion {
-  color: #4a5568;
-  line-height: 1.6;
-  margin: 0.75rem 0;
+    margin-bottom: 15px;
+    font-size: 1rem;
+}
+
+.profesorInfo,
+.categoriaInfo {
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+}
+
+.profesorInfo strong,
+.categoriaInfo strong {
+    color: var(--color-primary-dark);
+}
+
+.horariosContainer {
+    margin-top: 15px;
+    border-top: 1px solid #eee;
+    padding-top: 15px;
+}
+
+.horariosContainer p {
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: var(--color-primary-dark);
+}
+
+.horariosList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.horariosList li {
+    background-color: var(--color-bg-light);
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dia {
+    font-weight: bold;
+    color: var(--color-primary-dark);
+}
+
+.horas {
+    color: #555;
+    font-size: 0.9rem;
 }
 
 .noHorarios {
-  color: #718096;
-  font-style: italic;
-  margin: 0.5rem 0;
+    font-style: italic;
+    color: #888;
+    font-size: 0.9rem;
 }
 
-.loadingContainer {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 200px;
-  gap: 1rem;
+.loadingContainer,
+.error,
+.emptyState {
+    text-align: center;
+    padding: 50px;
+    font-size: 1.2rem;
+    color: var(--color-text-dark);
 }
 
 .spinner {
-  border: 4px solid rgba(0, 0, 0, 0.1);
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border-left-color: #4299e1;
-  animation: spin 1s linear infinite;
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-left-color: var(--color-primary-dark);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
-.error {
-  color: #e53e3e;
-  text-align: center;
-  padding: 2rem;
-  background: #fff5f5;
-  border-radius: 0.5rem;
-  margin: 2rem auto;
-  max-width: 600px;
+.actionsContainer {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+    display: flex;
+    justify-content: center;
 }
 
-.emptyState {
-  text-align: center;
-  color: #718096;
-  padding: 2rem;
-  background: #f7fafc;
-  border-radius: 0.5rem;
-  margin: 2rem auto;
-  max-width: 600px;
+.reserveButton {
+    background-color: var(--color-success);
+    color: var(--color-text-light);
+    border: none;
+    padding: 12px 25px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: var(--shadow-sm);
+}
+
+.reserveButton:hover:not(:disabled) {
+    background-color: #218838;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.reserveButton:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+    opacity: 0.7;
+    box-shadow: none;
+}
+
+.reserveButton.reserved {
+    background-color: #6c757d; /* Un color neutro como el gris oscuro */
+    cursor: default;
+    box-shadow: none;
+}
+
+.reserveButton.reserved:hover {
+    background-color: #6c757d;
+    transform: none;
+    box-shadow: none;
+}
+
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    .title {
+        font-size: 1.8rem;
+    }
+    .cursosGrid {
+        grid-template-columns: 1fr;
+    }
+    .cursoCard {
+        width: 100%;
+    }
 }
