@@ -1,0 +1,172 @@
+/* Contenedor principal del dashboard */
+.studentDashboard {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: var(--color-bg-light);
+}
+
+/* Cabecera del dashboard */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 25px;
+    background-color: var(--color-primary-dark);
+    color: var(--color-text-light);
+    box-shadow: var(--shadow-md);
+    flex-wrap: wrap; /* Permite que los elementos se envuelvan en pantallas pequeñas */
+    gap: 15px; /* Espacio entre elementos de la cabecera */
+}
+
+/* Título del Dashboard */
+.title {
+    font-size: 2.2rem;
+    margin: 0;
+    line-height: 1;
+    color: var(--color-text-light);
+    flex-grow: 1; /* Permite que el título ocupe espacio si es necesario */
+    text-align: center;
+}
+
+/* Navegación principal (botones de pestaña) */
+.mainNav {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap; /* Envuelve los botones si no hay espacio */
+    justify-content: center; /* Centra los botones en pantallas pequeñas */
+}
+
+.navButton {
+    background-color: transparent;
+    color: var(--color-text-light);
+    border: 1px solid var(--color-accent-yellow);
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.navButton:hover {
+    background-color: var(--color-accent-yellow);
+    color: var(--color-primary-dark);
+    transform: translateY(-2px);
+}
+
+.navButton.active {
+    background-color: var(--color-accent-yellow);
+    color: var(--color-primary-dark);
+    border-color: var(--color-accent-yellow);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Información del usuario (UserProfileWidget) */
+.userInfo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Contenedor del contenido dinámico del dashboard */
+.dashboardContent {
+    flex-grow: 1; /* Ocupa todo el espacio vertical restante */
+    padding: 20px;
+    max-width: 1200px; /* Ancho máximo para el contenido interno */
+    margin: 20px auto; /* Centra el contenido y le da margen superior */
+    background-color: var(--color-bg-white);
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm);
+    box-sizing: border-box; /* Asegura que padding y border no aumenten el tamaño total */
+}
+
+/* Estilos para los contenedores de carga y error */
+.loadingContainer,
+.errorContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background-color: var(--color-bg-light);
+    padding: 20px;
+    text-align: center;
+}
+
+/* Estilos para el spinner de carga */
+.spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-left-color: var(--color-primary-dark);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+}
+
+/* Animación de giro del spinner */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Estilos para el texto en contenedores de carga y error */
+.loadingContainer p,
+.errorContainer p {
+    font-size: 1.2rem;
+    color: var(--color-text-dark);
+}
+
+/* Color de texto para el contenedor de error */
+.errorContainer {
+    color: var(--color-error);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+
+    .title {
+        font-size: 1.8rem;
+        margin-bottom: 10px;
+    }
+
+    .mainNav {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .navButton {
+        flex: 1 1 auto; /* Permite que los botones ocupen el espacio disponible */
+        padding: 8px 15px;
+        font-size: 0.9rem;
+    }
+    
+    .userInfo {
+        width: 100%;
+        justify-content: center; /* Centra el widget de perfil */
+    }
+
+    .dashboardContent {
+        padding: 15px;
+        margin: 15px auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .header {
+        padding: 10px;
+    }
+    .title {
+        font-size: 1.5rem;
+    }
+    .navButton {
+        font-size: 0.85rem;
+    }
+}

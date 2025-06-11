@@ -1,33 +1,16 @@
-.container {
+/* Estilos para la sección de cursos disponibles en general */
+.availableCoursesSection {
     padding: 20px;
-    max-width: 1200px;
-    margin: 0 auto;
 }
 
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
-    padding: 15px 20px;
-    background-color: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-}
-
-.title {
-    font-size: 2.2rem;
+.sectionTitle {
+    font-size: 2rem;
     color: var(--color-primary-dark);
-    margin: 0;
-    flex-grow: 1;
+    margin-bottom: 30px;
+    text-align: center;
 }
 
-.userInfo {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
+/* Grid de cursos */
 .cursosGrid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -35,8 +18,9 @@
     align-items: start;
 }
 
+/* Tarjeta de curso individual */
 .cursoCard {
-    background-color: #ffffff;
+    background-color: var(--color-bg-white);
     border-radius: 15px;
     box-shadow: var(--shadow-sm);
     overflow: hidden;
@@ -45,14 +29,17 @@
     flex-direction: column;
     min-height: 200px;
     position: relative;
+    z-index: 1; /* Asegura que la tarjeta expandida esté por encima */
 }
 
+/* Estilos de la tarjeta expandida */
 .cursoCard.expanded {
     box-shadow: var(--shadow-md);
     transform: translateY(-5px);
-    z-index: 10;
+    z-index: 10; /* Mayor z-index cuando está expandida */
 }
 
+/* Encabezado de la tarjeta de curso */
 .cursoHeader {
     padding: 20px;
     background-color: var(--color-primary-light);
@@ -65,12 +52,14 @@
     flex-shrink: 0;
 }
 
+/* Nombre del curso */
 .cursoNombre {
     font-size: 1.8rem;
     margin: 0;
     line-height: 1.2;
 }
 
+/* Resumen del curso (cupos, costo, botón de detalles) */
 .cursoResumen {
     display: flex;
     justify-content: space-between;
@@ -87,6 +76,14 @@
     font-weight: 500;
 }
 
+/* Contenedor de información dentro del resumen */
+.infoContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+/* Botón de ver/ocultar detalles */
 .detailsButton {
     background: none;
     border: 1px solid var(--color-accent-yellow);
@@ -97,6 +94,9 @@
     font-size: 0.9rem;
     transition: all 0.2s ease;
     white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 
 .detailsButton:hover {
@@ -105,6 +105,7 @@
     transform: translateY(-2px);
 }
 
+/* Detalles del curso (sección expandible) */
 .cursoDetalles {
     padding: 20px;
     color: var(--color-text-dark);
@@ -115,20 +116,27 @@
     flex-grow: 1;
     animation: expandDetails 0.3s ease-out;
     overflow: hidden;
+    /* Propiedades para la animación */
+    max-height: 500px; /* Un valor alto para que el contenido quepa, se animará desde 0 */
+    opacity: 1;
+    visibility: visible;
 }
 
+/* Animación de expansión */
 @keyframes expandDetails {
     from {
         opacity: 0;
         max-height: 0;
         padding-top: 0;
         padding-bottom: 0;
+        visibility: hidden;
     }
     to {
         opacity: 1;
-        max-height: none;
+        max-height: 500px; /* Ajusta según el contenido máximo esperado */
         padding-top: 20px;
         padding-bottom: 20px;
+        visibility: visible;
     }
 }
 
@@ -192,6 +200,7 @@
     font-size: 0.9rem;
 }
 
+/* Contenedores de estado de carga, error y vacío */
 .loadingContainer,
 .error,
 .emptyState {
@@ -199,6 +208,7 @@
     padding: 50px;
     font-size: 1.2rem;
     color: var(--color-text-dark);
+    margin: 0 auto; /* Centra el contenido en el dashboard */
 }
 
 .spinner {
@@ -216,6 +226,7 @@
     100% { transform: rotate(360deg); }
 }
 
+/* Contenedor de acciones (botón de reservar) */
 .actionsContainer {
     margin-top: 20px;
     padding-top: 15px;
@@ -265,6 +276,7 @@
     box-shadow: none;
 }
 
+/* Media Queries para responsividad */
 @media (max-width: 1200px) {
     .cursosGrid {
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -272,32 +284,31 @@
 }
 
 @media (max-width: 768px) {
-    .header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 15px;
+    .availableCoursesSection {
+        padding: 15px; /* Reduce padding para móviles */
     }
-    
-    .title {
+
+    .sectionTitle {
         font-size: 1.8rem;
+        margin-bottom: 20px;
     }
-    
+
     .cursosGrid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr; /* Una columna en pantallas pequeñas */
         gap: 20px;
     }
-    
+
     .cursoCard {
         width: 100%;
         min-height: 180px;
     }
-    
+
     .cursoResumen {
         flex-direction: column;
         align-items: flex-start;
         gap: 15px;
     }
-    
+
     .detailsButton {
         align-self: flex-end;
     }
