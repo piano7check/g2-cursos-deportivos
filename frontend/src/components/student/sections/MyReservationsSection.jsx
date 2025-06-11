@@ -20,8 +20,8 @@ const MyReservationsSection = () => {
     const [loadingReservations, setLoadingReservations] = useState(true);
     const [errorReservations, setErrorReservations] = useState(null);
     const [expandedReservationId, setExpandedReservationId] = useState(null);
-    const [showPaymentModal, setShowPaymentModal] = useState(false); 
-    const [currentReservationToPay, setCurrentReservationToPay] = useState(null); 
+    const [showPaymentModal, setShowPaymentModal] = useState(false);
+    const [currentReservationToPay, setCurrentReservationToPay] = useState(null);
     const navigate = useNavigate();
 
     const {
@@ -87,17 +87,17 @@ const MyReservationsSection = () => {
         setShowPaymentModal(true);
     };
 
-    const handleConfirmPaymentSubmit = async (archivoUrl) => {
-        setShowPaymentModal(false); 
+    const handleConfirmPaymentSubmit = async (data) => {
+        setShowPaymentModal(false);
         if (!currentReservationToPay) return;
 
         try {
-            const result = await confirmarPago(currentReservationToPay.id, archivoUrl);
+            const result = await confirmarPago(currentReservationToPay.id, data);
             showMessage({
                 message: result.mensaje || `Comprobante de pago para "${currentReservationToPay.nombre}" enviado. Esperando validación.`,
                 type: 'success'
             });
-            fetchReservas(); 
+            fetchReservas();
         } catch (error) {
             showMessage({
                 message: error.message || `Error al enviar el comprobante de pago para "${currentReservationToPay.nombre}".`,
@@ -131,7 +131,6 @@ const MyReservationsSection = () => {
         if (estadoReserva === 'pendiente' && estadoPago === 'pendiente') return <FaClock />;
         return <FaInfoCircle />;
     };
-
 
     if (loadingReservations) {
         return (
@@ -171,7 +170,7 @@ const MyReservationsSection = () => {
                                         <FieldWithFallback value={new Date(reserva.fecha_reserva).toLocaleDateString()} />
                                     </p>
                                     <p>
-                                        <strong>Costo:</strong> ${' '}
+                                        <strong>Costo: </strong> bs {' '}
                                         <FieldWithFallback value={parseFloat(reserva.curso_coste).toFixed(2)} fallback="N/A" />
                                     </p>
                                     <p className={getStatusClass(reserva.estado_reserva, reserva.estado_pago)}>
@@ -271,7 +270,6 @@ const MyReservationsSection = () => {
                 />
             )}
 
-            {/* Modal para adjuntar comprobante de pago */}
             {showPaymentModal && (
                 <PaymentUploadModal
                     isOpen={showPaymentModal}

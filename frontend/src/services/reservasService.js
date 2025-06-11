@@ -45,7 +45,7 @@ export const obtenerReservasPorEstudiante = async () => {
 export const cancelarReserva = async (reservaId) => {
     try {
         const response = await fetch(`${API_URL}/reservas/${reservaId}/cancelar`, {
-            method: 'PATCH', // Corregido de PUT a PATCH
+            method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
             },
@@ -57,27 +57,37 @@ export const cancelarReserva = async (reservaId) => {
     }
 };
 
-export const confirmarPago = async (reservaId, archivoUrl) => {
+export const confirmarPago = async (reservaId, data) => {
+    const formData = new FormData();
+    
+    if (data instanceof File) {
+        formData.append('comprobante', data);
+    } else if (typeof data === 'string') {
+        try {
+            const response = await fetch(`${API_URL}/reservas/${reservaId}/confirmar-pago`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ archivo_url: data }),
+                credentials: 'include',
+            });
+            return handleResponse(response);
+        } catch (error) {
+            throw error;
+        }
+        return;
+    }
+
     try {
-        const response = await fetch(`${API_URL}/reservas/${reservaId}/confirmar-pago`, { // Corregido a confirmar-pago para coincidir con la ruta del backend
-            method: 'PATCH', // Corregido de PUT a PATCH
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ archivo_url: archivoUrl }),
+        const response = await fetch(`${API_URL}/reservas/${reservaId}/confirmar-pago`, {
+            method: 'PATCH',
+            body: formData,
             credentials: 'include',
         });
         return handleResponse(response);
     } catch (error) {
-        throw new Error(error.message || 'Error desconocido al confirmar el pago.');
+        console.error("Error en confirmarPago:", error);
+        throw new Error(error.message || 'Error al confirmar el pago');
     }
 };
-
-const reservasService = {
-    reservarCurso,
-    obtenerReservasPorEstudiante,
-    cancelarReserva,
-    confirmarPago,
-};
-
-export default reservasService;

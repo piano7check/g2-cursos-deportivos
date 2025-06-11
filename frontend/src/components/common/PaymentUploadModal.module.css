@@ -49,6 +49,64 @@
     line-height: 1.5;
 }
 
+/* Estilos para el contenedor del input de archivo */
+.fileInputContainer {
+    position: relative;
+    width: 100%;
+}
+
+.fileInputLabel {
+    display: block;
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px dashed var(--color-border);
+    border-radius: 8px;
+    font-size: 1rem;
+    color: var(--color-text-medium);
+    text-align: center;
+    cursor: pointer;
+    background-color: var(--color-bg-light);
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    box-sizing: border-box;
+}
+
+.fileInputLabel:hover {
+    background-color: #e0e0e0;
+    border-color: var(--color-primary);
+}
+
+.hiddenFileInput {
+    display: none; /* Oculta el input de archivo original */
+}
+
+/* Estilo para el separador "O" */
+.orSeparator {
+    text-align: center;
+    font-weight: bold;
+    color: var(--color-text-medium);
+    margin: 10px 0;
+    position: relative;
+}
+
+.orSeparator::before,
+.orSeparator::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 40%;
+    height: 1px;
+    background-color: var(--color-border);
+}
+
+.orSeparator::before {
+    left: 0;
+}
+
+.orSeparator::after {
+    right: 0;
+}
+
+
 .urlInput {
     width: 100%;
     padding: 12px 15px;
@@ -64,6 +122,13 @@
     border-color: var(--color-primary);
     box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
     outline: none;
+}
+
+.selectedFileName {
+    font-size: 0.9rem;
+    color: var(--color-primary-dark);
+    text-align: center;
+    margin-top: -10px; /* Para acercarlo al input */
 }
 
 .modalActions {
@@ -91,7 +156,7 @@
 }
 
 .confirmButton:hover {
-    background-color: #218838; /* Darker green */
+    background-color: #218838;
     transform: translateY(-2px);
     box-shadow: var(--shadow-md);
 }
@@ -102,12 +167,11 @@
 }
 
 .cancelButton:hover {
-    background-color: #5a6268; /* Darker gray */
+    background-color: #5a6268; 
     transform: translateY(-2px);
     box-shadow: var(--shadow-md);
 }
 
-/* Responsive adjustments */
 @media (max-width: 600px) {
     .modalContent {
         padding: 20px;
@@ -122,7 +186,8 @@
         font-size: 0.9rem;
     }
 
-    .urlInput {
+    .urlInput,
+    .fileInputLabel {
         padding: 10px 12px;
         font-size: 0.9rem;
     }

@@ -138,7 +138,7 @@ const AvailableCoursesSection = () => {
                                             <FieldWithFallback value={curso.cupos} fallback="N/A" />
                                         </p>
                                         <p>
-                                            <strong>Costo:</strong> ${' '}
+                                            <strong>Costo:</strong> bs{' '}
                                             <FieldWithFallback value={parseFloat(curso.coste).toFixed(2)} fallback="N/A" />
                                         </p>
                                     </div>
