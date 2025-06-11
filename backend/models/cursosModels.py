@@ -341,7 +341,6 @@ class CursosModel:
                         } for h in horarios
                     ]
 
-                    # Verificar si el estudiante tiene una reserva activa para este curso
                     sql_check_reserva = """
                         SELECT id FROM reservas
                         WHERE curso_id = %s AND estudiante_id = %s AND estado IN ('pendiente', 'validado')

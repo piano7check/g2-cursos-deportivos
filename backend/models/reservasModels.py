@@ -1,6 +1,7 @@
 from data.conexion import obtenerConexion
 import pymysql.cursors
 from decimal import Decimal
+from datetime import datetime
 
 class ReservasModel:
     @staticmethod
@@ -64,6 +65,46 @@ class ReservasModel:
         except Exception as e:
             conexion.rollback()
             return {"error": f"Error interno del servidor: {str(e)}", "status_code": 500}
+        finally:
+            if conexion:
+                conexion.close()
+
+    @staticmethod
+    def obtener_reserva_por_id(reserva_id):
+        conexion = obtenerConexion()
+        if conexion is None:
+            return {"error": "Error de conexión a la base de datos"}
+        try:
+            with conexion.cursor(pymysql.cursors.DictCursor) as cursor:
+                sql = """
+                    SELECT
+                        r.id AS reserva_id,
+                        r.estudiante_id,  -- ¡Aquí la adición!
+                        r.fecha_reserva,
+                        r.estado AS estado_reserva,
+                        c.id AS curso_id,
+                        c.nombre AS curso_nombre,
+                        c.coste AS curso_coste,
+                        u.name AS profesor_nombre,
+                        u.lastname AS profesor_apellido,
+                        vp.estado AS estado_pago,
+                        vp.archivo_url AS comprobante_url
+                    FROM reservas r
+                    JOIN cursos c ON r.curso_id = c.id
+                    JOIN users u ON c.profesor_id = u.id
+                    LEFT JOIN validaciones_pago vp ON r.id = vp.reserva_id
+                    WHERE r.id = %s
+                """
+                cursor.execute(sql, (reserva_id,))
+                reserva = cursor.fetchone()
+                if reserva and isinstance(reserva.get('curso_coste'), Decimal):
+                    reserva['curso_coste'] = str(reserva['curso_coste'])
+                return {"reserva": reserva}
+
+        except pymysql.Error as e:
+            return {"error": "Error en la base de datos", "codigo": e.args[0], "mensaje": e.args[1]}
+        except Exception as e:
+            return {"error": f"Error interno del servidor: {str(e)}"}
         finally:
             if conexion:
                 conexion.close()
@@ -234,7 +275,7 @@ class ReservasModel:
                 sql_update_reserva = "UPDATE reservas SET estado = %s WHERE id = %s"
                 cursor.execute(sql_update_reserva, (nuevo_estado, reserva_id))
 
-                if estado_actual == 'pendiente' and (nuevo_estado == 'expirado' or nuevo_estado == 'cancelado'):
+                if estado_actual in ['pendiente', 'validado'] and (nuevo_estado == 'expirado' or nuevo_estado == 'cancelado'):
                     sql_increment_cupos = "UPDATE cursos SET cupos = cupos + 1 WHERE id = %s"
                     cursor.execute(sql_increment_cupos, (curso_id,))
 
@@ -249,13 +290,13 @@ class ReservasModel:
             return {"error": "Error en la base de datos", "codigo": e.args[0], "mensaje": e.args[1]}
         except Exception as e:
             conexion.rollback()
-            return {"error": f"Error interno del servidor: {str(e)}"}
+            return {"error": f"Error interno del servidor: {str(e)}", "status_code": 500}
         finally:
             if conexion:
                 conexion.close()
 
     @staticmethod
-    def eliminar_reserva(reserva_id):
+    def actualizar_estado_pago_reserva(reserva_id, archivo_url=None):
         conexion = obtenerConexion()
         if conexion is None:
             return {"error": "Error de conexión a la base de datos"}
@@ -264,33 +305,48 @@ class ReservasModel:
             with conexion.cursor() as cursor:
                 conexion.begin()
 
-                sql_get_info = "SELECT estado, curso_id FROM reservas WHERE id = %s FOR UPDATE"
-                cursor.execute(sql_get_info, (reserva_id,))
-                reserva_info = cursor.fetchone()
+                sql_check_validation = "SELECT id, estado FROM validaciones_pago WHERE reserva_id = %s FOR UPDATE"
+                cursor.execute(sql_check_validation, (reserva_id,))
+                existing_validation = cursor.fetchone()
 
-                if not reserva_info:
-                    conexion.rollback()
-                    return {"error": "Reserva no encontrada."}
+                if existing_validation:
+                    validation_id = existing_validation[0]
+                    current_validation_estado = existing_validation[1]
 
-                estado_reserva = reserva_info[0]
-                curso_id = reserva_info[1]
-
-                sql_delete_reserva = "DELETE FROM reservas WHERE id = %s"
-                cursor.execute(sql_delete_reserva, (reserva_id,))
-
-                if estado_reserva in ['pendiente', 'validado']:
-                    sql_increment_cupos = "UPDATE cursos SET cupos = cupos + 1 WHERE id = %s"
-                    cursor.execute(sql_increment_cupos, (curso_id,))
-
+                    if current_validation_estado == 'aprobado':
+                        conexion.rollback()
+                        return {"error": "Esta reserva ya tiene un pago aprobado.", "status_code": 409}
+                    
+                    sql_update_validation = """
+                        UPDATE validaciones_pago SET
+                        archivo_url = %s,
+                        fecha_envio = NOW(),
+                        estado = 'pendiente'
+                        WHERE id = %s
+                    """
+                    cursor.execute(sql_update_validation, (archivo_url, validation_id))
+                    
+                else:
+                    sql_insert_validation = """
+                        INSERT INTO validaciones_pago (reserva_id, archivo_url, fecha_envio, estado)
+                        VALUES (%s, %s, NOW(), 'pendiente')
+                    """
+                    cursor.execute(sql_insert_validation, (reserva_id, archivo_url))
+                    validation_id = cursor.lastrowid
+                    
                 conexion.commit()
-                return {"mensaje": "Reserva eliminada exitosamente."}
+                return {
+                    "mensaje": "Comprobante de pago enviado para validación.",
+                    "validation_id": validation_id,
+                    "estado_pago": "pendiente"
+                }
 
         except pymysql.Error as e:
             conexion.rollback()
-            return {"error": "Error en la base de datos", "codigo": e.args[0], "mensaje": e.args[1]}
+            return {"error": "Error en la base de datos", "codigo": e.args[0], "mensaje": e.args[1], "status_code": 500}
         except Exception as e:
             conexion.rollback()
-            return {"error": f"Error interno del servidor: {str(e)}"}
+            return {"error": f"Error interno del servidor: {str(e)}", "status_code": 500}
         finally:
             if conexion:
                 conexion.close()
