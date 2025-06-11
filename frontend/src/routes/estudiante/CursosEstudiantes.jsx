@@ -1,13 +1,12 @@
 import { useUsuarioContext } from '../../context/UsuarioContext';
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaBookmark, FaCheckCircle } from 'react-icons/fa';
+import { FaBookmark, FaCheckCircle, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import UserProfileWidget from '../../components/common/UserProfileWidget';
 import MessageModal from '../../components/common/MessageModal';
 import useAdminMessages from '../../hooks/common/useAdminMessages';
 import { getCursosEstudiantes } from '../../services/cursosService';
 import { reservarCurso } from '../../services/reservasService';
-
 import styles from './CursosEstudiantes.module.css';
 
 const FieldWithFallback = ({ value, fallback = "No definido", children }) => {
@@ -21,7 +20,7 @@ const CursosEstudiantes = () => {
   const [errorCourses, setErrorCourses] = useState(null);
   const [expandedCourseId, setExpandedCourseId] = useState(null);
   const navigate = useNavigate();
-
+  
   const {
     showStatusModal,
     statusModalMessage,
@@ -42,7 +41,6 @@ const CursosEstudiantes = () => {
             horarios: Array.isArray(curso.horarios) ? curso.horarios : [],
           }))
         : [];
-
       setCursos(cursosValidados);
     } catch (err) {
       setErrorCourses(err.message || 'Error desconocido al cargar cursos');
@@ -118,6 +116,7 @@ const CursosEstudiantes = () => {
   }
 
   if (errorCourses || authErrorContext) return <div className={styles.error}>Error: {errorCourses || authErrorContext}</div>;
+
   if (cursos.length === 0) return <div className={styles.emptyState}>No hay cursos disponibles</div>;
 
   return (
@@ -130,92 +129,107 @@ const CursosEstudiantes = () => {
       </header>
 
       <div className={styles.cursosGrid}>
-        {cursos.map(curso => (
-          <div
-            key={curso.id}
-            className={`${styles.cursoCard} ${expandedCourseId === curso.id ? styles.expanded : ''}`}
-          >
-            <div className={styles.cursoHeader}>
-              <h3 className={styles.cursoNombre}>
-                <FieldWithFallback value={curso.nombre} fallback="Curso sin nombre" />
-              </h3>
-
-              <div className={styles.cursoResumen}>
-                <p>
-                  <strong>Cupos:</strong>
-                  <FieldWithFallback value={curso.cupos} fallback="N/A" />
-                </p>
-                <p>
-                  <strong>Costo:</strong> ${' '}
-                  <FieldWithFallback value={parseFloat(curso.coste).toFixed(2)} fallback="N/A" />
-                </p>
-                <button
-                  onClick={() => toggleDetails(curso.id)}
-                  className={styles.detailsButton}
-                  aria-expanded={expandedCourseId === curso.id}
-                >
-                  {expandedCourseId === curso.id ? 'Ocultar detalles' : 'Ver detalles'}
-                </button>
+        {cursos.map(curso => {
+          const isExpanded = expandedCourseId === curso.id;
+          
+          return (
+            <div
+              key={curso.id}
+              className={`${styles.cursoCard} ${isExpanded ? styles.expanded : ''}`}
+            >
+              <div className={styles.cursoHeader}>
+                <h3 className={styles.cursoNombre}>
+                  <FieldWithFallback value={curso.nombre} fallback="Curso sin nombre" />
+                </h3>
+                <div className={styles.cursoResumen}>
+                  <div className={styles.infoContainer}>
+                    <p>
+                      <strong>Cupos:</strong>
+                      <FieldWithFallback value={curso.cupos} fallback="N/A" />
+                    </p>
+                    <p>
+                      <strong>Costo:</strong> ${' '}
+                      <FieldWithFallback value={parseFloat(curso.coste).toFixed(2)} fallback="N/A" />
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => toggleDetails(curso.id)}
+                    className={styles.detailsButton}
+                    aria-expanded={isExpanded}
+                    aria-label={isExpanded ? 'Ocultar detalles' : 'Ver detalles'}
+                  >
+                    {isExpanded ? (
+                      <>
+                        Ocultar <FaChevronUp />
+                      </>
+                    ) : (
+                      <>
+                        Ver detalles <FaChevronDown />
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
+
+              {isExpanded && (
+                <div className={styles.cursoDetalles}>
+                  <p className={styles.cursoDescripcion}>
+                    <FieldWithFallback value={curso.descripcion} fallback="No hay descripción disponible" />
+                  </p>
+                  
+                  <p className={styles.categoriaInfo}>
+                    <strong>Categoría:</strong>{' '}
+                    <FieldWithFallback value={curso.categoria_nombre} fallback="Sin categoría" />
+                  </p>
+                  
+                  <p className={styles.profesorInfo}>
+                    <strong>Profesor:</strong>{' '}
+                    <FieldWithFallback value={`${curso.profesor_nombre || ''} ${curso.profesor_apellido || ''}`.trim()} />
+                  </p>
+
+                  <div className={styles.horariosContainer}>
+                    <p><strong>Horarios:</strong></p>
+                    {curso.horarios.length > 0 ? (
+                      <ul className={styles.horariosList}>
+                        {curso.horarios.map((horario, index) => (
+                          <li key={index}>
+                            <span className={styles.dia}>
+                              <FieldWithFallback value={horario.dia} fallback="Día no especificado" />:
+                            </span>
+                            <span className={styles.horas}>
+                              {formatTime(horario.hora_inicio)} - {formatTime(horario.hora_fin)}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className={styles.noHorarios}>No hay horarios definidos</p>
+                    )}
+                  </div>
+
+                  <div className={styles.actionsContainer}>
+                      <button
+                          className={`${styles.reserveButton} ${curso.is_reserved_by_student ? styles.reserved : ''}`}
+                          onClick={() => handleReservarCurso(curso.id, curso.nombre)}
+                          disabled={curso.cupos <= 0 || curso.is_reserved_by_student}
+                      >
+                          {curso.is_reserved_by_student ? (
+                              <>
+                                  <FaCheckCircle /> Cupo Reservado
+                              </>
+                          ) : (
+                              <>
+                                  <FaBookmark /> Reservar Cupo
+                              </>
+                          )}
+                          {curso.cupos <= 0 && !curso.is_reserved_by_student && ' (Sin cupos)'}
+                      </button>
+                  </div>
+                </div>
+              )}
             </div>
-
-            {expandedCourseId === curso.id && (
-              <div className={styles.cursoDetalles}>
-                <p className={styles.cursoDescripcion}>
-                  <FieldWithFallback value={curso.descripcion} fallback="No hay descripción disponible" />
-                </p>
-
-                <p className={styles.categoriaInfo}>
-                  <strong>Categoría:</strong>{' '}
-                  <FieldWithFallback value={curso.categoria_nombre} fallback="Sin categoría" />
-                </p>
-                <p className={styles.profesorInfo}>
-                  <strong>Profesor:</strong>{' '}
-                  <FieldWithFallback value={`${curso.profesor_nombre || ''} ${curso.profesor_apellido || ''}`.trim()} />
-                </p>
-
-                <div className={styles.horariosContainer}>
-                  <p><strong>Horarios:</strong></p>
-                  {curso.horarios.length > 0 ? (
-                    <ul className={styles.horariosList}>
-                      {curso.horarios.map((horario, index) => (
-                        <li key={index}>
-                          <span className={styles.dia}>
-                            <FieldWithFallback value={horario.dia} fallback="Día no especificado" />:
-                          </span>
-                          <span className={styles.horas}>
-                            {formatTime(horario.hora_inicio)} - {formatTime(horario.hora_fin)}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className={styles.noHorarios}>No hay horarios definidos</p>
-                  )}
-                </div>
-
-                <div className={styles.actionsContainer}>
-                    <button
-                        className={`${styles.reserveButton} ${curso.is_reserved_by_student ? styles.reserved : ''}`}
-                        onClick={() => handleReservarCurso(curso.id, curso.nombre)}
-                        disabled={curso.cupos <= 0 || curso.is_reserved_by_student}
-                    >
-                        {curso.is_reserved_by_student ? (
-                            <>
-                                <FaCheckCircle /> Cupo Reservado
-                            </>
-                        ) : (
-                            <>
-                                <FaBookmark /> Reservar Cupo
-                            </>
-                        )}
-                        {curso.cupos <= 0 && !curso.is_reserved_by_student && ' (Sin cupos)'}
-                    </button>
-                </div>
-              </div>
-            )}
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {showStatusModal && (
