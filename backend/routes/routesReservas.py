@@ -31,6 +31,11 @@ def cancelar_reserva_route(reserva_id):
 @token_requerido
 @rol_requerido(['estudiante'])
 def confirmar_pago_route(reserva_id):
-    data = request.get_json()
-    resultado, status_code = ReservasController.confirmar_pago(reserva_id, data)
-    return jsonify(resultado), status_code
+    if request.content_type and 'multipart/form-data' not in request.content_type and 'application/json' not in request.content_type:
+        return jsonify({"error": "Content-Type no soportado. Use multipart/form-data o application/json"}), 415
+    
+    try:
+        resultado, status_code = ReservasController.confirmar_pago(reserva_id)
+        return jsonify(resultado), status_code
+    except Exception as e:
+        return jsonify({"error": f"Error interno del servidor: {str(e)}"}), 500
