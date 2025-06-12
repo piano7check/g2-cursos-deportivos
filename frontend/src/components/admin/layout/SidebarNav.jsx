@@ -1,6 +1,6 @@
 import React from 'react';
-import { FaHome, FaUsers, FaBookOpen, FaTags, FaSignOutAlt, FaTimes } from 'react-icons/fa';
-import UserProfileWidget from '../../common/UserProfileWidget'; 
+import { FaHome, FaUsers, FaBookOpen, FaTags, FaSignOutAlt, FaTimes, FaMoneyCheckAlt } from 'react-icons/fa';
+import UserProfileWidget from '../../common/UserProfileWidget';
 import styles from '../../../routes/admin/AdminDashboard.module.css';
 
 const MenuItem = ({ icon, text, onClick, active }) => (
@@ -27,7 +27,7 @@ const SidebarNav = ({ isSidebarOpen, setIsSidebarOpen, activeTab, setActiveTab, 
                 <UserProfileWidget />
             </div>
             <nav className={styles.nav}>
-                <ul> 
+                <ul>
                     <MenuItem
                         icon={<FaHome />}
                         text="Resumen"
@@ -51,6 +51,12 @@ const SidebarNav = ({ isSidebarOpen, setIsSidebarOpen, activeTab, setActiveTab, 
                         text="Gestión de Categorías"
                         onClick={() => setActiveTab('categories')}
                         active={activeTab === 'categories'}
+                    />
+                    <MenuItem
+                        icon={<FaMoneyCheckAlt />}
+                        text="Validación de Pagos"
+                        onClick={() => setActiveTab('payment-validation')}
+                        active={activeTab === 'payment-validation'}
                     />
                 </ul>
             </nav>

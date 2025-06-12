@@ -15,19 +15,18 @@ import OverviewSection from '../../components/admin/sections/OverviewSection';
 import UsersManagementSection from '../../components/admin/sections/UsersManagementSection';
 import CoursesManagementSection from '../../components/admin/sections/CoursesManagementSection';
 import CategoriesManagementSection from '../../components/admin/sections/CategoriesManagementSection';
-
+import PaymentValidationSection from '../../components/admin/sections/PaymentValidationSection';
 
 import MessageModal from '../../components/common/MessageModal';
 
-import styles from './AdminDashboard.module.css'; 
+import styles from './AdminDashboard.module.css';
 
 const AdminDashboard = () => {
-   
     const { usuario: contextUsuario, cargando: cargandoContext, setUsuario } = useUsuarioContext();
-    const navigate = useNavigate(); 
+    const navigate = useNavigate();
 
-    const [activeTab, setActiveTab] = useState('overview'); 
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false); 
+    const [activeTab, setActiveTab] = useState('overview');
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     const {
         showStatusModal,
@@ -74,26 +73,25 @@ const AdminDashboard = () => {
             }
 
         } catch (err) {
-            console.error("Error al cargar datos del resumen:", err); 
+            console.error("Error al cargar datos del resumen:", err);
         }
-    }, []); 
-
+    }, []);
     
     useEffect(() => {
         if (!cargandoContext) {
             if (contextUsuario) {
-                fetchOverviewData(); 
+                fetchOverviewData();
             } else {
-                navigate('/login'); 
+                navigate('/login');
             }
         }
     }, [cargandoContext, contextUsuario, fetchOverviewData, navigate]);
 
     const handleLogout = async () => {
         try {
-            await logoutUser(); 
-            setUsuario(null); 
-            navigate('/login'); 
+            await logoutUser();
+            setUsuario(null);
+            navigate('/login');
         } catch (err) {
             console.error('Error al cerrar sesión:', err);
             showMessage({ message: `Error al cerrar sesión: ${err.message || 'Error desconocido'}`, type: 'error' });
@@ -106,6 +104,7 @@ const AdminDashboard = () => {
             case 'users': return 'Gestión de Usuarios';
             case 'courses': return 'Gestión de Cursos';
             case 'categories': return 'Gestión de Categorías';
+            case 'payment-validation': return 'Validación de Pagos';
             default: return 'Panel de Administración';
         }
     };
@@ -148,7 +147,7 @@ const AdminDashboard = () => {
                     >
                         <FaBars />
                     </button>
-                    <h1>{getActiveTabTitle()}</h1> 
+                    <h1>{getActiveTabTitle()}</h1>
                 </header>
 
                 <main className={styles.dashboardContent}>
@@ -162,9 +161,9 @@ const AdminDashboard = () => {
                     )}
                     {activeTab === 'users' && (
                         <UsersManagementSection
-                            showMessage={showMessage} 
-                            contextUsuario={contextUsuario} 
-                            navigate={navigate} 
+                            showMessage={showMessage}
+                            contextUsuario={contextUsuario}
+                            navigate={navigate}
                         />
                     )}
                     {activeTab === 'courses' && (
@@ -179,6 +178,11 @@ const AdminDashboard = () => {
                             showMessage={showMessage}
                             contextUsuario={contextUsuario}
                             navigate={navigate}
+                        />
+                    )}
+                    {activeTab === 'payment-validation' && (
+                        <PaymentValidationSection
+                            showMessage={showMessage}
                         />
                     )}
                 </main>

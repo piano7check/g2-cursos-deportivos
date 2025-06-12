@@ -91,3 +91,78 @@ export const confirmarPago = async (reservaId, data) => {
         throw new Error(error.message || 'Error al confirmar el pago');
     }
 };
+
+export const obtenerValidacionesPagoAdmin = async () => {
+    try {
+        const response = await fetch(`${API_URL}/admin/validaciones-pago`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+        });
+        return handleResponse(response);
+    } catch (error) {
+        throw new Error(error.message || 'Error desconocido al obtener las validaciones de pago.');
+    }
+};
+
+export const aprobarPago = async (validacionId) => {
+    try {
+        const response = await fetch(`${API_URL}/admin/validaciones-pago/${validacionId}/aprobar`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+        });
+        return handleResponse(response);
+    } catch (error) {
+        throw new Error(error.message || 'Error desconocido al aprobar el pago.');
+    }
+};
+
+export const rechazarPago = async (validacionId) => {
+    try {
+        const response = await fetch(`${API_URL}/admin/validaciones-pago/${validacionId}/rechazar`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+        });
+        return handleResponse(response);
+    } catch (error) {
+        throw new Error(error.message || 'Error desconocido al rechazar el pago.');
+    }
+};
+
+export const ocultarReservaEstudiante = async (reservaId, ocultar) => {
+    try {
+        // CAMBIO CRÍTICO AQUÍ: Añadir '/estudiante' al path
+        const response = await fetch(`${API_URL}/estudiante/reservas/${reservaId}/ocultar`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ ocultar: ocultar }),
+            credentials: 'include',
+        });
+        return handleResponse(response);
+    } catch (error) {
+        throw new Error(error.message || `Error al ${ocultar ? 'ocultar' : 'mostrar'} la reserva.`);
+    }
+};
+
+const reservasService = {
+    reservarCurso,
+    obtenerReservasPorEstudiante,
+    cancelarReserva,
+    confirmarPago,
+    obtenerValidacionesPagoAdmin,
+    aprobarPago,
+    rechazarPago,
+    ocultarReservaEstudiante,
+};
+
+export default reservasService;
