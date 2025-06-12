@@ -3,7 +3,8 @@ import uuid
 from schemas.reservas import validarReserva
 from models.reservasModels import ReservasModel
 from flask import g, jsonify, request, current_app
-from werkzeug.utils import secure_filename 
+from werkzeug.utils import secure_filename
+
 class ReservasController:
     @staticmethod
     def crear_reserva(data):
@@ -101,3 +102,27 @@ class ReservasController:
         except Exception as e:
             current_app.logger.error(f"Error en confirmar_pago: {str(e)}")
             return {"error": "Error interno del servidor"}, 500
+
+    @staticmethod
+    def obtener_validaciones_pago_admin():
+        resultado = ReservasModel.obtener_validaciones_pago_admin()
+        if "error" in resultado:
+            return resultado, resultado.get("status_code", 500)
+        else:
+            return resultado, 200
+
+    @staticmethod
+    def aprobar_pago(validacion_id):
+        resultado = ReservasModel.actualizar_estado_validacion_pago(validacion_id, 'aprobado')
+        if "error" in resultado:
+            return resultado, resultado.get("status_code", 500)
+        else:
+            return resultado, 200
+
+    @staticmethod
+    def rechazar_pago(validacion_id):
+        resultado = ReservasModel.actualizar_estado_validacion_pago(validacion_id, 'rechazado')
+        if "error" in resultado:
+            return resultado, resultado.get("status_code", 500)
+        else:
+            return resultado, 200

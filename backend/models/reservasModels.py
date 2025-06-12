@@ -79,7 +79,7 @@ class ReservasModel:
                 sql = """
                     SELECT
                         r.id AS reserva_id,
-                        r.estudiante_id,  -- ¡Aquí la adición!
+                        r.estudiante_id,
                         r.fecha_reserva,
                         r.estado AS estado_reserva,
                         c.id AS curso_id,
@@ -339,6 +339,117 @@ class ReservasModel:
                     "mensaje": "Comprobante de pago enviado para validación.",
                     "validation_id": validation_id,
                     "estado_pago": "pendiente"
+                }
+
+        except pymysql.Error as e:
+            conexion.rollback()
+            return {"error": "Error en la base de datos", "codigo": e.args[0], "mensaje": e.args[1], "status_code": 500}
+        except Exception as e:
+            conexion.rollback()
+            return {"error": f"Error interno del servidor: {str(e)}", "status_code": 500}
+        finally:
+            if conexion:
+                conexion.close()
+
+    @staticmethod
+    def obtener_validaciones_pago_admin():
+        conexion = obtenerConexion()
+        if conexion is None:
+            return {"error": "Error de conexión a la base de datos"}
+
+        try:
+            with conexion.cursor(pymysql.cursors.DictCursor) as cursor:
+                sql = """
+                    SELECT
+                        vp.id AS validacion_id,
+                        vp.reserva_id,
+                        vp.archivo_url,
+                        vp.fecha_envio,
+                        vp.estado AS estado_validacion,
+                        r.estado AS estado_reserva_original,
+                        r.fecha_reserva,
+                        c.nombre AS curso_nombre,
+                        c.coste AS curso_coste,
+                        e.name AS estudiante_nombre,
+                        e.lastname AS estudiante_apellido,
+                        e.email AS estudiante_email
+                    FROM validaciones_pago vp
+                    JOIN reservas r ON vp.reserva_id = r.id
+                    JOIN cursos c ON r.curso_id = c.id
+                    JOIN users e ON r.estudiante_id = e.id
+                    WHERE vp.estado = 'pendiente'
+                    ORDER BY vp.fecha_envio ASC
+                """
+                cursor.execute(sql)
+                validaciones = cursor.fetchall()
+
+                for validacion in validaciones:
+                    if 'curso_coste' in validacion and isinstance(validacion['curso_coste'], Decimal):
+                        validacion['curso_coste'] = str(validacion['curso_coste'])
+
+                return {"validaciones": validaciones}
+
+        except pymysql.Error as e:
+            return {"error": "Error en la base de datos", "codigo": e.args[0], "mensaje": e.args[1], "status_code": 500}
+        except Exception as e:
+            return {"error": f"Error interno del servidor: {str(e)}", "status_code": 500}
+        finally:
+            if conexion:
+                conexion.close()
+
+    @staticmethod
+    def actualizar_estado_validacion_pago(validacion_id, nuevo_estado):
+        conexion = obtenerConexion()
+        if conexion is None:
+            return {"error": "Error de conexión a la base de datos"}
+
+        if nuevo_estado not in ['aprobado', 'rechazado']:
+            return {"error": "Estado de validación inválido.", "status_code": 400}
+
+        try:
+            with conexion.cursor() as cursor:
+                conexion.begin()
+
+                sql_get_validation_info = """
+                    SELECT vp.estado, vp.reserva_id, r.estado AS estado_reserva
+                    FROM validaciones_pago vp
+                    JOIN reservas r ON vp.reserva_id = r.id
+                    WHERE vp.id = %s FOR UPDATE
+                """
+                cursor.execute(sql_get_validation_info, (validacion_id,))
+                validation_info = cursor.fetchone()
+
+                if not validation_info:
+                    conexion.rollback()
+                    return {"error": "Validación de pago no encontrada.", "status_code": 404}
+
+                current_validation_estado = validation_info[0]
+                reserva_id = validation_info[1]
+                current_reserva_estado = validation_info[2]
+
+                if current_validation_estado == nuevo_estado:
+                    conexion.rollback()
+                    return {"error": f"La validación ya está en estado '{nuevo_estado}'.", "status_code": 409}
+                
+                sql_update_validation = """
+                    UPDATE validaciones_pago SET estado = %s WHERE id = %s
+                """
+                cursor.execute(sql_update_validation, (nuevo_estado, validacion_id))
+
+                if nuevo_estado == 'aprobado':
+                    if current_reserva_estado == 'pendiente':
+                        sql_update_reserva = "UPDATE reservas SET estado = 'validado' WHERE id = %s"
+                        cursor.execute(sql_update_reserva, (reserva_id,))
+                    else:
+                        pass 
+                elif nuevo_estado == 'rechazado':
+                    pass
+
+                conexion.commit()
+                return {
+                    "mensaje": f"Estado de validación de pago actualizado a '{nuevo_estado}'.",
+                    "reserva_id": reserva_id,
+                    "estado_validacion": nuevo_estado
                 }
 
         except pymysql.Error as e:

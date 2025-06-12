@@ -3,6 +3,7 @@ from middleware.validarToken import token_requerido
 from middleware.validarRol import rol_requerido
 from controllers.controllerCursos import ControllerCursos
 from controllers.adminUserController import adminUserController
+from controllers.controllerReservas import ReservasController
 
 routes_admin = Blueprint("adminRoute", __name__)
 
@@ -59,3 +60,18 @@ def editar_usuario_admin(id):
 @routes_admin.route('/profesores', methods=['GET'])
 def obtener_profesores_admin():
     return adminUserController.obtenerProfesores()
+
+@routes_admin.route('/validaciones-pago', methods=['GET'])
+def obtener_validaciones_pago():
+    resultado, status_code = ReservasController.obtener_validaciones_pago_admin()
+    return jsonify(resultado), status_code
+
+@routes_admin.route('/validaciones-pago/<int:validacion_id>/aprobar', methods=['PATCH'])
+def aprobar_pago_admin(validacion_id):
+    resultado, status_code = ReservasController.aprobar_pago(validacion_id)
+    return jsonify(resultado), status_code
+
+@routes_admin.route('/validaciones-pago/<int:validacion_id>/rechazar', methods=['PATCH'])
+def rechazar_pago_admin(validacion_id):
+    resultado, status_code = ReservasController.rechazar_pago(validacion_id)
+    return jsonify(resultado), status_code
