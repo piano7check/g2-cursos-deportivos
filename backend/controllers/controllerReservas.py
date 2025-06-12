@@ -126,3 +126,17 @@ class ReservasController:
             return resultado, resultado.get("status_code", 500)
         else:
             return resultado, 200
+
+    @staticmethod
+    def ocultar_reserva_estudiante(reserva_id):
+        current_user_id = g.usuario.get('id')
+        if not current_user_id:
+            return {"error": "ID de estudiante no encontrado en el token"}, 400
+        
+        data = request.get_json()
+        ocultar_estado = data.get('ocultar', True) 
+        resultado = ReservasModel.actualizar_oculto_reserva_estudiante(reserva_id, current_user_id, ocultar_estado)
+        if "error" in resultado:
+            return resultado, resultado.get("status_code", 500)
+        else:
+            return resultado, 200

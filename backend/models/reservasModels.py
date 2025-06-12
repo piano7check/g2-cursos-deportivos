@@ -82,6 +82,7 @@ class ReservasModel:
                         r.estudiante_id,
                         r.fecha_reserva,
                         r.estado AS estado_reserva,
+                        r.oculto_para_estudiante,
                         c.id AS curso_id,
                         c.nombre AS curso_nombre,
                         c.coste AS curso_coste,
@@ -112,8 +113,6 @@ class ReservasModel:
     @staticmethod
     def obtener_reservas_por_estudiante(estudiante_id):
         conexion = obtenerConexion()
-        if conexion is None:
-            return {"error": "Error de conexión a la base de datos"}
 
         try:
             with conexion.cursor(pymysql.cursors.DictCursor) as cursor:
@@ -122,6 +121,7 @@ class ReservasModel:
                         r.id AS reserva_id,
                         r.fecha_reserva,
                         r.estado AS estado_reserva,
+                        r.oculto_para_estudiante,
                         c.id AS curso_id,
                         c.nombre AS curso_nombre,
                         c.descripcion AS curso_descripcion,
@@ -159,7 +159,7 @@ class ReservasModel:
                 conexion.close()
 
     @staticmethod
-    def obtener_todas_las_reservas(limit=None, offset=0, estudiante_id=None, curso_id=None, estado=None):
+    def obtener_todas_las_reservas(limit=None, offset=0, estudiante_id=None, curso_id=None, estado=None, oculto_para_estudiante=None):
         conexion = obtenerConexion()
         if conexion is None:
             return {"error": "Error de conexión a la base de datos"}
@@ -171,6 +171,7 @@ class ReservasModel:
                         r.id AS reserva_id,
                         r.fecha_reserva,
                         r.estado AS estado_reserva,
+                        r.oculto_para_estudiante,
                         c.id AS curso_id,
                         c.nombre AS curso_nombre,
                         c.descripcion AS curso_descripcion,
@@ -204,6 +205,9 @@ class ReservasModel:
                 if estado:
                     conditions.append("r.estado = %s")
                     values.append(estado)
+                if oculto_para_estudiante is not None:
+                    conditions.append("r.oculto_para_estudiante = %s")
+                    values.append(1 if oculto_para_estudiante else 0)
 
                 if conditions:
                     sql_base += " WHERE " + " AND ".join(conditions)
@@ -231,10 +235,15 @@ class ReservasModel:
                     LEFT JOIN categorias cat ON c.categoria_id = cat.id
                     LEFT JOIN validaciones_pago vp ON r.id = vp.reserva_id
                 """
-                if conditions:
-                    sql_count += " WHERE " + " AND ".join(conditions)
+                count_conditions = conditions[:]
+                count_values = values[:]
+                if limit is not None:
+                    count_values = count_values[:-2]
 
-                cursor.execute(sql_count, tuple(values[:-2] if limit is not None else values))
+                if count_conditions:
+                    sql_count += " WHERE " + " AND ".join(count_conditions)
+                
+                cursor.execute(sql_count, tuple(count_values))
                 total_reservas = cursor.fetchone()[0]
 
 
@@ -392,6 +401,7 @@ class ReservasModel:
         except pymysql.Error as e:
             return {"error": "Error en la base de datos", "codigo": e.args[0], "mensaje": e.args[1], "status_code": 500}
         except Exception as e:
+            conexion.rollback()
             return {"error": f"Error interno del servidor: {str(e)}", "status_code": 500}
         finally:
             if conexion:
@@ -451,6 +461,44 @@ class ReservasModel:
                     "reserva_id": reserva_id,
                     "estado_validacion": nuevo_estado
                 }
+
+        except pymysql.Error as e:
+            conexion.rollback()
+            return {"error": "Error en la base de datos", "codigo": e.args[0], "mensaje": e.args[1], "status_code": 500}
+        except Exception as e:
+            conexion.rollback()
+            return {"error": f"Error interno del servidor: {str(e)}", "status_code": 500}
+        finally:
+            if conexion:
+                conexion.close()
+
+    @staticmethod
+    def actualizar_oculto_reserva_estudiante(reserva_id, estudiante_id, ocultar_estado):
+        conexion = obtenerConexion()
+        if conexion is None:
+            return {"error": "Error de conexión a la base de datos", "status_code": 500}
+
+        try:
+            with conexion.cursor() as cursor:
+                conexion.begin()
+
+                sql_check_ownership = "SELECT estudiante_id FROM reservas WHERE id = %s FOR UPDATE"
+                cursor.execute(sql_check_ownership, (reserva_id,))
+                reserva_owner_id = cursor.fetchone()
+
+                if not reserva_owner_id or reserva_owner_id[0] != estudiante_id:
+                    conexion.rollback()
+                    return {"error": "Reserva no encontrada o no pertenece al estudiante.", "status_code": 403}
+
+                sql_update = """
+                    UPDATE reservas
+                    SET oculto_para_estudiante = %s
+                    WHERE id = %s
+                """
+                cursor.execute(sql_update, (ocultar_estado, reserva_id))
+                conexion.commit()
+
+            return {"mensaje": f"Reserva { 'ocultada' if ocultar_estado else 'mostrada' } correctamente.", "status_code": 200}
 
         except pymysql.Error as e:
             conexion.rollback()
