@@ -1,6 +1,6 @@
 from flask import request, jsonify, g, make_response
 from models.userModels import userModel
-from schemas.estudianteParcial import validarUsuarioParcial
+from schemas.userSchema import validarUsuarioParcial
 import bcrypt
 from utils.tokenUsuario import generarToken
 from utils.buscarUsuario import buscarUsuarioById

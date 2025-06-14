@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaTimes, FaSave, FaPlus, FaTrash } from 'react-icons/fa';
-import styles from '../../../routes/admin/AdminDashboard.module.css'; 
+import styles from '../../../routes/admin/AdminDashboard.module.css';
 
 const CourseModal = ({ editingCourse, professors, categories, onClose, onSave }) => {
     const [courseData, setCourseData] = useState({
@@ -9,6 +9,7 @@ const CourseModal = ({ editingCourse, professors, categories, onClose, onSave })
         cupos: '',
         profesor_id: '',
         categoria_id: '',
+        coste: '',
         horarios: [{ dia: '', hora_inicio: '', hora_fin: '' }],
     });
 
@@ -30,6 +31,7 @@ const CourseModal = ({ editingCourse, professors, categories, onClose, onSave })
                 cupos: editingCourse.cupos || '',
                 profesor_id: editingCourse.profesor_id ? String(editingCourse.profesor_id) : '',
                 categoria_id: editingCourse.categoria_id ? String(editingCourse.categoria_id) : '',
+                coste: editingCourse.coste !== undefined && editingCourse.coste !== null ? String(editingCourse.coste) : '',
                 horarios: editingCourse.horarios && editingCourse.horarios.length > 0
                     ? editingCourse.horarios.map(h => ({
                         dia: h.dia,
@@ -45,6 +47,7 @@ const CourseModal = ({ editingCourse, professors, categories, onClose, onSave })
                 cupos: '',
                 profesor_id: '',
                 categoria_id: '',
+                coste: '',
                 horarios: [{ dia: '', hora_inicio: '', hora_fin: '' }],
             });
         }
@@ -58,7 +61,11 @@ const CourseModal = ({ editingCourse, professors, categories, onClose, onSave })
     const handleHorarioChange = (index, e) => {
         const { name, value } = e.target;
         const newHorarios = [...courseData.horarios];
-        newHorarios[index] = { ...newHorarios[index], [name]: formatTimeToSeconds(value) };
+        if (name === 'dia') {
+            newHorarios[index] = { ...newHorarios[index], [name]: value };
+        } else {
+            newHorarios[index] = { ...newHorarios[index], [name]: formatTimeToSeconds(value) };
+        }
         setCourseData(prevData => ({ ...prevData, horarios: newHorarios }));
     };
 
@@ -83,6 +90,7 @@ const CourseModal = ({ editingCourse, professors, categories, onClose, onSave })
             cupos: parseInt(courseData.cupos, 10),
             profesor_id: parseInt(courseData.profesor_id, 10),
             categoria_id: courseData.categoria_id ? parseInt(courseData.categoria_id, 10) : null,
+            coste: parseFloat(courseData.coste),
         };
         onSave(dataToSave);
     };
@@ -129,6 +137,19 @@ const CourseModal = ({ editingCourse, professors, categories, onClose, onSave })
                         />
                     </div>
                     <div className={styles.formGroup}>
+                        <label htmlFor="coste">Costo:</label>
+                        <input
+                            type="number"
+                            id="coste"
+                            name="coste"
+                            value={courseData.coste}
+                            onChange={handleChange}
+                            required
+                            min="0"
+                            step="0.01"
+                        />
+                    </div>
+                    <div className={styles.formGroup}>
                         <label htmlFor="profesor_id">Profesor:</label>
                         <select
                             id="profesor_id"
@@ -152,6 +173,7 @@ const CourseModal = ({ editingCourse, professors, categories, onClose, onSave })
                             name="categoria_id"
                             value={courseData.categoria_id}
                             onChange={handleChange}
+                            required
                         >
                             <option value="">Seleccione una categoría (opcional)</option>
                             {categories.map(cat => (

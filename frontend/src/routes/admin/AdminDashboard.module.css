@@ -1,5 +1,3 @@
-/* frontend/src/routes/admin/AdminDashboard.module.css */
-
 .adminDashboard {
     display: flex;
     min-height: 100vh;
@@ -20,6 +18,7 @@
     transition: transform 0.3s ease-in-out;
     transform: translateX(0);
     z-index: 1000;
+    border-radius: 0 12px 12px 0;
 }
 
 @media (max-width: 768px) {
@@ -305,7 +304,6 @@
     color: white;
 }
 
-/* Modificaciones para el modal */
 .modalOverlay {
     position: fixed;
     top: 0;
@@ -324,15 +322,15 @@
     padding: 30px;
     border-radius: 12px;
     position: relative;
-    width: 90%; /* Ajustar para ser un poco más ancho */
-    max-width: 600px; /* Aumentar el ancho máximo del modal */
-    height: 90vh; /* Darle una altura fija con scroll si es necesario */
-    max-height: 90vh; /* Asegurar que no exceda la altura de la vista */
-    overflow-y: auto; /* Permitir scroll vertical dentro del modal */
+    width: 90%;
+    max-width: 600px;
+    height: auto;
+    max-height: 90vh;
+    overflow-y: auto;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     animation: fadeInScale 0.3s ease-out forwards;
-    display: flex; /* Usar flexbox para el contenido interno del modal */
-    flex-direction: column; /* Organizar el contenido en columna */
+    display: flex;
+    flex-direction: column;
 }
 
 .closeModalButton {
@@ -373,6 +371,9 @@
 .formGroup input[type="text"],
 .formGroup input[type="number"],
 .formGroup input[type="time"],
+.formGroup input[type="email"],
+.formGroup input[type="password"],
+.formGroup input[type="date"],
 .formGroup textarea,
 .formGroup select {
     width: 100%;
@@ -392,6 +393,26 @@
     outline: none;
 }
 
+.formGroup input[type="date"] {
+    appearance: none;
+    -webkit-appearance: none;
+    box-sizing: border-box;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+    color: #333;
+    background-color: #fff;
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.formGroup input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.5);
+    opacity: 0.7;
+    cursor: pointer;
+}
+
 .horariosTitle {
     margin-top: 25px;
     margin-bottom: 15px;
@@ -401,12 +422,11 @@
     padding-bottom: 5px;
 }
 
-/* Modificaciones para el diseño de los horarios en línea */
 .horarioItem {
-    display: flex; /* Usar flexbox para alinear elementos */
-    flex-wrap: wrap; /* Permitir que los elementos se envuelvan si no hay espacio */
-    gap: 15px; /* Espacio entre los grupos de formulario */
-    align-items: flex-end; /* Alinea los elementos en la parte inferior */
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: flex-end;
     margin-bottom: 15px;
     padding: 10px;
     border: 1px solid #f0f0f0;
@@ -415,13 +435,13 @@
 }
 
 .horarioItem .formGroup {
-    flex: 1 1 150px; /* Permite que cada grupo de formulario crezca y tenga un ancho base */
-    margin-bottom: 0; 
-    min-width: 120px; /* Ancho mínimo para evitar que se aplasten demasiado */
+    flex: 1 1 150px;
+    margin-bottom: 0;
+    min-width: 120px;
 }
 
 .horarioItem .formGroup label {
-    white-space: nowrap; /* Evita que el texto de la etiqueta se rompa en varias líneas */
+    white-space: nowrap;
 }
 
 .removeHorarioBtn {
@@ -433,13 +453,12 @@
     cursor: pointer;
     font-size: 1rem;
     transition: background-color 0.2s ease;
-    /* Ajustes para alineación con flexbox */
-    align-self: center; /* Centra el botón verticalmente */
-    height: 40px; /* Asegura una altura consistente */
+    align-self: center;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 0; /* Asegurar que no haya margen inferior */
+    margin-bottom: 0;
 }
 
 .removeHorarioBtn:hover {
@@ -472,7 +491,7 @@
     margin-top: 25px;
     padding-top: 15px;
     border-top: 1px solid #eee;
-    flex-shrink: 0; /* Evitar que los botones de acción se encojan */
+    flex-shrink: 0;
 }
 
 .saveButton, .cancelButton {
@@ -507,7 +526,6 @@
     transform: translateY(-2px);
 }
 
-/* Estilos para el MessageModal (si lo usas con este CSS) */
 .messageModalOverlay {
     position: fixed;
     top: 0;
@@ -526,67 +544,81 @@
     padding: 25px;
     border-radius: 12px;
     width: 90%;
-    max-width: 400px;
+    max-width: 350px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    text-align: center;
     animation: fadeInScale 0.3s ease-out forwards;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    box-sizing: border-box;
 }
 
-.messageModal h4 {
+.messageIcon {
+    font-size: 4rem;
+    margin-bottom: 15px;
+}
+
+.infoModal .messageIcon { color: #3498db; }
+.successModal .messageIcon { color: #28a745; }
+.errorModal .messageIcon { color: #dc3545; }
+.confirmModal .messageIcon { color: #f39c12; }
+
+.messageTitle {
     margin-top: 0;
     margin-bottom: 15px;
-    font-size: 1.5rem;
+    font-size: 1.4rem;
+    color: #333;
+    width: 100%;
+    text-align: center;
+    word-break: break-word;
 }
 
-.messageModal p {
-    margin-bottom: 20px;
+.messageText {
+    margin-bottom: 25px;
     color: #555;
+    line-height: 1.4;
+    width: 100%;
+    text-align: center;
+    word-break: break-word;
 }
 
-.messageModal .actions {
+.messageActions {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
-    gap: 10px;
+    gap: 15px;
+    width: 100%;
 }
 
-.messageModal button {
-    padding: 8px 18px;
+.messageButton {
+    padding: 10px 15px;
     border: none;
     border-radius: 8px;
     cursor: pointer;
     font-size: 0.95rem;
     transition: background-color 0.2s ease, transform 0.2s ease;
+    flex-grow: 1;
+    flex-basis: auto;
+    max-width: 150px;
+    min-width: 100px;
+    text-align: center;
 }
 
-.messageModal .infoButton {
-    background-color: #3498db;
-    color: white;
-}
-.messageModal .infoButton:hover { background-color: #2980b9; transform: translateY(-2px); }
+.infoButton { background-color: #3498db; color: white; }
+.infoButton:hover { background-color: #2980b9; transform: translateY(-2px); }
 
-.messageModal .successButton {
-    background-color: #28a745;
-    color: white;
-}
-.messageModal .successButton:hover { background-color: #218838; transform: translateY(-2px); }
+.successButton { background-color: #28a745; color: white; }
+.successButton:hover { background-color: #218838; transform: translateY(-2px); }
 
-.messageModal .errorButton {
-    background-color: #dc3545;
-    color: white;
-}
-.messageModal .errorButton:hover { background-color: #c82333; transform: translateY(-2px); }
+.errorButton { background-color: #dc3545; color: white; }
+.errorButton:hover { background-color: #c82333; transform: translateY(-2px); }
 
-.messageModal .confirmButton {
-    background-color: #3498db;
-    color: white;
-}
-.messageModal .confirmButton:hover { background-color: #2980b9; transform: translateY(-2px); }
+.confirmButton { background-color: #3498db; color: white; }
+.confirmButton:hover { background-color: #2980b9; transform: translateY(-2px); }
 
-.messageModal .cancelConfirmButton {
-    background-color: #95a5a6;
-    color: white;
-}
-.messageModal .cancelConfirmButton:hover { background-color: #7f8c8d; transform: translateY(-2px); }
+.cancelConfirmButton { background-color: #95a5a6; color: white; }
+.cancelConfirmButton:hover { background-color: #7f8c8d; transform: translateY(-2px); }
 
 @keyframes fadeInScale {
     from {
@@ -707,4 +739,243 @@
     font-size: 1.1rem;
     color: #666;
     line-height: 1.6;
+}
+
+.searchBar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    align-items: center;
+}
+
+.searchBar input {
+    flex: 1;
+    min-width: 150px;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: border-color 0.2s ease;
+}
+
+.searchBar select {
+    flex: 1;
+    min-width: 150px;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: border-color 0.2s ease;
+    background-color: white;
+    cursor: pointer;
+}
+
+.searchBar input:focus,
+.searchBar select:focus {
+    border-color: #3498db;
+    outline: none;
+}
+
+.searchButton, .clearSearchButton {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.searchButton:hover {
+    background-color: #2980b9;
+    transform: translateY(-2px);
+}
+
+.clearSearchButton {
+    background-color: #6c757d;
+}
+
+.clearSearchButton:hover {
+    background-color: #5a6268;
+    transform: translateY(-2px);
+}
+
+.paginationControls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #f0f2f5;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.paginationButton {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.paginationButton:hover:not(:disabled) {
+    background-color: #2980b9;
+    transform: translateY(-2px);
+}
+
+.paginationButton:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.paginationControls span {
+    font-size: 1rem;
+    color: #555;
+    font-weight: bold;
+}
+
+@media (max-width: 600px) {
+    .searchBar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .searchBar input,
+    .searchBar select,
+    .searchButton,
+    .clearSearchButton {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    .paginationControls {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .paginationButton {
+        width: 100%;
+        justify-content: center;
+    }
+    .modal {
+        max-width: 95%;
+        padding: 20px;
+    }
+}
+
+.statusBadge {
+    padding: 3px 8px;
+    border-radius: 9999px; 
+    font-size: 0.75rem; 
+    font-weight: 600; 
+    display: inline-block;
+}
+
+.statusPending {
+    background-color: #fefcbf; 
+    color: #92400e; 
+}
+
+.statusValidated {
+    background-color: #d1fae5; 
+    color: #065f46;
+}
+
+.statusCancelled, .statusRejected { 
+    background-color: #fee2e2; 
+    color: #991b1b; 
+}
+
+.actionsCell > div {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px; 
+}
+
+.approveButton {
+    background-color: #10b981;
+    color: white;
+    font-weight: bold;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+}
+
+.approveButton:hover {
+    background-color: #059669; 
+    transform: translateY(-1px);
+}
+
+.rejectButton {
+    background-color: #ef4444; 
+    color: white;
+    font-weight: bold;
+    padding: 8px 16px; 
+    border-radius: 8px; 
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+}
+
+.rejectButton:hover {
+    background-color: #dc2626;
+    transform: translateY(-1px);
+}
+
+
+.modalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #eee;
+}
+
+.modalH3 { 
+    margin: 0;
+    font-size: 1.8rem; 
+    font-weight: 600; 
+    color: #333;
+}
+
+.modalContent {
+    flex-grow: 1;
+    overflow-y: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.pdfIframe {
+    width: 100%;
+    height: 70vh; 
+    border: none;
+}
+
+.imageComprobante {
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+    margin: auto; 
 }

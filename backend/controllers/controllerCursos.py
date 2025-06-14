@@ -1,9 +1,9 @@
-from flask import jsonify, request
+from flask import jsonify, request, g
 from models.cursosModels import CursosModel
-from schemas.cursos import validarCurso 
+from schemas.cursos import validarCurso
 from schemas.cursosPartial import validarCursoParcial
 from utils.validarCursos import validar_horarios_y_disponibilidad_curso, validar_categoria_existente, parse_time_strings_to_datetime_time
-from utils.validarProfesor import validar_profesor 
+from utils.validarProfesor import validar_profesor
 from utils.obtenerCursoId import obtener_curso
 from datetime import datetime
 
@@ -22,7 +22,7 @@ class ControllerCursos():
         if not data:
             return jsonify({"error": "Datos JSON requeridos para la creación del curso."}), 400
 
-        esValido, errores = validarCurso(data) 
+        esValido, errores = validarCurso(data)
         if not esValido:
             return jsonify({"error": "Datos del curso inválidos", "detalles": errores}), 400
 
@@ -37,7 +37,7 @@ class ControllerCursos():
 
         horarios_a_validar = data.get('horarios')
         if not isinstance(horarios_a_validar, list) or not horarios_a_validar:
-             return jsonify({"error": "Se requiere al menos un horario válido para el curso."}), 400
+            return jsonify({"error": "Se requiere al menos un horario válido para el curso."}), 400
 
         horarios_parseados = parse_time_strings_to_datetime_time(horarios_a_validar)
         if "error" in horarios_parseados:
@@ -45,13 +45,13 @@ class ControllerCursos():
 
         valido_horarios, mensaje_horarios = validar_horarios_y_disponibilidad_curso(
             profesor_id,
-            horarios_parseados 
+            horarios_parseados
         )
 
         if not valido_horarios:
             return jsonify({"error": "Error de horario o disponibilidad", "detalle": mensaje_horarios}), 400
 
-        resultado = CursosModel.crear_curso(data) 
+        resultado = CursosModel.crear_curso(data)
         if isinstance(resultado, dict) and 'error' in resultado:
             return jsonify(resultado), resultado.get("codigo", 500)
 
@@ -95,13 +95,13 @@ class ControllerCursos():
 
             valido_horarios, mensaje_horarios = validar_horarios_y_disponibilidad_curso(
                 profesor_id_final,
-                horarios_parseados, 
+                horarios_parseados,
                 curso_id_a_ignorar=id
             )
             if not valido_horarios:
                 return jsonify({"error": "Conflicto de horario al editar curso", "detalle": mensaje_horarios}), 400
 
-        resultado = CursosModel.actualizar_curso(id, data_limpia) 
+        resultado = CursosModel.actualizar_curso(id, data_limpia)
         if isinstance(resultado, dict) and 'error' in resultado:
             return jsonify(resultado), resultado.get("codigo", 500)
 
@@ -120,3 +120,34 @@ class ControllerCursos():
             return jsonify(resultado), resultado.get("codigo", 500)
 
         return jsonify(resultado), 200
+
+    @staticmethod
+    def buscarCursos():
+        nombre_curso = request.args.get('nombre', None)
+        nombre_categoria = request.args.get('categoria', None)
+        nombre_profesor = request.args.get('profesor', None)
+        
+        resultado = CursosModel.buscar_cursos(
+            nombre_curso=nombre_curso,
+            nombre_categoria=nombre_categoria,
+            nombre_profesor=nombre_profesor
+        )
+
+        if isinstance(resultado, dict) and 'error' in resultado:
+            return jsonify(resultado), resultado.get("codigo", 500)
+        
+        return jsonify({"cursos": resultado}), 200
+
+    @staticmethod
+    def obtenerCursosEstudiantes():
+        estudiante_id = g.usuario.get('id')
+
+        if not estudiante_id:
+            return jsonify({"error": "ID de estudiante no encontrado en el token"}), 400
+
+        cursos_data = CursosModel.obtener_cursos_con_estado_reserva(estudiante_id)
+
+        if 'error' in cursos_data:
+            return jsonify(cursos_data), cursos_data.get('status_code', 500)
+        
+        return jsonify(cursos_data), 200

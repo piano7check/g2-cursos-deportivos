@@ -1,295 +1,111 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaUsers, FaChalkboardTeacher, FaBookOpen, FaPlus, FaSignOutAlt, FaHome, FaBars, FaTimes, FaTags } from 'react-icons/fa';
+import { FaBars } from 'react-icons/fa';
+
+import useAdminMessages from '../../hooks/common/useAdminMessages';
 
 import { useUsuarioContext } from '../../context/UsuarioContext';
-import { getCursos, createCurso, updateCurso, deleteCurso, getProfesores } from '../../services/cursosService';
-import { getAllCategorias, createCategoria, updateCategoria, deleteCategoria } from '../../services/categoriasService';
 import { logoutUser } from '../../services/userService';
+import { getProfesores, getCursos } from '../../services/cursosService';
+import { getAllCategorias } from '../../services/categoriasService';
+import { getTotalUsersCount } from '../../services/userService';
 
-import CursosTable from '../../components/admin/cursos/CursosTable';
-import CourseModal from '../../components/admin/cursos/CourseModal';
-import CategoriasTable from '../../components/admin/categorias/CategoriasTable';
-import CategoriaModal from '../../components/admin/categorias/CategoriaModal';
+import SidebarNav from '../../components/admin/layout/SidebarNav';
+import OverviewSection from '../../components/admin/sections/OverviewSection';
+import UsersManagementSection from '../../components/admin/sections/UsersManagementSection';
+import CoursesManagementSection from '../../components/admin/sections/CoursesManagementSection';
+import CategoriesManagementSection from '../../components/admin/sections/CategoriesManagementSection';
+import PaymentValidationSection from '../../components/admin/sections/PaymentValidationSection';
+
 import MessageModal from '../../components/common/MessageModal';
-import UserProfileWidget from '../../components/common/UserProfileWidget';
 
 import styles from './AdminDashboard.module.css';
 
 const AdminDashboard = () => {
-    const { usuario: contextUsuario, cargando: cargandoContext, triggerCoursesUpdate, setUsuario } = useUsuarioContext();
+    const { usuario: contextUsuario, cargando: cargandoContext, setUsuario } = useUsuarioContext();
     const navigate = useNavigate();
 
     const [activeTab, setActiveTab] = useState('overview');
-    const [showCourseModal, setShowCourseModal] = useState(false);
-    const [editingCourse, setEditingCourse] = useState(null);
-    const [professors, setProfessors] = useState([]); 
-    const [courses, setCourses] = useState([]);
-    const [loadingCourses, setLoadingCourses] = useState(true);
-    const [errorCourses, setErrorCourses] = useState(null);
-
-    const [categories, setCategories] = useState([]);
-    const [loadingCategories, setLoadingCategories] = useState(true);
-    const [errorCategories, setErrorCategories] = useState(null);
-    const [showCategoryModal, setShowCategoryModal] = useState(false);
-    const [editingCategory, setEditingCategory] = useState(null);
-
-    const [showStatusModal, setShowStatusModal] = useState(false);
-    const [statusModalMessage, setStatusModalMessage] = useState('');
-    const [statusModalType, setStatusModalType] = useState('info');
-    const [statusModalOnConfirm, setStatusModalOnConfirm] = useState(null);
-
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-    const closeStatusModal = () => {
-        setShowStatusModal(false);
-        setStatusModalMessage('');
-        setStatusModalType('info');
-        setStatusModalOnConfirm(null);
-    };
+    const {
+        showStatusModal,
+        statusModalMessage,
+        statusModalType,
+        statusModalOnConfirm,
+        closeStatusModal,
+        showMessage
+    } = useAdminMessages();
 
-    const fetchCourses = useCallback(async () => {
-        setLoadingCourses(true);
-        setErrorCourses(null);
-        try {
-            const response = await getCursos();
-            const fetchedCourses = response.cursos.map(course => ({
-                id: course.id,
-                nombre: course.nombre, 
-                descripcion: course.descripcion, 
-                cupos: course.cupos, 
-                profesor_id: course.profesor_id, 
-                profesor_nombre: `${course.profesor_nombre || ''} ${course.profesor_apellido || ''}`.trim(), 
-                horarios: course.horarios,
-                categoria_id: course.categoria_id,
-                categoria_nombre: course.categoria_nombre
-            }));
-            setCourses(fetchedCourses);
-        } catch (err) {
-            setStatusModalMessage(err.message || 'Error al cargar los cursos. Por favor, intente de nuevo.');
-            setStatusModalType('error');
-            setShowStatusModal(true);
-            if (err.status === 401) {
-                navigate('/login');
-            }
-        } finally {
-            setLoadingCourses(false);
-        }
-    }, [navigate]);
+    const [totalUsersCount, setTotalUsersCount] = useState(0);
+    const [professorsCount, setProfessorsCount] = useState(0);
+    const [coursesCount, setCoursesCount] = useState(0);
+    const [categoriesCount, setCategoriesCount] = useState(0);
 
-    const fetchProfessors = useCallback(async () => {
+    const fetchOverviewData = useCallback(async () => {
         try {
-            const fetchedProfs = await getProfesores();
-            if (fetchedProfs && fetchedProfs.profesores) {
-                setProfessors(fetchedProfs.profesores);
+            const usersResponse = await getTotalUsersCount();
+            if (usersResponse && typeof usersResponse.total_users === 'number') {
+                setTotalUsersCount(usersResponse.total_users);
             } else {
-                setProfessors([]); 
-                console.warn("No se encontraron profesores o el formato de datos es incorrecto:", fetchedProfs);
+                setTotalUsersCount(0);
             }
-        } catch (err) {
-            setStatusModalMessage(err.message || 'Error cargando profesores.');
-            setStatusModalType('error');
-            setShowStatusModal(true);
-            if (err.status === 401) {
-                navigate('/login');
-            }
-        }
-    }, [navigate]);
 
-    const fetchCategories = useCallback(async () => {
-        setLoadingCategories(true);
-        setErrorCategories(null);
-        try {
-            const response = await getAllCategorias();
-            if (response && response.categorias) {
-                 setCategories(response.categorias);
+            const professorsResponse = await getProfesores();
+            if (professorsResponse && professorsResponse.profesores) {
+                setProfessorsCount(professorsResponse.profesores.length);
             } else {
-                 setCategories([]); 
-                 console.warn("No se encontraron categorías o el formato de datos es incorrecto:", response);
+                setProfessorsCount(0);
             }
-        } catch (err) {
-            setStatusModalMessage(err.message || 'Error al cargar las categorías. Por favor, intente de nuevo.');
-            setStatusModalType('error');
-            setShowStatusModal(true);
-            if (err.status === 401) {
-                navigate('/login');
-            }
-        } finally {
-            setLoadingCategories(false);
-        }
-    }, [navigate]);
 
+            const coursesResponse = await getCursos();
+            if (coursesResponse && coursesResponse.cursos) {
+                setCoursesCount(coursesResponse.cursos.length);
+            } else {
+                setCoursesCount(0);
+            }
+
+            const categoriesResponse = await getAllCategorias();
+            if (categoriesResponse && categoriesResponse.categorias) {
+                setCategoriesCount(categoriesResponse.categorias.length);
+            } else {
+                setCategoriesCount(0);
+            }
+
+        } catch (err) {
+            console.error("Error al cargar datos del resumen:", err);
+        }
+    }, []);
+    
     useEffect(() => {
         if (!cargandoContext) {
             if (contextUsuario) {
-                fetchCourses();
-                fetchProfessors();
-                fetchCategories();
+                fetchOverviewData();
             } else {
                 navigate('/login');
             }
         }
-    }, [cargandoContext, contextUsuario, fetchCourses, fetchProfessors, fetchCategories, navigate]);
-
-    const handleNewCourseClick = () => {
-        setEditingCourse(null);
-        setShowCourseModal(true);
-    };
-
-    const handleEditCourseClick = (course) => {
-        setEditingCourse({
-            id: course.id,
-            nombre: course.nombre, 
-            descripcion: course.descripcion, 
-            cupos: course.cupos, 
-            profesor_id: course.profesor_id, 
-            categoria_id: course.categoria_id, 
-            horarios: course.horarios && course.horarios.length > 0 ? course.horarios : [{ dia: '', hora_inicio: '', hora_fin: '' }],
-        });
-        setShowCourseModal(true);
-    };
-
-    const handleSaveCourse = async (courseData) => {
-        try {
-            if (editingCourse) {
-                const dataToSendForPatch = {
-                    nombre: courseData.nombre,
-                    descripcion: courseData.descripcion,
-                    cupos: courseData.cupos,
-                    profesor_id: courseData.profesor_id,
-                    categoria_id: courseData.categoria_id,
-                    horarios: courseData.horarios,
-                };
-
-                await updateCurso(editingCourse.id, dataToSendForPatch);
-                setStatusModalMessage(`El curso "${courseData.nombre}" se actualizó correctamente.`);
-                setStatusModalType('success');
-                setShowStatusModal(true);
-            } else {
-                const dataToSend = {
-                    nombre: courseData.nombre,
-                    descripcion: courseData.descripcion,
-                    cupos: courseData.cupos,
-                    profesor_id: courseData.profesor_id,
-                    categoria_id: courseData.categoria_id,
-                    horarios: courseData.horarios,
-                };
-                const response = await createCurso(dataToSend);
-                setStatusModalMessage(`El curso "${response.nombre}" se creó correctamente.`);
-                setStatusModalType('success');
-                setShowStatusModal(true);
-            }
-            setShowCourseModal(false);
-            setEditingCourse(null);
-            fetchCourses(); 
-            triggerCoursesUpdate(); 
-        } catch (err) {
-            const errorMessage = err.data?.detalle || err.message || 'Error desconocido al guardar curso.';
-            setStatusModalMessage(`Error al guardar curso: ${errorMessage}`);
-            setStatusModalType('error');
-            setShowStatusModal(true);
-            if (err.status === 401) {
-                navigate('/login');
-            }
-        }
-    };
-
-    const handleDeleteCourse = async (courseId) => {
-        setStatusModalMessage('¿Está seguro de que desea eliminar este curso? Esta acción es irreversible.');
-        setStatusModalType('confirm');
-        setStatusModalOnConfirm(() => async () => {
-            closeStatusModal(); 
-            try {
-                await deleteCurso(courseId);
-                setStatusModalMessage(`El curso se eliminó correctamente.`);
-                setStatusModalType('success');
-                setShowStatusModal(true);
-                fetchCourses(); 
-                triggerCoursesUpdate();
-            } catch (err) {
-                const errorMessage = err.data?.detalle || err.message || 'Error desconocido al eliminar curso.';
-                setStatusModalMessage(`Error al eliminar curso: ${errorMessage}`);
-                setStatusModalType('error');
-                setShowStatusModal(true);
-                if (err.status === 401) {
-                    navigate('/login');
-                }
-            }
-        });
-        setShowStatusModal(true); 
-    };
-
-    const handleNewCategoryClick = () => {
-        setEditingCategory(null);
-        setShowCategoryModal(true);
-    };
-
-    const handleEditCategoryClick = (category) => {
-        setEditingCategory(category);
-        setShowCategoryModal(true);
-    };
-
-    const handleSaveCategory = async (categoryData) => {
-        try {
-            if (editingCategory) {
-                await updateCategoria(editingCategory.id, categoryData);
-                setStatusModalMessage(`La categoría "${categoryData.nombre}" se actualizó correctamente.`);
-                setStatusModalType('success');
-                setShowStatusModal(true);
-            } else {
-                const response = await createCategoria(categoryData);
-                setStatusModalMessage(`La categoría "${response.nombre}" se creó correctamente.`);
-                setStatusModalType('success');
-                setShowStatusModal(true);
-            }
-            setShowCategoryModal(false);
-            setEditingCategory(null);
-            fetchCategories();
-        } catch (err) {
-            const errorMessage = err.data?.detalle || err.message || 'Error desconocido al guardar categoría.';
-            setStatusModalMessage(`Error al guardar categoría: ${errorMessage}`);
-            setStatusModalType('error');
-            setShowStatusModal(true);
-            if (err.status === 401) {
-                navigate('/login');
-            }
-        }
-    };
-
-    const handleDeleteCategory = async (categoryId) => {
-        setStatusModalMessage('¿Está seguro de que desea eliminar esta categoría? Esta acción es irreversible.');
-        setStatusModalType('confirm');
-        setStatusModalOnConfirm(() => async () => {
-            closeStatusModal();
-            try {
-                await deleteCategoria(categoryId);
-                setStatusModalMessage(`La categoría se eliminó correctamente.`);
-                setStatusModalType('success');
-                setShowStatusModal(true);
-                fetchCategories();
-            } catch (err) {
-                const errorMessage = err.data?.detalle || err.message || 'Error desconocido al eliminar categoría.';
-                setStatusModalMessage(`Error al eliminar categoría: ${errorMessage}`);
-                setStatusModalType('error');
-                setShowStatusModal(true);
-                if (err.status === 401) {
-                    navigate('/login');
-                }
-            }
-        });
-        setShowStatusModal(true); 
-    };
+    }, [cargandoContext, contextUsuario, fetchOverviewData, navigate]);
 
     const handleLogout = async () => {
         try {
             await logoutUser();
-            setUsuario(null); 
-            navigate('/login'); 
+            setUsuario(null);
+            navigate('/login');
         } catch (err) {
             console.error('Error al cerrar sesión:', err);
-            setStatusModalMessage(`Error al cerrar sesión: ${err.message || 'Error desconocido'}`);
-            setStatusModalType('error');
-            setShowStatusModal(true);
+            showMessage({ message: `Error al cerrar sesión: ${err.message || 'Error desconocido'}`, type: 'error' });
+        }
+    };
+
+    const getActiveTabTitle = () => {
+        switch (activeTab) {
+            case 'overview': return 'Resumen del Panel';
+            case 'users': return 'Gestión de Usuarios';
+            case 'courses': return 'Gestión de Cursos';
+            case 'categories': return 'Gestión de Categorías';
+            case 'payment-validation': return 'Validación de Pagos';
+            default: return 'Panel de Administración';
         }
     };
 
@@ -313,51 +129,20 @@ const AdminDashboard = () => {
         );
     }
 
-    const getActiveTabTitle = () => {
-        switch (activeTab) {
-            case 'overview': return 'Resumen del Panel';
-            case 'users': return 'Gestión de Usuarios';
-            case 'professors': return 'Gestión de Profesores';
-            case 'courses': return 'Gestión de Cursos';
-            case 'categories': return 'Gestión de Categorías';
-            default: return 'Panel de Administración';
-        }
-    };
-
     return (
         <div className={styles.adminDashboard}>
-            <aside className={`${styles.sidebar} ${isSidebarOpen ? styles.sidebarOpen : ''}`}>
-                <button
-                    className={styles.closeSidebarButton} 
-                    onClick={() => setIsSidebarOpen(false)}
-                >
-                    <FaTimes />
-                </button>
-                <div className={styles.sidebarHeader}>
-                    <h2>Admin Panel</h2>
-                    <UserProfileWidget />
-                </div>
-                <nav className={styles.nav}> 
-                    <MenuItem icon={<FaHome />} text="Resumen" onClick={() => setActiveTab('overview')} active={activeTab === 'overview'} />
-                    <MenuItem icon={<FaUsers />} text="Gestión de Usuarios" onClick={() => setActiveTab('users')} active={activeTab === 'users'} />
-                    <MenuItem icon={<FaChalkboardTeacher />} text="Gestión de Profesores" onClick={() => setActiveTab('professors')} active={activeTab === 'professors'} />
-                    <MenuItem icon={<FaBookOpen />} text="Gestión de Cursos" onClick={() => setActiveTab('courses')} active={activeTab === 'courses'} />
-                    <MenuItem icon={<FaTags />} text="Gestión de Categorías" onClick={() => setActiveTab('categories')} active={activeTab === 'categories'} />
-                </nav>
-                <div className={styles.sidebarFooter}>
-                    <button
-                        onClick={handleLogout}
-                        className={styles.logoutButton}
-                    >
-                        <FaSignOutAlt className={styles.logoutIcon} /> Cerrar Sesión
-                    </button>
-                </div>
-            </aside>
+            <SidebarNav
+                isSidebarOpen={isSidebarOpen}
+                setIsSidebarOpen={setIsSidebarOpen}
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                handleLogout={handleLogout}
+            />
 
             <div className={styles.mainContent}>
-                <header className={styles.header}> 
+                <header className={styles.header}>
                     <button
-                        className={styles.menuButton} 
+                        className={styles.menuButton}
                         onClick={() => setIsSidebarOpen(true)}
                     >
                         <FaBars />
@@ -367,77 +152,41 @@ const AdminDashboard = () => {
 
                 <main className={styles.dashboardContent}>
                     {activeTab === 'overview' && (
-                        <div className={styles.overviewSection}>
-                            <div className={styles.statsGrid}>
-                                <StatCard title="Usuarios Totales" value="150" icon={<FaUsers />} />
-                                <StatCard title="Profesores Activos" value={professors.length} icon={<FaChalkboardTeacher />} />
-                                <StatCard title="Cursos Publicados" value={courses.length} icon={<FaBookOpen />} />
-                                <StatCard title="Categorías Registradas" value={categories.length} icon={<FaTags />} />
-                            </div>
-                        </div>
+                        <OverviewSection
+                            totalUsersCount={totalUsersCount}
+                            professorsCount={professorsCount}
+                            coursesCount={coursesCount}
+                            categoriesCount={categoriesCount}
+                        />
                     )}
                     {activeTab === 'users' && (
-                        <SectionCard title="Gestión de Usuarios">
-                            <p className={styles.text}>Aquí irá la tabla y gestión de usuarios.</p> 
-                        </SectionCard>
-                    )}
-                    {activeTab === 'professors' && (
-                        <SectionCard title="Gestión de Profesores">
-                            <p className={styles.text}>Aquí irá la tabla y gestión de profesores.</p> 
-                        </SectionCard>
+                        <UsersManagementSection
+                            showMessage={showMessage}
+                            contextUsuario={contextUsuario}
+                            navigate={navigate}
+                        />
                     )}
                     {activeTab === 'courses' && (
-                        <SectionCard> 
-                            <div className={styles.sectionHeader}>
-                                <button className={styles.addButton} onClick={handleNewCourseClick}>
-                                    <FaPlus /> Nuevo Curso
-                                </button>
-                            </div>
-                            <CursosTable
-                                courses={courses}
-                                loading={loadingCourses}
-                                error={errorCourses}
-                                onEdit={handleEditCourseClick}
-                                onDelete={handleDeleteCourse}
-                            />
-                        </SectionCard>
+                        <CoursesManagementSection
+                            showMessage={showMessage}
+                            contextUsuario={contextUsuario}
+                            navigate={navigate}
+                        />
                     )}
                     {activeTab === 'categories' && (
-                        <SectionCard> 
-                            <div className={styles.sectionHeader}>
-                                <button className={styles.addButton} onClick={handleNewCategoryClick}>
-                                    <FaPlus /> Nueva Categoría
-                                </button>
-                            </div>
-                            <CategoriasTable
-                                categories={categories}
-                                loading={loadingCategories}
-                                error={errorCategories}
-                                onEdit={handleEditCategoryClick}
-                                onDelete={handleDeleteCategory}
-                            />
-                        </SectionCard>
+                        <CategoriesManagementSection
+                            showMessage={showMessage}
+                            contextUsuario={contextUsuario}
+                            navigate={navigate}
+                        />
+                    )}
+                    {activeTab === 'payment-validation' && (
+                        <PaymentValidationSection
+                            showMessage={showMessage}
+                        />
                     )}
                 </main>
             </div>
-
-            {showCourseModal && (
-                <CourseModal
-                    editingCourse={editingCourse}
-                    professors={professors} 
-                    categories={categories} 
-                    onClose={() => { setShowCourseModal(false); setEditingCourse(null); }}
-                    onSave={handleSaveCourse}
-                />
-            )}
-
-            {showCategoryModal && (
-                <CategoriaModal
-                    editingCategory={editingCategory}
-                    onClose={() => { setShowCategoryModal(false); setEditingCategory(null); }}
-                    onSave={handleSaveCategory}
-                />
-            )}
 
             {showStatusModal && (
                 <MessageModal
@@ -450,31 +199,5 @@ const AdminDashboard = () => {
         </div>
     );
 };
-
-const MenuItem = ({ icon, text, onClick, active }) => (
-    <li
-        className={`${styles.navItem} ${active ? styles.active : ''}`} 
-        onClick={onClick}
-    >
-        {icon}
-        <span className={styles.navText}>{text}</span> 
-    </li>
-);
-
-const StatCard = ({ title, value, icon }) => (
-    <div className={styles.statCard}> 
-        <h3>{title}</h3>
-        <p>{value}</p>
-        <div className={styles.statIcon}> 
-            {icon}
-        </div>
-    </div>
-);
-
-const SectionCard = ({ children }) => (
-    <div className={styles.dashboardSection}> 
-        {children}
-    </div>
-);
 
 export default AdminDashboard;

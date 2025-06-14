@@ -7,10 +7,9 @@ const UserModal = ({ editingUser, onClose, onSave }) => {
         name: '',
         lastname: '',
         email: '',
-        password: '', 
+        password: '',
         rol: '',
-        phone_number: '',
-        address: ''
+        birthdate: ''
     });
 
     useEffect(() => {
@@ -19,10 +18,9 @@ const UserModal = ({ editingUser, onClose, onSave }) => {
                 name: editingUser.name || '',
                 lastname: editingUser.lastname || '',
                 email: editingUser.email || '',
-                password: '', 
+                password: '',
                 rol: editingUser.rol || '',
-                phone_number: editingUser.phone_number || '',
-                address: editingUser.address || ''
+                birthdate: editingUser.birthdate ? editingUser.birthdate.split('T')[0] : ''
             });
         } else {
             setUserData({
@@ -31,8 +29,7 @@ const UserModal = ({ editingUser, onClose, onSave }) => {
                 email: '',
                 password: '',
                 rol: '',
-                phone_number: '',
-                address: ''
+                birthdate: ''
             });
         }
     }, [editingUser]);
@@ -49,7 +46,7 @@ const UserModal = ({ editingUser, onClose, onSave }) => {
         if (editingUser && dataToSave.password === '') {
             delete dataToSave.password;
         }
-        
+
         onSave(dataToSave);
     };
 
@@ -86,7 +83,7 @@ const UserModal = ({ editingUser, onClose, onSave }) => {
                     <div className={styles.formGroup}>
                         <label htmlFor="email">Email:</label>
                         <input
-                            type="email"
+                            type="email" 
                             id="email"
                             name="email"
                             value={userData.email}
@@ -97,12 +94,12 @@ const UserModal = ({ editingUser, onClose, onSave }) => {
                     <div className={styles.formGroup}>
                         <label htmlFor="password">Contraseña {editingUser ? '(dejar vacío para no cambiar)' : '*'}:</label>
                         <input
-                            type="password"
+                            type="password" 
                             id="password"
                             name="password"
                             value={userData.password}
                             onChange={handleChange}
-                            required={!editingUser} 
+                            required={!editingUser}
                         />
                     </div>
                     <div className={styles.formGroup}>
@@ -121,23 +118,14 @@ const UserModal = ({ editingUser, onClose, onSave }) => {
                         </select>
                     </div>
                     <div className={styles.formGroup}>
-                        <label htmlFor="phone_number">Teléfono:</label>
+                        <label htmlFor="birthdate">Fecha de Nacimiento:</label>
                         <input
-                            type="text"
-                            id="phone_number"
-                            name="phone_number"
-                            value={userData.phone_number}
+                            type="date" 
+                            id="birthdate"
+                            name="birthdate"
+                            value={userData.birthdate}
                             onChange={handleChange}
-                        />
-                    </div>
-                    <div className={styles.formGroup}>
-                        <label htmlFor="address">Dirección:</label>
-                        <input
-                            type="text"
-                            id="address"
-                            name="address"
-                            value={userData.address}
-                            onChange={handleChange}
+                            required
                         />
                     </div>
                     <div className={styles.modalActions}>

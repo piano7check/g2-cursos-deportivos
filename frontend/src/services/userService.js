@@ -74,3 +74,69 @@ export const deleteCurrentUser = async () => {
     });
     return handleResponse(response);
 };
+
+export const getAllUsers = async (limit = 10, offset = 0, name = '', lastname = '', email = '', rol = '') => {
+    const queryParams = new URLSearchParams();
+    queryParams.append('limit', limit);
+    queryParams.append('offset', offset);
+    if (name) queryParams.append('name', name);
+    if (lastname) queryParams.append('lastname', lastname);
+    if (email) queryParams.append('email', email);
+    if (rol) queryParams.append('rol', rol);
+
+    const response = await fetch(`${API_BASE_URL}/admin/usuarios?${queryParams.toString()}`, {
+        method: 'GET',
+        credentials: 'include',
+    });
+    return handleResponse(response);
+};
+
+export const getTotalUsersCount = async (name = '', lastname = '', email = '', rol = '') => {
+    const queryParams = new URLSearchParams();
+    if (name) queryParams.append('name', name);
+    if (lastname) queryParams.append('lastname', lastname);
+    if (email) queryParams.append('email', email);
+    if (rol) queryParams.append('rol', rol);
+
+    const queryString = queryParams.toString();
+    const url = queryString ? `${API_BASE_URL}/admin/usuarios/count?${queryString}` : `${API_BASE_URL}/admin/usuarios/count`;
+
+    const response = await fetch(url, {
+        method: 'GET',
+        credentials: 'include',
+    });
+    return handleResponse(response);
+};
+
+
+export const createUserAdmin = async (userData) => {
+    const response = await fetch(`${API_BASE_URL}/admin/usuarios`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+        credentials: 'include',
+    });
+    return handleResponse(response);
+};
+
+export const updateUserAdmin = async (userId, userData) => {
+    const response = await fetch(`${API_BASE_URL}/admin/usuarios/${userId}`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+        credentials: 'include',
+    });
+    return handleResponse(response);
+};
+
+export const deleteUserAdmin = async (userId) => {
+    const response = await fetch(`${API_BASE_URL}/admin/usuarios/${userId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+    });
+    return handleResponse(response);
+};

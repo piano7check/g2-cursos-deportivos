@@ -1,0 +1,413 @@
+/* Estilos para la sección de cursos disponibles en general */
+.availableCoursesSection {
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.sectionTitle {
+    font-size: 2rem;
+    color: var(--color-primary-dark);
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+/* Grid de cursos - Optimizado para 3 columnas */
+.cursosGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+    align-items: start;
+    justify-content: center;
+    width: 100%;
+}
+
+/* Tarjeta de curso individual - Posicionamiento absoluto para expansión */
+.cursoCard {
+    background-color: var(--color-bg-white);
+    border-radius: 15px;
+    box-shadow: var(--shadow-sm);
+    overflow: visible; /* Cambio importante para permitir expansión */
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 1;
+    width: 100%;
+}
+
+/* Estilos de la tarjeta expandida - Sin afectar el grid */
+.cursoCard.expanded {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-5px);
+    z-index: 100; /* Z-index alto para estar por encima */
+}
+
+/* Encabezado de la tarjeta de curso */
+.cursoHeader {
+    padding: 20px;
+    background-color: var(--color-primary-light);
+    color: var(--color-text-light);
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 2;
+}
+
+/* Nombre del curso */
+.cursoNombre {
+    font-size: 1.6rem;
+    margin: 0;
+    line-height: 1.3;
+    font-weight: 600;
+}
+
+/* Resumen del curso (cupos, costo, botón de detalles) */
+.cursoResumen {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    font-size: 1rem;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    gap: 15px;
+}
+
+.cursoResumen p {
+    margin: 0;
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+/* Contenedor de información dentro del resumen */
+.infoContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+}
+
+/* Botón de ver/ocultar detalles */
+.detailsButton {
+    background: none;
+    border: 1px solid var(--color-accent-yellow);
+    color: var(--color-accent-yellow);
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.detailsButton:hover {
+    background-color: var(--color-accent-yellow);
+    color: var(--color-primary-dark);
+    transform: translateY(-1px);
+}
+
+.detailsButton:active {
+    transform: translateY(0);
+}
+
+/* Detalles del curso - Posicionamiento absoluto para no afectar el grid */
+.cursoDetalles {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: var(--color-bg-white);
+    border-radius: 0 0 15px 15px;
+    box-shadow: var(--shadow-lg);
+    padding: 20px;
+    color: var(--color-text-dark);
+    line-height: 1.6;
+    z-index: 99;
+    
+    /* Animación de entrada */
+    animation: slideDown 0.3s ease-out forwards;
+    transform-origin: top;
+    
+    /* Bordes y sombras para integrarse mejor */
+    border-top: 1px solid #e9ecef;
+    margin-top: -1px;
+}
+
+/* Animación de expansión mejorada */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px) scaleY(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scaleY(1);
+    }
+}
+
+.cursoDescripcion {
+    margin-bottom: 18px;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--color-text-dark);
+}
+
+.profesorInfo,
+.categoriaInfo {
+    margin-bottom: 12px;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.profesorInfo strong,
+.categoriaInfo strong {
+    color: var(--color-primary-dark);
+    min-width: 80px;
+}
+
+.horariosContainer {
+    margin-top: 18px;
+    border-top: 1px solid #e9ecef;
+    padding-top: 18px;
+}
+
+.horariosContainer > p {
+    font-weight: bold;
+    margin-bottom: 12px;
+    color: var(--color-primary-dark);
+    font-size: 1rem;
+}
+
+.horariosList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 8px;
+}
+
+.horariosList li {
+    background-color: var(--color-bg-light);
+    padding: 12px 16px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-left: 3px solid var(--color-primary-light);
+    transition: all 0.2s ease;
+}
+
+.horariosList li:hover {
+    background-color: #f8f9fa;
+    transform: translateX(2px);
+}
+
+.dia {
+    font-weight: 600;
+    color: var(--color-primary-dark);
+    font-size: 0.9rem;
+}
+
+.horas {
+    color: #495057;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.noHorarios {
+    font-style: italic;
+    color: #6c757d;
+    font-size: 0.9rem;
+    text-align: center;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+/* Contenedores de estado de carga, error y vacío */
+.loadingContainer,
+.error,
+.emptyState {
+    text-align: center;
+    padding: 60px 20px;
+    font-size: 1.2rem;
+    color: var(--color-text-dark);
+    margin: 0 auto;
+}
+
+.spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-left-color: var(--color-primary-dark);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Contenedor de acciones (botón de reservar) */
+.actionsContainer {
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    justify-content: center;
+}
+
+.reserveButton {
+    background-color: var(--color-success);
+    color: var(--color-text-light);
+    border: none;
+    padding: 14px 28px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
+    min-width: 160px;
+    justify-content: center;
+}
+
+.reserveButton:hover:not(:disabled) {
+    background-color: #218838;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.reserveButton:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.8;
+    box-shadow: none;
+}
+
+.reserveButton.reserved {
+    background-color: #17a2b8;
+    cursor: default;
+}
+
+.reserveButton.reserved:hover {
+    background-color: #17a2b8;
+    transform: none;
+}
+
+/* Media Queries para responsividad mejorada */
+@media (min-width: 1024px) {
+    .cursosGrid {
+        grid-template-columns: repeat(3, 1fr);
+        max-width: 1200px;
+        gap: 30px;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1023px) {
+    .cursosGrid {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 800px;
+        gap: 25px;
+    }
+}
+
+@media (max-width: 1200px) and (min-width: 769px) {
+    .availableCoursesSection {
+        padding: 15px;
+    }
+}
+
+@media (max-width: 768px) {
+    .availableCoursesSection {
+        padding: 12px;
+    }
+
+    .sectionTitle {
+        font-size: 1.7rem;
+        margin-bottom: 25px;
+    }
+
+    .cursosGrid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
+    .cursoCard {
+        width: 100%;
+    }
+
+    .cursoResumen {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .detailsButton {
+        align-self: flex-end;
+        padding: 8px 14px;
+        font-size: 0.85rem;
+    }
+
+    .cursoDetalles {
+        padding: 16px;
+    }
+
+    .horariosList li {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+
+    .dia {
+        font-size: 0.85rem;
+    }
+
+    .horas {
+        font-size: 0.8rem;
+        margin-left: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .cursosGrid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .cursoHeader {
+        padding: 16px;
+    }
+
+    .cursoNombre {
+        font-size: 1.4rem;
+    }
+
+    .cursoDetalles {
+        padding: 14px;
+    }
+
+    .reserveButton {
+        padding: 12px 20px;
+        font-size: 0.9rem;
+        min-width: 140px;
+    }
+}

@@ -1,0 +1,466 @@
+/* Estilos para la sección de mis reservas en general */
+.myReservationsSection {
+    padding: 20px;
+    max-width: 1400px; /* Consistencia con AvailableCoursesSection */
+    margin: 0 auto; /* Centrar en la pantalla */
+}
+
+.sectionTitle {
+    font-size: 2rem;
+    color: var(--color-primary-dark);
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+/* Grid de reservas - Optimizado para 3 columnas */
+.reservasGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+    align-items: start;
+    justify-content: center; /* Centrar el grid en pantallas grandes */
+    width: 100%; /* Asegurar que ocupe todo el ancho disponible */
+}
+
+/* Tarjeta de reserva individual - Posicionamiento absoluto para expansión */
+.reservaCard {
+    background-color: var(--color-bg-white);
+    border-radius: 15px;
+    box-shadow: var(--shadow-sm);
+    overflow: visible; /* CAMBIO CLAVE: Permitir que el contenido expandido se muestre */
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    /* min-height: 200px; ELIMINADO: La altura se ajustará al contenido inicial */
+    position: relative; /* CLAVE: Para que los detalles absolutos se posicionen respecto a esta tarjeta */
+    z-index: 1;
+    width: 100%; /* Asegurar que la tarjeta ocupe el espacio completo de la columna */
+}
+
+/* Estilos de la tarjeta expandida - Sin afectar el grid */
+.reservaCard.expanded {
+    box-shadow: var(--shadow-lg); /* Sombra más pronunciada al expandir */
+    transform: translateY(-5px); /* Pequeño levantamiento visual */
+    z-index: 100; /* Z-index alto para estar por encima de otras tarjetas */
+}
+
+/* Encabezado de la tarjeta de reserva */
+.reservaHeader {
+    padding: 20px;
+    background-color: var(--color-primary-light);
+    color: var(--color-text-light);
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex-shrink: 0; /* Evitar que el encabezado se encoja */
+    position: relative; /* Asegurar que los elementos internos del header se comporten bien */
+    z-index: 2; /* Para que esté por encima de los detalles que se despliegan */
+}
+
+/* Nombre del curso en la reserva */
+.cursoNombre {
+    font-size: 1.8rem;
+    margin: 0;
+    line-height: 1.2;
+    font-weight: 600; /* Añadido para consistencia */
+}
+
+/* Información resumida de la reserva */
+.reservaInfo {
+    display: flex;
+    flex-direction: column;
+    font-size: 1rem;
+    padding-top: 12px; /* Aumentado para consistencia */
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    gap: 8px; /* Ajustado para consistencia */
+}
+
+.reservaInfo p {
+    margin: 0;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.reservaInfo strong {
+    font-weight: bold;
+}
+
+/* Botón de ver/ocultar detalles */
+.detailsButton {
+    background: none;
+    border: 1px solid var(--color-accent-yellow);
+    color: var(--color-accent-yellow);
+    padding: 10px 16px; /* Ajustado para consistencia */
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500; /* Añadido para consistencia */
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px; /* Ajustado para consistencia */
+    margin-top: 10px;
+    flex-shrink: 0; /* Asegurar que el botón no se encoja */
+}
+
+.detailsButton:hover {
+    background-color: var(--color-accent-yellow);
+    color: var(--color-primary-dark);
+    transform: translateY(-1px); /* Pequeño levantamiento */
+}
+
+.detailsButton:active {
+    transform: translateY(0); /* Efecto de click */
+}
+
+/* Detalles de la reserva - Posicionamiento absoluto para expansión */
+.reservaDetalles {
+    position: absolute; /* CLAVE: Para que se expanda sin afectar el flujo del grid */
+    top: 100%; /* Empieza justo debajo del encabezado de la tarjeta */
+    left: 0;
+    right: 0;
+    background-color: var(--color-bg-white);
+    border-radius: 0 0 15px 15px;
+    box-shadow: var(--shadow-lg);
+    padding: 20px;
+    color: var(--color-text-dark);
+    line-height: 1.6; /* Ajustado para consistencia */
+    z-index: 99; /* Para que esté por encima de las tarjetas adyacentes */
+    
+    /* Animación de entrada */
+    animation: slideDown 0.3s ease-out forwards;
+    transform-origin: top; /* Animación se origina desde la parte superior */
+    
+    /* Bordes y sombras para integrarse mejor */
+    border-top: 1px solid #e9ecef;
+    margin-top: -1px; /* Para superponer ligeramente el borde superior */
+    
+    max-height: none; /* Permitir que el contenido se expanda completamente */
+    opacity: 1;
+    visibility: visible;
+    /* flex-grow: 1; ELIMINADO: No es necesario con position: absolute */
+}
+
+/* Animación de expansión */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px) scaleY(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scaleY(1);
+    }
+}
+
+
+.cursoDescripcion {
+    margin-bottom: 18px; /* Ajustado para consistencia */
+    font-size: 1rem;
+    line-height: 1.6; /* Añadido para consistencia */
+    color: var(--color-text-dark); /* Añadido para consistencia */
+}
+
+.profesorInfo,
+.categoriaInfo {
+    margin-bottom: 12px; /* Ajustado para consistencia */
+    font-size: 0.95rem;
+    display: flex; /* Añadido para consistencia */
+    align-items: center; /* Añadido para consistencia */
+    gap: 8px; /* Añadido para consistencia */
+}
+
+.profesorInfo strong,
+.categoriaInfo strong {
+    color: var(--color-primary-dark);
+    min-width: 80px; /* Añadido para alinear el texto si es corto */
+}
+
+.comprobanteLink {
+    margin-top: 18px; /* Ajustado para consistencia */
+    border-top: 1px solid #e9ecef; /* Añadido para consistencia */
+    padding-top: 18px; /* Añadido para consistencia */
+    font-size: 0.95rem;
+}
+
+.comprobanteLink a {
+    color: var(--color-primary);
+    text-decoration: underline;
+}
+
+.actionsContainer {
+    margin-top: 20px;
+    padding-top: 18px; /* Ajustado para consistencia */
+    border-top: 1px solid #e9ecef; /* Ajustado para consistencia */
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+}
+
+.actionButton {
+    background-color: var(--color-primary);
+    color: var(--color-text-light);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: var(--shadow-sm);
+}
+
+.actionButton:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.actionButton:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+    opacity: 0.7;
+    box-shadow: none;
+}
+
+/* Estilos específicos para los botones de acción */
+.confirmPaymentButton {
+    background-color: var(--color-accent-yellow);
+    color: var(--color-primary-dark);
+}
+
+.confirmPaymentButton:hover:not(:disabled) {
+    background-color: var(--color-accent-yellow-dark);
+}
+
+.cancelButton {
+    background-color: var(--color-error);
+    color: var(--color-text-light);
+}
+
+.cancelButton:hover:not(:disabled) {
+    background-color: #c82333; /* Darker red */
+}
+
+.pendingReviewButton {
+    background-color: #007bff; /* Blue for pending review */
+    color: var(--color-text-light);
+    cursor: default;
+}
+
+.pendingReviewButton:hover {
+    background-color: #007bff;
+    transform: none;
+    box-shadow: none;
+}
+
+.finalizedStatus {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    color: var(--color-primary-dark);
+}
+
+
+/* Estilos para el estado de la reserva */
+.statusPendiente {
+    color: var(--color-accent-yellow); /* Amarillo para pendiente */
+}
+
+.statusValidado {
+    color: var(--color-success); /* Verde para validado */
+}
+
+.statusExpirado, .statusCancelado {
+    color: var(--color-error); /* Rojo para expirado/cancelado */
+}
+
+.statusPagoPendiente {
+    color: #007bff; /* Azul para pago en revisión */
+}
+
+
+/* Contenedores de estado de carga, error y vacío */
+.loadingContainer,
+.error,
+.emptyState {
+    text-align: center;
+    padding: 50px;
+    font-size: 1.2rem;
+    color: var(--color-text-dark);
+    margin: 0 auto;
+}
+
+.spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-left-color: var(--color-primary-dark);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Media Queries para responsividad */
+@media (min-width: 1024px) { /* Añadido para 3 columnas en desktops */
+    .reservasGrid {
+        grid-template-columns: repeat(3, 1fr);
+        max-width: 1200px;
+        gap: 30px;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1023px) { /* Añadido para 2 columnas en tablets */
+    .reservasGrid {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 800px;
+        gap: 25px;
+    }
+}
+
+@media (max-width: 1200px) and (min-width: 769px) {
+    .myReservationsSection {
+        padding: 15px;
+    }
+}
+
+@media (max-width: 768px) {
+    .myReservationsSection {
+        padding: 12px;
+    }
+
+    .sectionTitle {
+        font-size: 1.7rem;
+        margin-bottom: 25px;
+    }
+
+    .reservasGrid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        max-width: 500px; /* Limitar ancho en móvil */
+        margin: 0 auto; /* Centrar en móvil */
+    }
+
+    .reservaCard {
+        width: 100%;
+        /* min-height: 180px; ELIMINADO */
+    }
+
+    .reservaInfo {
+        padding-top: 10px;
+    }
+
+    .detailsButton {
+        align-self: flex-end;
+        padding: 8px 14px; /* Ajustado para consistencia */
+        font-size: 0.85rem; /* Ajustado para consistencia */
+    }
+
+    .actionsContainer {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .actionButton {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) { /* Añadido para móviles más pequeños */
+    .reservasGrid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .reservaHeader {
+        padding: 16px;
+    }
+
+    .cursoNombre {
+        font-size: 1.4rem;
+    }
+
+    .reservaDetalles {
+        padding: 14px;
+    }
+
+    .actionButton {
+        padding: 12px 20px;
+        font-size: 0.9rem;
+        min-width: 140px;
+    }
+}
+
+.statusPagoRechazado {
+    color: #cc0000;
+    font-weight: bold;
+}
+.toggleArchivedContainer {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.toggleArchivedButton {
+    background-color: #607d8b; /* Gris azulado */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.toggleArchivedButton:hover {
+    background-color: #455a64;
+    transform: translateY(-2px);
+}
+
+.hideShowButton {
+    background-color: #34495e; /* Azul oscuro grisáceo */
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.hideShowButton:hover {
+    background-color: #2c3e50;
+    transform: translateY(-2px);
+}
+
+.archivedCard {
+    opacity: 0.6;
+    background-color: #f5f5f5; /* Un fondo más claro para tarjetas archivadas */
+    border: 1px dashed #ccc; /* Un borde punteado para diferenciarlas */
+    transition: all 0.3s ease;
+}
+
+.archivedCard:hover {
+    opacity: 0.8; /* Ligeramente más opaco al pasar el ratón */
+}
