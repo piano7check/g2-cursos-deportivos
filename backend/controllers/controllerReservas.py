@@ -1,6 +1,7 @@
 import os
 import uuid
 from schemas.reservas import validarReserva
+from models.cursosModels import CursosModel 
 from models.reservasModels import ReservasModel
 from flask import g, jsonify, request, current_app
 from werkzeug.utils import secure_filename
@@ -47,9 +48,10 @@ class ReservasController:
         if reserva_data["reserva"]["estudiante_id"] != current_user_id:
             return {"error": "No autorizado para cancelar esta reserva."}, 403
         if reserva_data["reserva"]["estado_reserva"] == 'validado':
-            return {"error": "No se puede cancelar una reserva ya validada."}, 400
+            return {"error": "No se puede cancelar una reserva ya validada. Contacta al administrador si es necesario."}, 400
         if reserva_data["reserva"]["estado_reserva"] == 'cancelado':
             return {"error": "Esta reserva ya ha sido cancelada."}, 400
+        
         resultado = ReservasModel.actualizar_estado_reserva(reserva_id, 'cancelado')
         if "error" in resultado:
             return resultado, resultado.get("status_code", 500)
@@ -134,9 +136,54 @@ class ReservasController:
             return {"error": "ID de estudiante no encontrado en el token"}, 400
         
         data = request.get_json()
-        ocultar_estado = data.get('ocultar', True) 
+        ocultar_estado = data.get('ocultar', True)
         resultado = ReservasModel.actualizar_oculto_reserva_estudiante(reserva_id, current_user_id, ocultar_estado)
         if "error" in resultado:
             return resultado, resultado.get("status_code", 500)
         else:
             return resultado, 200
+
+    @staticmethod
+    def obtener_estudiantes_de_curso(curso_id):
+        profesor_id = g.usuario.get('id')
+        if not profesor_id:
+            return jsonify({"error": "ID de profesor no encontrado en el token"}), 400
+        
+        resultado = ReservasModel.obtener_estudiantes_por_curso(curso_id, profesor_id)
+        
+        if "error" in resultado:
+            return jsonify(resultado), resultado.get("status_code", 500)
+        else:
+            return jsonify(resultado), 200
+
+    @staticmethod
+    def cancelar_inscripcion_estudiante(reserva_id):
+        profesor_id = g.usuario.get('id')
+        if not profesor_id:
+            return jsonify({"error": "ID de profesor no encontrado en el token"}), 400
+
+        reserva_data_result = ReservasModel.obtener_reserva_por_id(reserva_id)
+        if "error" in reserva_data_result or not reserva_data_result.get("reserva"):
+            return jsonify({"error": "Reserva no encontrada."}), reserva_data_result.get("status_code", 404)
+        
+        reserva = reserva_data_result["reserva"]
+
+        curso_id_de_reserva = reserva.get('curso_id')
+        
+        curso_info = CursosModel.obtener_curso_por_id(curso_id_de_reserva)
+
+        if "error" in curso_info or not curso_info.get("curso"):
+            return jsonify({"error": "Curso asociado a la reserva no encontrado."}), curso_info.get("status_code", 404)
+
+        if curso_info["curso"]["profesor_id"] != profesor_id:
+            return jsonify({"error": "No autorizado para cancelar esta inscripción (el curso no le pertenece).", "status_code": 403}), 403
+
+        if reserva["estado_reserva"] in ['cancelado', 'expirado']:
+            return jsonify({"error": f"La inscripción ya está en estado '{reserva['estado_reserva']}' y no puede ser cancelada."}, 400)
+        
+        resultado = ReservasModel.actualizar_estado_reserva(reserva_id, 'cancelado')
+
+        if "error" in resultado:
+            return jsonify(resultado), resultado.get("status_code", 500)
+        else:
+            return jsonify(resultado), 200
