@@ -2,8 +2,11 @@ const API_URL = 'http://localhost:5000/api';
 
 const handleResponse = async (response) => {
     if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Algo salió mal en la solicitud.');
+        const errorData = await response.json().catch(() => ({})); 
+        if (response.status === 403) {
+            throw new Error(errorData.error || 'No autorizado para realizar esta acción.', { cause: 'unauthorized' });
+        }
+        throw new Error(errorData.error || errorData.message || 'Algo salió mal en la solicitud.');
     }
     return response.json();
 };
@@ -139,7 +142,6 @@ export const rechazarPago = async (validacionId) => {
 
 export const ocultarReservaEstudiante = async (reservaId, ocultar) => {
     try {
-        // CAMBIO CRÍTICO AQUÍ: Añadir '/estudiante' al path
         const response = await fetch(`${API_URL}/estudiante/reservas/${reservaId}/ocultar`, {
             method: 'PATCH',
             headers: {
@@ -154,6 +156,40 @@ export const ocultarReservaEstudiante = async (reservaId, ocultar) => {
     }
 };
 
+export const getReservasEstudiantesByCourse = async (cursoId) => {
+    try {
+        const response = await fetch(`${API_URL}/profesor/cursos/${cursoId}/estudiantes`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+        });
+        return handleResponse(response);
+    } catch (error) {
+        throw new Error(error.message || 'Error al obtener los estudiantes del curso.');
+    }
+};
+
+export const cancelarInscripcionEstudiante = async (reservaId) => {
+    try {
+        const response = await fetch(`${API_URL}/profesor/reservas/${reservaId}/cancelar-inscripcion`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+        });
+        return handleResponse(response);
+    } catch (error) {
+        const errorMessage = error.message || 'Error al cancelar la inscripción del estudiante.';
+        if (error.cause === 'unauthorized') {
+            throw new Error(errorMessage, { cause: 'unauthorized' });
+        }
+        throw new Error(errorMessage);
+    }
+};
+
 const reservasService = {
     reservarCurso,
     obtenerReservasPorEstudiante,
@@ -163,6 +199,8 @@ const reservasService = {
     aprobarPago,
     rechazarPago,
     ocultarReservaEstudiante,
+    getReservasEstudiantesByCourse, 
+    cancelarInscripcionEstudiante, 
 };
 
 export default reservasService;
