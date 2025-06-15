@@ -1,3 +1,4 @@
+/* Variables CSS (asegúrate de que estén definidas globalmente o aquí si no lo están) */
 :root {
     --color-primary: #3498db;
     --color-primary-dark: #2980b9;
@@ -98,25 +99,62 @@
     padding-bottom: 15px;
 }
 
-.datesList {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    flex-grow: 1; 
+.tableContainer {
+    flex-grow: 1;
+    overflow-x: auto;
+    border-radius: 8px;
+    box-shadow: var(--shadow-xs);
 }
 
-.dateItem {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 0;
+.attendanceTable {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--color-bg-white);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.tableHeader {
+    background-color: var(--color-primary);
+    color: white;
+    padding: 15px 20px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 1.1rem;
+    border-bottom: 2px solid var(--color-primary-dark);
+}
+
+.tableHeader:first-child {
+    width: 60%;
+}
+
+.tableHeader:last-child {
+    width: 40%;
+    text-align: center;
+}
+
+.tableRow {
+    transition: background-color 0.2s ease;
+}
+
+.tableRow:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+.tableRow:hover {
+    background-color: #e3f2fd;
+}
+
+.tableCell {
+    padding: 15px 20px;
     border-bottom: 1px solid #e9ecef;
     font-size: 1.1rem;
     color: var(--color-text-dark);
+    vertical-align: middle;
 }
 
-.dateItem:last-child {
-    border-bottom: none;
+.tableCell:last-child {
+    text-align: center;
 }
 
 .editButton {
@@ -212,15 +250,73 @@
         margin-bottom: 15px;
     }
 
-    .dateItem {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-        padding: 10px 0;
+    .tableContainer {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .tableHeader {
+        padding: 12px 15px;
+        font-size: 1rem;
+    }
+
+    .tableCell {
+        padding: 12px 15px;
+        font-size: 1rem;
     }
 
     .editButton {
-        width: 100%;
-        text-align: center;
+        padding: 6px 12px;
+        font-size: 0.85rem;
+    }
+
+    /* Para pantallas muy pequeñas, cambiar a diseño de tarjeta */
+    @media (max-width: 480px) {
+        .attendanceTable,
+        .tableHeader,
+        .tableRow,
+        .tableCell {
+            display: block;
+        }
+
+        .tableHeader {
+            display: none;
+        }
+
+        .tableRow {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background-color: white;
+            box-shadow: var(--shadow-xs);
+        }
+
+        .tableRow:nth-child(even) {
+            background-color: white;
+        }
+
+        .tableCell {
+            border-bottom: none;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .tableCell:first-child::before {
+            content: "Fecha: ";
+            font-weight: 600;
+            color: var(--color-primary-dark);
+        }
+
+        .tableCell:last-child {
+            justify-content: center;
+            border-top: 1px solid #e9ecef;
+            background-color: #f8f9fa;
+        }
+
+        .editButton {
+            width: 100%;
+        }
     }
 }

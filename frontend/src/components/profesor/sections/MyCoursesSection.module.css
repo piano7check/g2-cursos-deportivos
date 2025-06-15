@@ -1,0 +1,456 @@
+:root {
+    --color-primary: #3498db;
+    --color-primary-dark: #2980b9;
+    --color-primary-light: #5dade2; /* Un tono más claro para el header de la tarjeta */
+    --color-accent-blue: #007bff;
+    --color-accent-yellow: #f39c12;
+    --color-success: #28a745;
+    --color-error: #dc3545;
+    --color-bg-light: #f0f2f5;
+    --color-bg-white: #ffffff;
+    --color-text-dark: #34495e;
+    --color-text-muted: #6c757d;
+    --color-text-light: #ecf0f1;
+    --shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 5px 15px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.myCoursesSection {
+    padding: 30px;
+    background-color: var(--color-bg-white);
+    border-radius: 10px;
+    box-shadow: var(--shadow-sm);
+    width: calc(100% - 40px);
+    margin: 20px auto;
+    min-height: calc(100vh - 100px - 40px);
+    display: flex;
+    flex-direction: column;
+}
+
+.sectionTitle {
+    font-size: 2rem;
+    color: var(--color-primary-dark);
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.courseCardsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 25px;
+    justify-content: center;
+    flex-grow: 1;
+    align-items: start; /* Importante: alinea las tarjetas al inicio */
+}
+
+/* Tarjeta de curso individual - Cambio clave: sin position absolute */
+.courseCard {
+    background-color: var(--color-bg-white);
+    border-radius: 15px;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden; /* Cambio: hidden en lugar de visible */
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    /* Altura mínima para tarjetas no expandidas */
+    min-height: fit-content;
+}
+
+/* Estilos de la tarjeta expandida */
+.courseCard.expanded {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-5px);
+    z-index: 100;
+}
+
+/* Encabezado de la tarjeta de curso (visible siempre) */
+.courseHeader {
+    padding: 20px;
+    background-color: var(--color-primary-light);
+    color: var(--color-text-light);
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 2;
+}
+
+/* Nombre del curso */
+.courseTitle {
+    font-size: 1.6rem;
+    margin: 0;
+    line-height: 1.3;
+    font-weight: 600;
+}
+
+/* Resumen del curso (estudiantes inscritos, capacidad, botón de detalles) */
+.courseSummary {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    font-size: 1rem;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    gap: 15px;
+}
+
+.courseSummary p {
+    margin: 0;
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+/* Contenedor de información dentro del resumen */
+.infoContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+}
+
+/* Botón de ver/ocultar detalles */
+.detailsButton {
+    background: none;
+    border: 1px solid var(--color-accent-yellow);
+    color: var(--color-accent-yellow);
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.detailsButton:hover {
+    background-color: var(--color-accent-yellow);
+    color: var(--color-primary-dark);
+    transform: translateY(-1px);
+}
+
+.detailsButton:active {
+    transform: translateY(0);
+}
+
+/* CAMBIO PRINCIPAL: Detalles del curso ahora con flujo normal */
+.courseDetailsExpanded {
+    background-color: var(--color-bg-white);
+    padding: 20px;
+    color: var(--color-text-dark);
+    line-height: 1.6;
+    border-top: 1px solid #e9ecef;
+    
+    /* Animación de entrada suave */
+    animation: expandDown 0.3s ease-out forwards;
+    transform-origin: top;
+    
+    /* Asegurar que el contenido se muestre correctamente */
+    overflow: hidden;
+}
+
+/* Animación de expansión mejorada */
+@keyframes expandDown {
+    from {
+        opacity: 0;
+        max-height: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+    to {
+        opacity: 1;
+        max-height: 1000px; /* Valor suficientemente alto */
+        padding-top: 20px;
+        padding-bottom: 20px;
+    }
+}
+
+.courseDescription {
+    margin-bottom: 18px;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--color-text-dark);
+}
+
+.categoryInfo,
+.durationInfo {
+    margin-bottom: 12px;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.categoryInfo strong,
+.durationInfo strong {
+    color: var(--color-primary-dark);
+    min-width: 80px;
+}
+
+.horariosContainer {
+    margin-top: 18px;
+    border-top: 1px solid #e9ecef;
+    padding-top: 18px;
+}
+
+.horariosContainer > p {
+    font-weight: bold;
+    margin-bottom: 12px;
+    color: var(--color-primary-dark);
+    font-size: 1rem;
+}
+
+.horariosList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 8px;
+}
+
+.horariosList li {
+    background-color: var(--color-bg-light);
+    padding: 12px 16px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-left: 3px solid var(--color-primary-light);
+    transition: all 0.2s ease;
+}
+
+.horariosList li:hover {
+    background-color: #f8f9fa;
+    transform: translateX(2px);
+}
+
+.day {
+    font-weight: 600;
+    color: var(--color-primary-dark);
+    font-size: 0.9rem;
+}
+
+.times {
+    color: #495057;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.noHorarios {
+    font-style: italic;
+    color: #6c757d;
+    font-size: 0.9rem;
+    text-align: center;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+/* Contenedores de estado de carga, error y vacío */
+.loadingContainer,
+.errorContainer,
+.emptyState {
+    text-align: center;
+    padding: 40px 20px;
+    font-size: 1.1rem;
+    color: var(--color-text-dark);
+    margin: 20px auto;
+    border-radius: 10px;
+    background-color: var(--color-bg-white);
+    box-shadow: var(--shadow-sm);
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-left-color: var(--color-primary-dark);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.errorContainer p {
+    color: var(--color-error);
+    background-color: #f8d7da;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #f5c6cb;
+}
+
+/* Contenedor de acciones (Botón Ver Estudiantes) */
+.actionsContainer {
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    justify-content: center;
+}
+
+.viewStudentsButton {
+    background-color: var(--color-primary);
+    color: var(--color-text-light);
+    border: none;
+    padding: 14px 28px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
+    min-width: 160px;
+    justify-content: center;
+}
+
+.viewStudentsButton:hover {
+    background-color: var(--color-primary-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.buttonArrow {
+    font-size: 1.2rem;
+    margin-left: 5px;
+    transition: transform 0.2s ease;
+}
+
+.viewStudentsButton:hover .buttonArrow {
+    transform: translateX(5px);
+}
+
+/* Media Queries para responsividad mejorada */
+@media (min-width: 1024px) {
+    .courseCardsGrid {
+        grid-template-columns: repeat(3, 1fr);
+        max-width: 1200px;
+        gap: 30px;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1023px) {
+    .courseCardsGrid {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 800px;
+        gap: 25px;
+    }
+}
+
+@media (max-width: 1200px) and (min-width: 769px) {
+    .myCoursesSection {
+        padding: 15px;
+    }
+}
+
+@media (max-width: 768px) {
+    .myCoursesSection {
+        padding: 12px;
+    }
+
+    .sectionTitle {
+        font-size: 1.7rem;
+        margin-bottom: 25px;
+    }
+
+    .courseCardsGrid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
+    .courseCard {
+        min-height: 220px;
+        padding: 0; /* Removido padding extra */
+    }
+
+    .courseHeader {
+        padding: 16px;
+    }
+
+    .courseTitle {
+        font-size: 1.4rem;
+        margin-bottom: 10px;
+    }
+
+    .courseSummary {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .detailsButton {
+        align-self: flex-end;
+        padding: 8px 14px;
+        font-size: 0.85rem;
+    }
+
+    .courseDetailsExpanded {
+        padding: 16px;
+    }
+
+    .horariosList li {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+
+    .day {
+        font-size: 0.85rem;
+    }
+
+    .times {
+        font-size: 0.8rem;
+        margin-left: 8px;
+    }
+
+    .viewStudentsButton {
+        padding: 12px 20px;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .courseCardsGrid {
+        gap: 15px;
+    }
+
+    .courseHeader {
+        padding: 14px;
+    }
+
+    .courseTitle {
+        font-size: 1.3rem;
+    }
+
+    .courseDetailsExpanded {
+        padding: 14px;
+    }
+
+    .viewStudentsButton {
+        min-width: 140px;
+        padding: 10px 15px;
+    }
+}

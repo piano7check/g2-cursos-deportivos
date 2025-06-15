@@ -160,19 +160,34 @@ const AttendanceHistorySection = ({ onEditAttendance }) => {
                     ) : attendanceDates.length > 0 ? (
                         <div className={styles.datesListContainer}>
                             <h3 className={styles.listSubtitle}>Fechas de asistencia registradas para {profesorCourses.find(c => c.id == selectedCourse)?.nombre}</h3>
-                            <ul className={styles.datesList}>
-                                {attendanceDates.map(dateStr => (
-                                    <li key={dateStr} className={styles.dateItem}>
-                                        <span>{formatDisplayDate(dateStr)}</span>
-                                        <button
-                                            className={styles.editButton}
-                                            onClick={() => onEditAttendance(selectedCourse, dateStr)}
-                                        >
-                                            Ver/Editar
-                                        </button>
-                                    </li>
-                                ))}
-                            </ul>
+                            
+                            <div className={styles.tableContainer}>
+                                <table className={styles.attendanceTable}>
+                                    <thead>
+                                        <tr>
+                                            <th className={styles.tableHeader}>Fecha</th>
+                                            <th className={styles.tableHeader}>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {attendanceDates.map(dateStr => (
+                                            <tr key={dateStr} className={styles.tableRow}>
+                                                <td className={styles.tableCell}>
+                                                    {formatDisplayDate(dateStr)}
+                                                </td>
+                                                <td className={styles.tableCell}>
+                                                    <button
+                                                        className={styles.editButton}
+                                                        onClick={() => onEditAttendance(selectedCourse, dateStr)}
+                                                    >
+                                                        Ver/Editar
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     ) : (
                         <div className={styles.emptyState}>

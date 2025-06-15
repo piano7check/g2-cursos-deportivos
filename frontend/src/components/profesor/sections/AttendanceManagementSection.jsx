@@ -75,6 +75,7 @@ const AttendanceManagementSection = ({ mode, initialCourseId, initialDate }) => 
                 }));
                 setStudents(initialStudents);
 
+
                 const records = {};
                 attendanceData.asistencias.forEach(record => {
                     records[record.estudiante_id] = record.estado_asistencia;
