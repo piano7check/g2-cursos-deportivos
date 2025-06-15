@@ -11,7 +11,8 @@ const handleResponse = async (response) => {
         }
         throw new Error(errorData.error || errorData.message || 'Algo salió mal en la solicitud.');
     }
-    return response.json();
+    const data = await response.json();
+    return data;
 };
 
 export const getStudentsByCourse = async (courseId) => {
@@ -39,6 +40,17 @@ export const registerAttendance = async (attendanceData) => {
 
 export const getAttendanceByCourseAndDate = async (courseId, dateString) => {
     const response = await fetch(`${API_BASE_URL}/profesor/asistencias/${courseId}/${dateString}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+    });
+    return handleResponse(response);
+};
+
+export const getAttendanceDatesByCourse = async (courseId) => {
+    const response = await fetch(`${API_BASE_URL}/profesor/asistencias/fechas/${courseId}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',

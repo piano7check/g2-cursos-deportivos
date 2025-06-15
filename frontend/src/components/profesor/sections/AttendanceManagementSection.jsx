@@ -5,12 +5,12 @@ import styles from './AttendanceManagementSection.module.css';
 import { useUsuarioContext } from '../../../context/UsuarioContext';
 import MessageModal from '../../common/MessageModal';
 
-const AttendanceManagementSection = () => {
+const AttendanceManagementSection = ({ mode, initialCourseId, initialDate }) => {
     const { usuario, cargando: usuarioCargando } = useUsuarioContext(); 
     const [profesorCourses, setProfesorCourses] = useState([]);
-    const [selectedCourse, setSelectedCourse] = useState('');
-    const [selectedDate, setSelectedDate] = useState('');
-    const [students, setStudents] = useState([]);
+    const [selectedCourse, setSelectedCourse] = useState(mode === 'edit-history' ? initialCourseId : '');
+    const [selectedDate, setSelectedDate] = useState(mode === 'edit-history' ? initialDate : '');
+    const [students, setStudents] = useState([]); 
     const [attendanceRecords, setAttendanceRecords] = useState({});
     const [loading, setLoading] = useState(true); 
     const [error, setError] = useState(null);
@@ -40,7 +40,9 @@ const AttendanceManagementSection = () => {
                     setProfesorCourses(data.cursos);
                 } else {
                     setProfesorCourses([]);
-                    setSelectedCourse('');
+                    if (mode !== 'edit-history') { 
+                        setSelectedCourse('');
+                    }
                     showInfoModal("No se encontraron cursos asignados a este profesor. Por favor, contacte al administrador.", 'info');
                 }
             } catch (err) {
@@ -55,26 +57,20 @@ const AttendanceManagementSection = () => {
         if (!usuarioCargando && usuario?.id) {
             fetchCourses();
         }
-    }, [usuario, usuarioCargando, showInfoModal]);
+    }, [usuario, usuarioCargando, showInfoModal, mode]);
 
-    const loadStudentsAndAttendance = useCallback(async () => {
-        if (!selectedCourse || !selectedDate || !usuario?.id) {
-            showInfoModal("Por favor, selecciona un curso y una fecha para cargar la lista de asistencia.", 'warning');
-            setStudents([]); 
-            setAttendanceRecords({});
-            return;
-        }
-
+    const loadStudentsAndAttendance = useCallback(async (courseId, date) => {
         setLoading(true); 
         setError(null);
         try {
-            const studentsData = await getStudentsByCourse(selectedCourse);
-            const attendanceData = await getAttendanceByCourseAndDate(selectedCourse, selectedDate);
+            const studentsData = await getStudentsByCourse(courseId);
+            const attendanceData = await getAttendanceByCourseAndDate(courseId, date);
 
             if (studentsData.estudiantes && studentsData.estudiantes.length > 0) {
                 const initialStudents = studentsData.estudiantes.map(s => ({
                     id: s.estudiante_id,
-                    nombre: `${s.estudiante_nombre} ${s.estudiante_apellido}`,
+                    nombre: s.estudiante_nombre,
+                    apellido: s.estudiante_apellido,
                     email: s.estudiante_email,
                 }));
                 setStudents(initialStudents);
@@ -98,7 +94,13 @@ const AttendanceManagementSection = () => {
         } finally {
             setLoading(false); 
         }
-    }, [selectedCourse, selectedDate, usuario?.id, showInfoModal]);
+    }, [showInfoModal]);
+
+    useEffect(() => {
+        if (mode === 'edit-history' && initialCourseId && initialDate && !usuarioCargando && usuario?.id) {
+            loadStudentsAndAttendance(initialCourseId, initialDate);
+        }
+    }, [mode, initialCourseId, initialDate, loadStudentsAndAttendance, usuario, usuarioCargando]);
 
     const handleAttendanceChange = (studentId, status) => {
         setAttendanceRecords(prevRecords => ({
@@ -168,12 +170,12 @@ const AttendanceManagementSection = () => {
         return <div className={styles.errorContainer}><p>Acceso denegado. Por favor, inicie sesión.</p></div>;
     }
     
-    if (!loading && (profesorCourses.length === 0 || error)) {
+    if (!loading && profesorCourses.length === 0 && !error) { 
         return (
             <section className={styles.attendanceManagementSection}>
                 <h2 className={styles.sectionTitle}>Gestión de Asistencias</h2>
                 <div className={styles.emptyState}>
-                    <p>{error || "No se encontraron cursos asignados a este profesor."}</p>
+                    <p>No se encontraron cursos asignados a este profesor.</p>
                     <p>Por favor, contacte al administrador si cree que esto es un error.</p>
                 </div>
                 {showModal && ( 
@@ -190,7 +192,7 @@ const AttendanceManagementSection = () => {
 
     return (
         <section className={styles.attendanceManagementSection}>
-            <h2 className={styles.sectionTitle}>Gestión de Asistencias</h2>
+            <h2 className={styles.sectionTitle}>{mode === 'new-register' ? 'Registrar Asistencia Diaria' : 'Modificar Asistencia'}</h2>
             <div className={styles.controlsContainer}>
                 <div className={styles.selectControl}>
                     <label htmlFor="course-select">Selecciona un Curso:</label>
@@ -200,10 +202,11 @@ const AttendanceManagementSection = () => {
                         value={selectedCourse}
                         onChange={(e) => {
                             setSelectedCourse(e.target.value);
+                            setSelectedDate(''); 
                             setStudents([]); 
                             setAttendanceRecords({}); 
                         }}
-                        disabled={loading} 
+                        disabled={loading || mode === 'edit-history'} 
                     >
                         <option value="">Selecciona un curso</option>
                         {profesorCourses.map(course => (
@@ -213,84 +216,95 @@ const AttendanceManagementSection = () => {
                 </div>
 
                 <div className={styles.selectControl}>
-                    <label htmlFor="date-select">Selecciona la Fecha:</label>
+                    <label htmlFor="date-select-new">Fecha:</label>
                     <input
                         type="date"
-                        id="date-select"
+                        id="date-select-new"
                         className={styles.dateInput}
-                        value={selectedDate}
+                        value={selectedDate} 
                         onChange={(e) => {
                             setSelectedDate(e.target.value);
                             setStudents([]); 
                             setAttendanceRecords({}); 
                         }}
                         max={new Date().toISOString().split('T')[0]}
-                        disabled={loading} 
+                        disabled={loading || !selectedCourse || mode === 'edit-history'} 
                     />
                 </div>
                 <button
                     className={styles.loadStudentsButton}
-                    onClick={loadStudentsAndAttendance}
+                    onClick={() => loadStudentsAndAttendance(selectedCourse, selectedDate)}
                     disabled={!selectedCourse || !selectedDate || loading} 
                 >
-                    {loading ? 'Cargando...' : 'Cargar Lista de Asistencia'}
+                    {loading && selectedCourse && selectedDate ? 'Cargando...' : 'Cargar Lista de Asistencia'}
                 </button>
             </div>
 
-            {loading && selectedCourse && selectedDate ? (
+            {loading && selectedCourse && selectedDate && mode === 'edit-history' ? ( 
                 <div className={styles.loadingContainer}>
                     <div className={styles.spinner}></div>
-                    <p>Cargando lista de estudiantes...</p>
+                    <p>Cargando asistencia para la fecha seleccionada...</p>
                 </div>
-            ) : error && selectedCourse && selectedDate ? (
+            ) : loading && selectedCourse && selectedDate && mode === 'new-register' ? (
+                <div className={styles.loadingContainer}>
+                    <div className={styles.spinner}></div>
+                    <p>Cargando estudiantes...</p>
+                </div>
+            ) : error && selectedCourse && selectedDate ? ( 
                 <div className={styles.error}><p>{error}</p></div>
-            ) : selectedCourse && selectedDate && students.length > 0 ? (
+            ) : selectedCourse && selectedDate && students.length > 0 ? ( 
                 <div className={styles.attendanceListContainer}>
-                    {/* APLICAR EL FORMATO AQUÍ */}
                     <h3 className={styles.listTitle}>Asistencia para {profesorCourses.find(c => c.id == selectedCourse)?.nombre} el {formatDisplayDate(selectedDate)}</h3>
-                    <>
-                        <ul className={styles.studentsList}>
-                            {students.map(student => (
-                                <li key={student.id} className={styles.studentItem}>
-                                    <div className={styles.studentInfo}>
-                                        <span className={styles.studentName}>{student.nombre}</span>
-                                        <span className={styles.studentEmail}>{student.email}</span>
-                                    </div>
-                                    <div className={styles.attendanceControls}>
-                                        <button
-                                            className={`${styles.attendanceButton} ${attendanceRecords[student.id] === 'presente' ? styles.activePresent : ''}`}
-                                            onClick={() => handleAttendanceChange(student.id, 'presente')}
-                                        >
-                                            Presente
-                                        </button>
-                                        <button
-                                            className={`${styles.attendanceButton} ${attendanceRecords[student.id] === 'ausente' ? styles.activeAbsent : ''}`}
-                                            onClick={() => handleAttendanceChange(student.id, 'ausente')}
-                                        >
-                                            Ausente
-                                        </button>
-                                        <button
-                                            className={`${styles.attendanceButton} ${attendanceRecords[student.id] === 'tarde' ? styles.activeLate : ''}`}
-                                            onClick={() => handleAttendanceChange(student.id, 'tarde')}
-                                        >
-                                            Tarde
-                                        </button>
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
-                        <div className={styles.actionsContainer}>
-                            <button
-                                className={styles.submitButton}
-                                onClick={handleSubmitAttendance}
-                                disabled={loading}
-                            >
-                                {loading ? 'Guardando...' : 'Guardar Asistencia'}
-                            </button>
-                        </div>
-                    </>
+                    
+                    <div className={styles.studentsListHeader}>
+                        <span className={styles.headerItem}>N°</span>
+                        <span className={styles.headerItem}>Nombre</span>
+                        <span className={styles.headerItem}>Apellido</span>
+                        <span className={styles.headerItem}>Correo</span>
+                        <span className={styles.headerItem}>Estado</span>
+                    </div>
+
+                    <ul className={styles.studentsList}>
+                        {students.map((student, index) => (
+                            <li key={student.id} className={styles.studentItem}>
+                                <div className={styles.studentListItemNumber}>{index + 1}</div>
+                                <div className={styles.studentListName}>{student.nombre}</div>
+                                <div className={styles.studentListLastName}>{student.apellido}</div>
+                                <div className={styles.studentListEmail}>{student.email}</div>
+                                <div className={styles.attendanceControls}>
+                                    <button
+                                        className={`${styles.attendanceButton} ${attendanceRecords[student.id] === 'presente' ? styles.activePresent : ''}`}
+                                        onClick={() => handleAttendanceChange(student.id, 'presente')}
+                                    >
+                                        Presente
+                                    </button>
+                                    <button
+                                        className={`${styles.attendanceButton} ${attendanceRecords[student.id] === 'ausente' ? styles.activeAbsent : ''}`}
+                                        onClick={() => handleAttendanceChange(student.id, 'ausente')}
+                                    >
+                                        Ausente
+                                    </button>
+                                    <button
+                                        className={`${styles.attendanceButton} ${attendanceRecords[student.id] === 'tarde' ? styles.activeLate : ''}`}
+                                        onClick={() => handleAttendanceChange(student.id, 'tarde')}
+                                    >
+                                        Tarde
+                                    </button>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                    <div className={styles.actionsContainer}>
+                        <button
+                            className={styles.submitButton}
+                            onClick={handleSubmitAttendance}
+                            disabled={loading}
+                        >
+                            {loading ? 'Guardando...' : 'Guardar Asistencia'}
+                        </button>
+                    </div>
                 </div>
-            ) : selectedCourse && selectedDate && students.length === 0 && !loading && !error ? (
+            ) : selectedCourse && selectedDate && students.length === 0 && !loading && !error ? ( 
                 <div className={styles.emptyState}>
                     <p>No hay estudiantes inscritos con reserva validada para este curso o no hay asistencias registradas para la fecha seleccionada.</p>
                 </div>

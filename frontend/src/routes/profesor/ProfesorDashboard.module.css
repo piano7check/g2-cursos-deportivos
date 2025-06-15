@@ -1,22 +1,284 @@
-/* Contenedor principal del dashboard del profesor */
+/* Variables CSS (si las usas, asegúrate de que estén definidas en tu index.css o app.css) */
+:root {
+    --color-primary: #3498db;
+    --color-primary-dark: #2980b9;
+    --color-accent-blue: #007bff;
+    --color-accent-yellow: #f39c12;
+    --color-success: #28a745;
+    --color-error: #dc3545;
+    --color-bg-light: #f0f2f5;
+    --color-bg-white: #ffffff;
+    --color-text-dark: #34495e;
+    --color-text-muted: #6c757d;
+    --color-text-light: #ecf0f1;
+    --shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 5px 15px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
 .profesorDashboard {
     display: flex;
     min-height: 100vh;
     background-color: var(--color-bg-light);
 }
 
-/* Área de contenido principal */
+.sidebar {
+    width: 250px;
+    background-color: #2c3e50;
+    color: var(--color-text-light);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: fixed;
+    height: 100vh;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease-in-out;
+    transform: translateX(0);
+    z-index: 1000;
+    border-radius: 0 12px 12px 0;
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+        position: absolute;
+        width: 200px;
+    }
+    .sidebarOpen {
+        transform: translateX(0);
+    }
+}
+
+.closeSidebarButton {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--color-text-light);
+    font-size: 1.5rem;
+    cursor: pointer;
+    align-self: flex-end;
+    margin-bottom: 10px;
+}
+
+@media (max-width: 768px) {
+    .closeSidebarButton {
+        display: block;
+    }
+}
+
+.sidebarHeader {
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebarHeader h2 {
+    margin: 0;
+    font-size: 1.8rem;
+    color: var(--color-primary);
+}
+
+.sidebarHeader .userProfileWidget {
+    margin-top: 15px;
+    padding: 10px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.navItem {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    font-size: 1.1rem;
+    gap: 10px;
+}
+
+.navItem:hover {
+    background-color: #34495e;
+    transform: translateX(5px);
+}
+
+.navItem.active {
+    background-color: var(--color-primary);
+    font-weight: bold;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.navText {
+    flex-grow: 1;
+}
+
+.sidebarFooter {
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+}
+
+.logoutButton {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 90%;
+    margin: 15px auto 0;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.logoutButton:hover {
+    background-color: #c0392b;
+    transform: translateY(-2px);
+}
+
+.logoutIcon {
+    margin-right: 5px;
+}
+
 .mainContent {
     flex-grow: 1;
     padding: 20px;
-    transition: margin-left 0.3s ease; /* Transición para cuando el sidebar se colapsa/expande */
-    margin-left: 250px; /* Ancho por defecto del sidebar */
+    margin-left: 250px;
+    transition: margin-left 0.3s ease;
 }
 
-/* Media query para dispositivos móviles */
 @media (max-width: 768px) {
     .mainContent {
-        margin-left: 0; /* Ocupar todo el ancho en móviles */
-        padding: 15px;
+        margin-left: 0;
+        width: 100%;
+        padding-top: 70px;
+    }
+}
+
+.attendanceOverview {
+    text-align: center;
+    padding: 50px; /* Mantener padding generoso */
+    background-color: var(--color-bg-white);
+    border-radius: 10px;
+    box-shadow: var(--shadow-md);
+    width: calc(100% - 40px); /* Ocupar casi todo el ancho, restando el padding del mainContent */
+    margin: 20px; /* Un margen uniforme para despegarlo de los bordes del mainContent */
+    min-height: calc(100vh - 100px); /* Ajustar la altura mínima para que ocupe la pantalla, restando header/footer/margins */
+    display: flex; /* Usar flexbox para centrar el contenido verticalmente si es necesario */
+    flex-direction: column;
+    justify-content: center; /* Centrar verticalmente el contenido */
+    align-items: center; /* Centrar horizontalmente el contenido */
+}
+
+.overviewDescription {
+    font-size: 1.1rem;
+    color: var(--color-text-muted);
+    margin-bottom: 40px;
+}
+
+.attendanceOptions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 40px;
+    width: 100%; /* Asegurar que ocupe el 100% del contenedor padre */
+}
+
+.attendanceOptionButton {
+    background-color: var(--color-bg-white);
+    color: var(--color-text-dark);
+    border: 2px solid var(--color-text-dark);
+    padding: 40px 50px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 1.5rem;
+    font-weight: 700;
+    flex: 1;
+    min-width: 320px;
+    max-width: 450px;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-sm);
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    text-decoration: none;
+}
+
+.attendanceOptionButton:hover {
+    background-color: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.attendanceOptionButton:active {
+    transform: translateY(0);
+    box-shadow: var(--shadow-sm);
+}
+
+.sectionTitle {
+    font-size: 2rem;
+    color: var(--color-primary-dark);
+    margin-bottom: 20px;
+}
+
+.backButton {
+    background-color: #6c757d;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: background-color 0.2s ease;
+}
+
+.backButton:hover {
+    background-color: #5a6268;
+}
+
+@media (max-width: 768px) {
+    .attendanceOverview {
+        padding: 20px;
+        margin: 20px auto;
+        width: calc(100% - 40px); /* Ajuste para que ocupe el ancho en móviles */
+        min-height: calc(100vh - 100px - 40px); /* Ajuste de altura para móviles */
+    }
+
+    .overviewDescription {
+        font-size: 1rem;
+        margin-bottom: 20px;
+    }
+
+    .attendanceOptions {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .attendanceOptionButton {
+        padding: 25px 30px;
+        font-size: 1.3rem;
+        min-width: unset;
+        width: 100%;
+        gap: 10px;
     }
 }
