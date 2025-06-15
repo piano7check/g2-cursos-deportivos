@@ -27,7 +27,7 @@ class CursosModel:
 
                 for horario in data['horarios']:
                     sql_horario = """INSERT INTO horarios(curso_id, dia, hora_inicio, hora_fin)
-                                     VALUES (%s, %s, %s, %s)"""
+                                       VALUES (%s, %s, %s, %s)"""
                     cursor.execute(sql_horario, (
                         curso_id,
                         horario['dia'],
@@ -106,10 +106,29 @@ class CursosModel:
 
         try:
             with conexion.cursor(pymysql.cursors.DictCursor) as cursor:
-                sql = """SELECT c.id, c.nombre, c.descripcion, c.cupos, c.profesor_id, c.categoria_id, c.coste, cat.nombre as categoria_nombre
-                               FROM cursos c
-                               LEFT JOIN categorias cat ON c.categoria_id = cat.id
-                               WHERE c.profesor_id = %s"""
+                sql = """
+                    SELECT
+                        c.id,
+                        c.nombre,
+                        c.descripcion,
+                        c.cupos,
+                        c.profesor_id,
+                        c.categoria_id,
+                        c.coste,
+                        cat.nombre AS categoria_nombre,
+                        COUNT(CASE WHEN r.estado = 'validado' THEN r.estudiante_id END) AS current_students_count
+                    FROM
+                        cursos c
+                    LEFT JOIN
+                        categorias cat ON c.categoria_id = cat.id
+                    LEFT JOIN
+                        reservas r ON c.id = r.curso_id
+                    WHERE
+                        c.profesor_id = %s
+                    GROUP BY
+                        c.id, c.nombre, c.descripcion, c.cupos, c.profesor_id, c.categoria_id, c.coste, categoria_nombre
+                    ORDER BY c.nombre
+                """
                 cursor.execute(sql, (profesor_id,))
                 cursos = cursor.fetchall()
 
@@ -134,8 +153,10 @@ class CursosModel:
                 return {"cursos": cursos, "status_code": 200}
 
         except pymysql.Error as e:
+            print(f"SQL Error in obtener_cursos_por_profesor: {e.args[1]}")
             return {"error": "Error en base de datos", "codigo": e.args[0], "mensaje": e.args[1], "status_code": 500}
         except Exception as e:
+            print(f"General Error in obtener_cursos_por_profesor: {str(e)}")
             return {"error": str(e), "status_code": 500}
         finally:
             if conexion:
