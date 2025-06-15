@@ -246,7 +246,6 @@ class ReservasModel:
                 cursor.execute(sql_count, tuple(count_values))
                 total_reservas = cursor.fetchone()[0]
 
-
                 return {"reservas": reservas, "total_reservas": total_reservas}
 
         except pymysql.Error as e:
@@ -284,9 +283,14 @@ class ReservasModel:
                 sql_update_reserva = "UPDATE reservas SET estado = %s WHERE id = %s"
                 cursor.execute(sql_update_reserva, (nuevo_estado, reserva_id))
 
-                if estado_actual in ['pendiente', 'validado'] and (nuevo_estado == 'expirado' or nuevo_estado == 'cancelado'):
+                if estado_actual in ['pendiente', 'validado'] and nuevo_estado in ['expirado', 'cancelado']:
                     sql_increment_cupos = "UPDATE cursos SET cupos = cupos + 1 WHERE id = %s"
                     cursor.execute(sql_increment_cupos, (curso_id,))
+
+                if estado_actual not in ['validado'] and nuevo_estado == 'validado':
+                    sql_decrement_cupos = "UPDATE cursos SET cupos = cupos - 1 WHERE id = %s"
+                    cursor.execute(sql_decrement_cupos, (curso_id,))
+
 
                 conexion.commit()
                 return {
@@ -450,8 +454,6 @@ class ReservasModel:
                     if current_reserva_estado == 'pendiente':
                         sql_update_reserva = "UPDATE reservas SET estado = 'validado' WHERE id = %s"
                         cursor.execute(sql_update_reserva, (reserva_id,))
-                    else:
-                        pass 
                 elif nuevo_estado == 'rechazado':
                     pass
 
@@ -505,6 +507,54 @@ class ReservasModel:
             return {"error": "Error en la base de datos", "codigo": e.args[0], "mensaje": e.args[1], "status_code": 500}
         except Exception as e:
             conexion.rollback()
+            return {"error": f"Error interno del servidor: {str(e)}", "status_code": 500}
+        finally:
+            if conexion:
+                conexion.close()
+
+    @staticmethod
+    def obtener_estudiantes_por_curso(curso_id, profesor_id):
+        conexion = obtenerConexion()
+        if conexion is None:
+            return {"error": "Error de conexión a la base de datos", "status_code": 500}
+        
+        try:
+            with conexion.cursor(pymysql.cursors.DictCursor) as cursor:
+                sql_check_curso_profesor = "SELECT profesor_id FROM cursos WHERE id = %s"
+                cursor.execute(sql_check_curso_profesor, (curso_id,))
+                curso_info = cursor.fetchone()
+
+                if not curso_info or curso_info['profesor_id'] != profesor_id:
+                    return {"error": "Curso no encontrado o no autorizado para este profesor.", "status_code": 403}
+
+                sql = """
+                    SELECT
+                        r.id AS reserva_id,
+                        r.estudiante_id,
+                        u.name AS estudiante_nombre,
+                        u.lastname AS estudiante_apellido,
+                        u.email AS estudiante_email,
+                        r.fecha_reserva,
+                        r.estado AS estado_reserva
+                    FROM
+                        reservas r
+                    JOIN
+                        users u ON r.estudiante_id = u.id
+                    WHERE
+                        r.curso_id = %s AND r.estado IN ('pendiente', 'validado')
+                    ORDER BY
+                        u.lastname, u.name
+                """
+                cursor.execute(sql, (curso_id,))
+                estudiantes = cursor.fetchall()
+
+                return {"estudiantes": estudiantes, "status_code": 200}
+
+        except pymysql.Error as e:
+            print(f"SQL Error en obtener_estudiantes_por_curso: {e.args[1]}")
+            return {"error": "Error en la base de datos", "codigo": e.args[0], "mensaje": e.args[1], "status_code": 500}
+        except Exception as e:
+            print(f"Error general en obtener_estudiantes_por_curso: {str(e)}")
             return {"error": f"Error interno del servidor: {str(e)}", "status_code": 500}
         finally:
             if conexion:
