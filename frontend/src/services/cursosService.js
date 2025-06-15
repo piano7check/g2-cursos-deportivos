@@ -108,3 +108,14 @@ export const getCursosEstudiantes = async () => {
         throw error;
     }
 };
+
+export const getCursosByProfessor = async () => {
+    const response = await fetch(`${API_BASE_URL}/profesor/cursos`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+    });
+    return handleResponse(response);
+};
