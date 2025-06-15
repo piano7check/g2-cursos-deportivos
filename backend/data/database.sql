@@ -74,3 +74,15 @@ CREATE TABLE `validaciones_pago` (
   KEY `reserva_id` (`reserva_id`),
   CONSTRAINT `validaciones_pago_ibfk_1` FOREIGN KEY (`reserva_id`) REFERENCES `reservas` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `asistencias` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `estudiante_id` INT NOT NULL,
+  `curso_id` INT NOT NULL,
+  `fecha` DATE NOT NULL,
+  `estado_asistencia` ENUM('presente', 'ausente', 'tarde') NOT NULL DEFAULT 'ausente',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_asistencia_estudiante_curso_fecha` (`estudiante_id`, `curso_id`, `fecha`),
+  CONSTRAINT `asistencias_ibfk_1` FOREIGN KEY (`estudiante_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `asistencias_ibfk_2` FOREIGN KEY (`curso_id`) REFERENCES `cursos` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

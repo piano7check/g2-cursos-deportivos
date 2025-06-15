@@ -102,7 +102,7 @@ class CursosModel:
     def obtener_cursos_por_profesor(profesor_id):
         conexion = obtenerConexion()
         if conexion is None:
-            return {"error": "Error de conexión a BD"}
+            return {"error": "Error de conexión a BD", "status_code": 500}
 
         try:
             with conexion.cursor(pymysql.cursors.DictCursor) as cursor:
@@ -131,12 +131,12 @@ class CursosModel:
                         })
                     curso['horarios'] = horarios_serializables
 
-                return cursos
+                return {"cursos": cursos, "status_code": 200}
 
         except pymysql.Error as e:
-            return {"error": "Error en base de datos", "codigo": e.args[0], "mensaje": e.args[1]}
+            return {"error": "Error en base de datos", "codigo": e.args[0], "mensaje": e.args[1], "status_code": 500}
         except Exception as e:
-            return {"error": str(e)}
+            return {"error": str(e), "status_code": 500}
         finally:
             if conexion:
                 conexion.close()

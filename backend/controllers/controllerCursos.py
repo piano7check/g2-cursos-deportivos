@@ -151,3 +151,16 @@ class ControllerCursos():
             return jsonify(cursos_data), cursos_data.get('status_code', 500)
         
         return jsonify(cursos_data), 200
+
+    @staticmethod
+    def obtener_cursos_por_profesor():
+        profesor_id = g.usuario.get('id')
+        if not profesor_id:
+            return jsonify({"error": "ID de profesor no encontrado en el token"}), 400
+        
+        resultado = CursosModel.obtener_cursos_por_profesor(profesor_id)
+        
+        if "error" in resultado:
+            return jsonify(resultado), resultado.get("status_code", 500)
+        
+        return jsonify(resultado), 200
