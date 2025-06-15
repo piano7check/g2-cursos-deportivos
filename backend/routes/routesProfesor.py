@@ -8,7 +8,7 @@ routes_profesor = Blueprint("profesorRoute", __name__)
 
 @routes_profesor.route('/cursos', methods=['GET'])
 @token_requerido
-@rol_requerido(['profesor', 'admin']) 
+@rol_requerido(['profesor', 'admin'])
 def obtener_cursos_profesor():
     return ControllerCursos.obtener_cursos_por_profesor()
 
@@ -30,3 +30,8 @@ def registrar_asistencia_clase():
 def consultar_asistencia_clase(curso_id, fecha_str):
     return ControllerAsistencias.obtener_asistencia_curso_fecha(curso_id, fecha_str)
 
+@routes_profesor.route('/asistencias/fechas/<int:curso_id>', methods=['GET'])
+@token_requerido
+@rol_requerido(['profesor', 'admin'])
+def obtener_fechas_asistencia_curso(curso_id):
+    return ControllerAsistencias.obtener_fechas_con_asistencia_por_curso(curso_id)

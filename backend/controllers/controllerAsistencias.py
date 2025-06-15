@@ -4,7 +4,6 @@ from models.cursosModels import CursosModel
 from schemas.asistencias import validarRegistroAsistenciaBatch
 
 class ControllerAsistencias:
-    @staticmethod
     def registrar_o_actualizar_asistencia():
         current_profesor_id = g.usuario.get('id')
         if not current_profesor_id:
@@ -30,7 +29,6 @@ class ControllerAsistencias:
             return resultado, resultado.get("status_code", 500)
         return resultado, 200
 
-    @staticmethod
     def obtener_asistencia_curso_fecha(curso_id, fecha_str):
         current_profesor_id = g.usuario.get('id')
         if not current_profesor_id:
@@ -41,12 +39,11 @@ class ControllerAsistencias:
             return {"error": "No autorizado para consultar asistencia de este curso."}, 403
 
         resultado = AsistenciasModel.obtener_asistencia_por_curso_fecha(curso_id, fecha_str)
-
+        
         if "error" in resultado:
             return resultado, resultado.get("status_code", 500)
         return resultado, 200
 
-    @staticmethod
     def obtener_estudiantes_por_curso(curso_id):
         current_profesor_id = g.usuario.get('id')
         if not current_profesor_id:
@@ -57,6 +54,21 @@ class ControllerAsistencias:
             return {"error": "No autorizado para acceder a los estudiantes de este curso."}, 403
 
         resultado = AsistenciasModel.obtener_estudiantes_inscritos_en_curso(curso_id)
+        
+        if "error" in resultado:
+            return resultado, resultado.get("status_code", 500)
+        return resultado, 200
+
+    def obtener_fechas_con_asistencia_por_curso(curso_id):
+        current_profesor_id = g.usuario.get('id')
+        if not current_profesor_id:
+            return {"error": "ID de profesor no encontrado en el token."}, 400
+
+        curso = CursosModel.obtener_curso_por_id(curso_id)
+        if "error" in curso or not curso.get("curso") or curso["curso"].get("profesor_id") != current_profesor_id:
+            return {"error": "No autorizado para consultar fechas de asistencia de este curso."}, 403
+
+        resultado = AsistenciasModel.obtener_fechas_con_asistencia_por_curso(curso_id)
 
         if "error" in resultado:
             return resultado, resultado.get("status_code", 500)
