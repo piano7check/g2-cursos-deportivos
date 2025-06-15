@@ -5,6 +5,8 @@ import styles from './ProfesorDashboard.module.css';
 import ProfesorSidebarNav from '../../components/profesor/layout/ProfesorSidebarNav';
 import AttendanceManagementSection from '../../components/profesor/sections/AttendanceManagementSection';
 import AttendanceHistorySection from '../../components/profesor/sections/AttendanceHistorySection';
+import MyCoursesSection from '../../components/profesor/sections/MyCoursesSection';
+import CourseStudentsSection from '../../components/profesor/sections/CourseStudentsSection';
 
 const ProfesorDashboard = () => {
     const { usuario, cargando, error, logout } = useUsuarioContext();
@@ -13,6 +15,10 @@ const ProfesorDashboard = () => {
     const [attendanceSubView, setAttendanceSubView] = useState('overview');
     const [courseToEdit, setCourseToEdit] = useState(null);
     const [dateToEdit, setDateToEdit] = useState(null);
+    const [myCoursesSubView, setMyCoursesSubView] = useState('list');
+    const [selectedCourseForStudents, setSelectedCourseForStudents] = useState(null);
+    const [selectedCourseNameForStudents, setSelectedCourseNameForStudents] = useState(null);
+    const [selectedCourseCategoryForStudents, setSelectedCourseCategoryForStudents] = useState(null); // Nuevo estado para la categoría
 
     useEffect(() => {
         if (!cargando) {
@@ -40,14 +46,35 @@ const ProfesorDashboard = () => {
         setDateToEdit(null);
     }, []);
 
+    // Modificada para recibir también courseCategory
+    const navigateToCourseStudents = useCallback((courseId, courseName, courseCategory) => {
+        setSelectedCourseForStudents(courseId);
+        setSelectedCourseNameForStudents(courseName || 'Nombre de Curso No Disponible');
+        setSelectedCourseCategoryForStudents(courseCategory || 'Categoría No Disponible'); // Asegurar un fallback
+        setActiveSection('my-courses');
+        setMyCoursesSubView('students');
+    }, []);
+
+    const handleBackToMyCoursesList = useCallback(() => {
+        setMyCoursesSubView('list');
+        setSelectedCourseForStudents(null);
+        setSelectedCourseNameForStudents(null);
+        setSelectedCourseCategoryForStudents(null); // Resetear también la categoría
+    }, []);
+
     useEffect(() => {
         if (activeSection !== 'attendance') {
             setAttendanceSubView('overview');
             setCourseToEdit(null);
             setDateToEdit(null);
         }
+        if (activeSection !== 'my-courses') {
+            setMyCoursesSubView('list');
+            setSelectedCourseForStudents(null);
+            setSelectedCourseNameForStudents(null);
+            setSelectedCourseCategoryForStudents(null);
+        }
     }, [activeSection]);
-
 
     if (cargando) {
         return (
@@ -145,7 +172,22 @@ const ProfesorDashboard = () => {
                         )}
                     </>
                 )}
-                {activeSection === 'my-courses' && <div><h2>Mis Cursos (próximamente)</h2></div>}
+                
+                {activeSection === 'my-courses' && (
+                    <>
+                        {myCoursesSubView === 'list' && (
+                            <MyCoursesSection onViewStudents={navigateToCourseStudents} />
+                        )}
+                        {myCoursesSubView === 'students' && selectedCourseForStudents && (
+                            <CourseStudentsSection
+                                courseId={selectedCourseForStudents}
+                                courseName={selectedCourseNameForStudents}
+                                courseCategory={selectedCourseCategoryForStudents}
+                                onBack={handleBackToMyCoursesList}
+                            />
+                        )}
+                    </>
+                )}
             </main>
         </div>
     );
