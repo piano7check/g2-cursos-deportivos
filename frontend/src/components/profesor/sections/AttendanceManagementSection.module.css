@@ -1,0 +1,320 @@
+.attendanceManagementSection {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: var(--color-bg-light);
+    border-radius: 10px;
+    box-shadow: var(--shadow-sm);
+}
+
+.sectionTitle {
+    font-size: 2rem;
+    color: var(--color-primary-dark);
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.controlsContainer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 30px;
+    justify-content: center;
+    background-color: var(--color-bg-white);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: var(--shadow-xs);
+}
+
+.selectControl {
+    flex: 1;
+    min-width: 280px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.selectControl label {
+    font-weight: 600;
+    color: var(--color-text-dark);
+    font-size: 1rem;
+}
+
+.selectInput,
+.dateInput {
+    width: 100%;
+    padding: 10px 15px;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    font-size: 1rem;
+    color: var(--color-text-dark);
+    background-color: #fff;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.selectInput:focus,
+.dateInput:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    outline: none;
+}
+
+.loadStudentsButton {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    margin-top: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.loadStudentsButton:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+}
+
+.loadStudentsButton:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+.attendanceListContainer {
+    background-color: var(--color-bg-white);
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: var(--shadow-sm);
+}
+
+.listTitle {
+    font-size: 1.5rem;
+    color: var(--color-primary-dark);
+    margin-bottom: 20px;
+    text-align: center;
+    border-bottom: 1px solid #e9ecef;
+    padding-bottom: 15px;
+}
+
+.studentsList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.studentItem {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.studentItem:last-child {
+    border-bottom: none;
+}
+
+.studentInfo {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 150px;
+    margin-right: 15px;
+}
+
+.studentName {
+    font-weight: 600;
+    color: var(--color-text-dark);
+    font-size: 1.05rem;
+}
+
+.studentEmail {
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+}
+
+.attendanceControls {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.attendanceButton {
+    background-color: #f8f9fa;
+    color: var(--color-primary-dark);
+    border: 1px solid #ced4da;
+    padding: 8px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.attendanceButton:hover:not(.activePresent):not(.activeAbsent):not(.activeLate) {
+    background-color: #e2e6ea;
+    transform: translateY(-1px);
+}
+
+.attendanceButton.activePresent {
+    background-color: var(--color-success);
+    color: var(--color-text-light);
+    border-color: var(--color-success);
+    box-shadow: var(--shadow-sm);
+}
+
+.attendanceButton.activeAbsent {
+    background-color: var(--color-error);
+    color: var(--color-text-light);
+    border-color: var(--color-error);
+    box-shadow: var(--shadow-sm);
+}
+
+.attendanceButton.activeLate {
+    background-color: var(--color-accent-yellow);
+    color: var(--color-primary-dark);
+    border-color: var(--color-accent-yellow);
+    box-shadow: var(--shadow-sm);
+}
+
+.actionsContainer {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #e9ecef;
+    text-align: center;
+}
+
+.submitButton {
+    background-color: var(--color-primary);
+    color: var(--color-text-light);
+    border: none;
+    padding: 12px 25px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
+}
+
+.submitButton:hover:not(:disabled) {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.submitButton:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.7;
+    box-shadow: none;
+}
+
+.loadingContainer,
+.error,
+.emptyState {
+    text-align: center;
+    padding: 40px 20px;
+    font-size: 1.1rem;
+    color: var(--color-text-dark);
+    margin: 20px auto;
+    border-radius: 10px;
+    background-color: var(--color-bg-white);
+    box-shadow: var(--shadow-sm);
+}
+
+.spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-left-color: var(--color-primary-dark);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+    .attendanceManagementSection {
+        padding: 15px;
+    }
+
+    .sectionTitle {
+        font-size: 1.8rem;
+        margin-bottom: 25px;
+    }
+
+    .controlsContainer {
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px;
+    }
+
+    .selectControl {
+        min-width: unset;
+        width: 100%;
+    }
+
+    .attendanceListContainer {
+        padding: 15px;
+    }
+
+    .listTitle {
+        font-size: 1.3rem;
+        margin-bottom: 15px;
+    }
+
+    .studentItem {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 10px 0;
+    }
+
+    .studentInfo {
+        width: 100%;
+        margin-right: 0;
+    }
+
+    .attendanceControls {
+        width: 100%;
+        justify-content: center;
+        margin-top: 10px;
+    }
+
+    .attendanceButton {
+        flex: 1;
+        text-align: center;
+        padding: 10px 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .sectionTitle {
+        font-size: 1.5rem;
+    }
+
+    .submitButton {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+
+    .studentName {
+        font-size: 1rem;
+    }
+
+    .studentEmail {
+        font-size: 0.85rem;
+    }
+}

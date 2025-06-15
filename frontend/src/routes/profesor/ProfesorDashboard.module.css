@@ -1,0 +1,22 @@
+/* Contenedor principal del dashboard del profesor */
+.profesorDashboard {
+    display: flex;
+    min-height: 100vh;
+    background-color: var(--color-bg-light);
+}
+
+/* Área de contenido principal */
+.mainContent {
+    flex-grow: 1;
+    padding: 20px;
+    transition: margin-left 0.3s ease; /* Transición para cuando el sidebar se colapsa/expande */
+    margin-left: 250px; /* Ancho por defecto del sidebar */
+}
+
+/* Media query para dispositivos móviles */
+@media (max-width: 768px) {
+    .mainContent {
+        margin-left: 0; /* Ocupar todo el ancho en móviles */
+        padding: 15px;
+    }
+}

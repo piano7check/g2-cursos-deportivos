@@ -6,6 +6,7 @@ import Login from './components/login/Login.jsx';
 import Registro from './components/registro/Registro.jsx';
 import StudentDashboard from './routes/estudiante/StudentDashboard.jsx';
 import AdminDashboard from './routes/admin/AdminDashboard.jsx';
+import ProfesorDashboard from './routes/profesor/ProfesorDashboard.jsx'; 
 import UserProfilePage from './routes/user/UserProfilePage.jsx';
 import ProtectedRoute from './components/protected/ProtectedRoute.jsx';
 
@@ -33,6 +34,16 @@ function App() {
                     </ProtectedRoute>
                 }
             />
+
+            <Route
+                path="/dashboardProfesor"
+                element={
+                    <ProtectedRoute allowedRoles={['profesor', 'admin']}>
+                        <ProfesorDashboard />
+                    </ProtectedRoute>
+                }
+            />
+
             <Route
                 path="/profile"
                 element={

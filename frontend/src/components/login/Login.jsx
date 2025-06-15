@@ -27,7 +27,9 @@ const Login = () => {
         if (!cargando && usuario) {
             if (usuario.rol === 'admin') {
                 navigate('/dashboardAdmin');
-            } else if (usuario.rol === 'estudiante' || usuario.rol === 'profesor') {
+            } else if (usuario.rol === 'profesor') { 
+                navigate('/dashboardProfesor'); 
+            } else if (usuario.rol === 'estudiante') { 
                 navigate('/dashboardStudent'); 
             }
         }
@@ -48,7 +50,9 @@ const Login = () => {
 
                 if (userRole === 'admin') {
                     navigate('/dashboardAdmin'); 
-                } else if (userRole === 'estudiante' || userRole === 'profesor') {
+                } else if (userRole === 'profesor') { 
+                    navigate('/dashboardProfesor');
+                } else if (userRole === 'estudiante') {
                     navigate('/dashboardStudent'); 
                 } else {
                     setStatusModalMessage('Rol de usuario no reconocido. Contacte al administrador.');
