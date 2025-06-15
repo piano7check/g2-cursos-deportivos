@@ -3,6 +3,7 @@ from middleware.validarToken import token_requerido
 from middleware.validarRol import rol_requerido
 from controllers.controllerCursos import ControllerCursos
 from controllers.controllerAsistencias import ControllerAsistencias
+from controllers.controllerReservas import ReservasController 
 
 routes_profesor = Blueprint("profesorRoute", __name__)
 
@@ -16,7 +17,13 @@ def obtener_cursos_profesor():
 @token_requerido
 @rol_requerido(['profesor', 'admin'])
 def obtener_estudiantes_de_curso(curso_id):
-    return ControllerAsistencias.obtener_estudiantes_por_curso(curso_id)
+    return ReservasController.obtener_estudiantes_de_curso(curso_id)
+
+@routes_profesor.route('/reservas/<int:reserva_id>/cancelar-inscripcion', methods=['PATCH'])
+@token_requerido
+@rol_requerido(['profesor', 'admin'])
+def cancelar_inscripcion_estudiante(reserva_id):
+    return ReservasController.cancelar_inscripcion_estudiante(reserva_id)
 
 @routes_profesor.route('/asistencias', methods=['POST'])
 @token_requerido
