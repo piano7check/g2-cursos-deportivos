@@ -14,7 +14,7 @@ class CursosModel:
                 conexion.begin()
 
                 sql_curso = """INSERT INTO cursos(nombre, descripcion, cupos, profesor_id, categoria_id, coste)
-                               VALUES (%s, %s, %s, %s, %s, %s)"""
+                                 VALUES (%s, %s, %s, %s, %s, %s)"""
                 cursor.execute(sql_curso, (
                     data['nombre'],
                     data['descripcion'],
@@ -107,9 +107,9 @@ class CursosModel:
         try:
             with conexion.cursor(pymysql.cursors.DictCursor) as cursor:
                 sql = """SELECT c.id, c.nombre, c.descripcion, c.cupos, c.profesor_id, c.categoria_id, c.coste, cat.nombre as categoria_nombre
-                           FROM cursos c
-                           LEFT JOIN categorias cat ON c.categoria_id = cat.id
-                           WHERE c.profesor_id = %s"""
+                               FROM cursos c
+                               LEFT JOIN categorias cat ON c.categoria_id = cat.id
+                               WHERE c.profesor_id = %s"""
                 cursor.execute(sql, (profesor_id,))
                 cursos = cursor.fetchall()
 
@@ -292,6 +292,45 @@ class CursosModel:
         except Exception as e:
             return {"error": "Error al eliminar curso",
             "detalles": str(e)}
+        finally:
+            if conexion:
+                conexion.close()
+
+    @staticmethod
+    def obtener_curso_por_id(curso_id):
+        conexion = obtenerConexion()
+        if conexion is None:
+            return {"error": "Error de conexión a BD", "status_code": 500}
+
+        try:
+            with conexion.cursor(pymysql.cursors.DictCursor) as cursor:
+                sql = "SELECT c.*, u.name as profesor_nombre, u.lastname as profesor_apellido, cat.nombre as categoria_nombre FROM cursos c JOIN users u ON c.profesor_id = u.id LEFT JOIN categorias cat ON c.categoria_id = cat.id WHERE c.id = %s"
+                cursor.execute(sql, (curso_id,))
+                curso = cursor.fetchone()
+
+                if curso:
+                    if 'coste' in curso and isinstance(curso['coste'], Decimal):
+                        curso['coste'] = str(curso['coste'])
+                    
+                    cursor.execute(
+                        "SELECT dia, hora_inicio, hora_fin FROM horarios WHERE curso_id = %s",
+                        (curso['id'],)
+                    )
+                    horarios = cursor.fetchall()
+                    curso['horarios'] = [
+                        {
+                            'dia': h['dia'],
+                            'hora_inicio': str(h['hora_inicio']),
+                            'hora_fin': str(h['hora_fin'])
+                        } for h in horarios
+                    ]
+                    return {"curso": curso, "status_code": 200}
+                else:
+                    return {"error": "Curso no encontrado", "status_code": 404}
+        except pymysql.Error as e:
+            return {"error": "Error en base de datos", "codigo": e.args[0], "mensaje": e.args[1], "status_code": 500}
+        except Exception as e:
+            return {"error": str(e), "status_code": 500}
         finally:
             if conexion:
                 conexion.close()
