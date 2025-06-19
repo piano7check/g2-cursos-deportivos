@@ -1,7 +1,7 @@
 import os
 import uuid
 from schemas.reservas import validarReserva
-from models.cursosModels import CursosModel 
+from models.cursosModels import CursosModel
 from models.reservasModels import ReservasModel
 from flask import g, jsonify, request, current_app
 from werkzeug.utils import secure_filename
@@ -187,3 +187,16 @@ class ReservasController:
             return jsonify(resultado), resultado.get("status_code", 500)
         else:
             return jsonify(resultado), 200
+
+    @staticmethod
+    def obtener_cursos_validados_por_estudiante():
+        current_user_id = g.usuario.get('id')
+        if not current_user_id:
+            return {"error": "ID de estudiante no encontrado en el token"}, 400
+        
+        resultado = ReservasModel.obtener_cursos_validados_por_estudiante(current_user_id)
+        
+        if "error" in resultado:
+            return resultado, resultado.get("status_code", 500)
+        else:
+            return resultado, 200

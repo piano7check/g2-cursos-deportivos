@@ -18,3 +18,10 @@ def cursosEstudiantes():
 def ocultar_reserva_estudiante(reserva_id):
     resultado, status_code = ReservasController.ocultar_reserva_estudiante(reserva_id)
     return jsonify(resultado), status_code
+
+@routes_student.route('/mis-cursos-validados', methods=['GET'])
+@token_requerido
+@rol_requerido(['estudiante'])
+def obtener_mis_cursos_validados():
+    resultado, status_code = ReservasController.obtener_cursos_validados_por_estudiante()
+    return jsonify(resultado), status_code
