@@ -291,7 +291,6 @@ class ReservasModel:
                     sql_decrement_cupos = "UPDATE cursos SET cupos = cupos - 1 WHERE id = %s"
                     cursor.execute(sql_decrement_cupos, (curso_id,))
 
-
                 conexion.commit()
                 return {
                     "id": reserva_id,
@@ -300,7 +299,7 @@ class ReservasModel:
 
         except pymysql.Error as e:
             conexion.rollback()
-            return {"error": "Error en la base de datos", "codigo": e.args[0], "mensaje": e.args[1]}
+            return {"error": "Error en la base de datos", "codigo": e.args[0], "mensaje": e.args[1], "status_code": 500}
         except Exception as e:
             conexion.rollback()
             return {"error": f"Error interno del servidor: {str(e)}", "status_code": 500}
@@ -556,6 +555,67 @@ class ReservasModel:
         except Exception as e:
             print(f"Error general en obtener_estudiantes_por_curso: {str(e)}")
             return {"error": f"Error interno del servidor: {str(e)}", "status_code": 500}
+        finally:
+            if conexion:
+                conexion.close()
+    
+    @staticmethod
+    def obtener_cursos_validados_por_estudiante(estudiante_id):
+        try:
+            conexion = obtenerConexion()
+            with conexion.cursor(pymysql.cursors.DictCursor) as cursor:
+                consulta_base = """
+                    SELECT
+                        c.id AS curso_id,
+                        c.nombre AS curso_nombre,
+                        c.descripcion AS curso_descripcion,
+                        c.cupos AS curso_cupos,
+                        c.coste AS curso_coste,
+                        cat.nombre AS categoria_nombre,
+                        res.fecha_reserva,
+                        res.estado AS estado_reserva,
+                        res.id AS reserva_id,
+                        p.name AS profesor_nombre,
+                        p.lastname AS profesor_apellido
+                    FROM reservas res
+                    JOIN cursos c ON res.curso_id = c.id
+                    JOIN categorias cat ON c.categoria_id = cat.id
+                    JOIN users p ON c.profesor_id = p.id
+                    WHERE res.estudiante_id = %s AND res.estado = 'validado'
+                    AND res.oculto_para_estudiante = FALSE;
+                """
+                cursor.execute(consulta_base, (estudiante_id,))
+                cursos_validados = cursor.fetchall()
+
+                for curso in cursos_validados:
+                    sql_horarios = """
+                        SELECT dia, hora_inicio, hora_fin
+                        FROM horarios
+                        WHERE curso_id = %s
+                        ORDER BY FIELD(dia, 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'), hora_inicio;
+                    """
+                    cursor.execute(sql_horarios, (curso['curso_id'],))
+                    horarios_raw = cursor.fetchall()
+                    
+                    curso['horarios'] = []
+                    for horario in horarios_raw:
+                        horario_formatted = {
+                            'dia': horario['dia'],
+                            'hora_inicio': str(horario['hora_inicio']) if 'hora_inicio' in horario else None,
+                            'hora_fin': str(horario['hora_fin']) if 'hora_fin' in horario else None
+                        }
+                        curso['horarios'].append(horario_formatted)
+
+                    if 'curso_coste' in curso and isinstance(curso['curso_coste'], Decimal):
+                        curso['curso_coste'] = str(curso['curso_coste'])
+
+                return {"cursos": cursos_validados}
+        except pymysql.Error as e:
+            print(f"Error SQL al obtener cursos validados del estudiante: {e.args[1]}")
+            return {"error": "Error al obtener cursos validados del estudiante.", "codigo": e.args[0], "mensaje": e.args[1], "status_code": 500}
+        except Exception as e:
+            print(f"Error general al obtener cursos validados del estudiante: {e}")
+            return {"error": "Error al obtener cursos validados del estudiante.", "status_code": 500}
         finally:
             if conexion:
                 conexion.close()

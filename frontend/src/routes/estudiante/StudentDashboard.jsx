@@ -9,13 +9,14 @@ import { logoutUser } from '../../services/userService';
 import StudentDashboardStyles from './StudentDashboard.module.css';
 
 import AvailableCoursesSection from '../../components/student/sections/AvailableCoursesSection';
-import MyReservationsSection from '../../../../frontend/src/components/student/sections/MyReservationsSection'; 
+import MyReservationsSection from '../../components/student/sections/MyReservationsSection';
+import MyValidatedCoursesSection from '../../components/student/sections/MyValidatedCoursesSection';
 
 const StudentDashboard = () => {
     const { usuario, cargando, error: authErrorContext, setUsuario } = useUsuarioContext();
     const navigate = useNavigate();
 
-    const [activeTab, setActiveTab] = useState('availableCourses'); 
+    const [activeTab, setActiveTab] = useState('availableCourses');
 
     useEffect(() => {
         if (!cargando && !usuario && !authErrorContext) {
@@ -37,7 +38,7 @@ const StudentDashboard = () => {
     }, [setUsuario, navigate]);
 
     const handleProfileClick = () => {
-        navigate('/profile'); 
+        navigate('/profile');
     };
 
     const renderContent = () => {
@@ -46,6 +47,8 @@ const StudentDashboard = () => {
                 return <AvailableCoursesSection />;
             case 'myReservations':
                 return <MyReservationsSection />;
+            case 'myValidatedCourses':
+                return <MyValidatedCoursesSection />;
             default:
                 return <AvailableCoursesSection />;
         }
@@ -85,8 +88,14 @@ const StudentDashboard = () => {
                         Mis Reservas
                     </button>
                     <button
-                        className={StudentDashboardStyles.navButton} 
-                        onClick={handleProfileClick} 
+                        className={`${StudentDashboardStyles.navButton} ${activeTab === 'myValidatedCourses' ? StudentDashboardStyles.active : ''}`}
+                        onClick={() => setActiveTab('myValidatedCourses')}
+                    >
+                        Mis Cursos
+                    </button>
+                    <button
+                        className={StudentDashboardStyles.navButton}
+                        onClick={handleProfileClick}
                     >
                         Mi Perfil
                     </button>
