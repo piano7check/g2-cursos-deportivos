@@ -564,7 +564,7 @@ class ReservasModel:
         try:
             conexion = obtenerConexion()
             with conexion.cursor(pymysql.cursors.DictCursor) as cursor:
-                consulta = """
+                consulta_base = """
                     SELECT
                         c.id AS curso_id,
                         c.nombre AS curso_nombre,
@@ -584,10 +584,28 @@ class ReservasModel:
                     WHERE res.estudiante_id = %s AND res.estado = 'validado'
                     AND res.oculto_para_estudiante = FALSE;
                 """
-                cursor.execute(consulta, (estudiante_id,))
+                cursor.execute(consulta_base, (estudiante_id,))
                 cursos_validados = cursor.fetchall()
 
                 for curso in cursos_validados:
+                    sql_horarios = """
+                        SELECT dia, hora_inicio, hora_fin
+                        FROM horarios
+                        WHERE curso_id = %s
+                        ORDER BY FIELD(dia, 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'), hora_inicio;
+                    """
+                    cursor.execute(sql_horarios, (curso['curso_id'],))
+                    horarios_raw = cursor.fetchall()
+                    
+                    curso['horarios'] = []
+                    for horario in horarios_raw:
+                        horario_formatted = {
+                            'dia': horario['dia'],
+                            'hora_inicio': str(horario['hora_inicio']) if 'hora_inicio' in horario else None,
+                            'hora_fin': str(horario['hora_fin']) if 'hora_fin' in horario else None
+                        }
+                        curso['horarios'].append(horario_formatted)
+
                     if 'curso_coste' in curso and isinstance(curso['curso_coste'], Decimal):
                         curso['curso_coste'] = str(curso['curso_coste'])
 
