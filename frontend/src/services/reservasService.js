@@ -2,7 +2,7 @@ const API_URL = 'http://localhost:5000/api';
 
 const handleResponse = async (response) => {
     if (!response.ok) {
-        const errorData = await response.json().catch(() => ({})); 
+        const errorData = await response.json().catch(() => ({}));
         if (response.status === 403) {
             throw new Error(errorData.error || 'No autorizado para realizar esta acción.', { cause: 'unauthorized' });
         }
@@ -190,6 +190,22 @@ export const cancelarInscripcionEstudiante = async (reservaId) => {
     }
 };
 
+// Nueva función para obtener cursos validados por el estudiante
+export const getMyValidatedCourses = async () => {
+    try {
+        const response = await fetch(`${API_URL}/estudiante/mis-cursos-validados`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+        });
+        return handleResponse(response);
+    } catch (error) {
+        throw new Error(error.message || 'Error al obtener los cursos validados del estudiante.');
+    }
+};
+
 const reservasService = {
     reservarCurso,
     obtenerReservasPorEstudiante,
@@ -199,8 +215,9 @@ const reservasService = {
     aprobarPago,
     rechazarPago,
     ocultarReservaEstudiante,
-    getReservasEstudiantesByCourse, 
-    cancelarInscripcionEstudiante, 
+    getReservasEstudiantesByCourse,
+    cancelarInscripcionEstudiante,
+    getMyValidatedCourses, // Exporta la nueva función
 };
 
 export default reservasService;
